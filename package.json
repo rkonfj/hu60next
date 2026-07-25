@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && opennextjs-cloudflare build --skipNextBuild && node scripts/prepare-sites.mjs",
+    "build:next": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },
@@ -16,11 +17,13 @@
     "sanitize-html": "2.17.6"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "1.20.2",
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@types/sanitize-html": "^2.16.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "4.114.0"
   },
   "overrides": {
     "postcss": "8.5.23",
