@@ -3415,25 +3415,6 @@ body:has(> .auth-page) > .site-header {
     margin-top: 0;
   }
 
-  .pagination {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .pagination strong,
-  .pagination-label {
-    display: none;
-  }
-
-  .pagination a,
-  .pagination > span {
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    padding: 0;
-    border: 0;
-  }
-
   .feed-pagination-top {
     margin-left: auto;
     gap: 4px;
