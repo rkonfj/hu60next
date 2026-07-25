@@ -31,7 +31,7 @@ export default async function ForumPage({
     forum.childForum.flatMap((child) => child.newTopic ?? []);
 
   return (
-    <main className="page-shell narrow-page">
+    <main className="page-shell narrow-page forum-page">
       <nav className="breadcrumbs" aria-label="面包屑">
         <Link href="/forums">社区版块</Link>
         <ChevronRight size={14} />
