@@ -3110,7 +3110,14 @@ body * {
   border-radius: 8px !important;
 }
 
-body :is(.site-header, .header-inner, .topic-card-meta, hr) {
+body :is(
+    .site-header,
+    .header-inner,
+    .topic-card-meta,
+    .mobile-menu-popover form,
+    .mobile-menu-auth,
+    hr
+  ) {
   border-radius: 0 !important;
 }
 
