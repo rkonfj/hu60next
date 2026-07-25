@@ -1,2 +1,2 @@
-export { default } from "../worker.js";
-export * from "../worker.js";
+export { default } from "./worker.js";
+export * from "./worker.js";
