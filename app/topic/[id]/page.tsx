@@ -1,0 +1,238 @@
+import {
+  ArrowLeft,
+  Bookmark,
+  ChevronRight,
+  Clock3,
+  Eye,
+  Flame,
+  LockKeyhole,
+  MessageCircle,
+  Reply,
+  Share2
+} from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Avatar } from "@/components/avatar";
+import { Pagination } from "@/components/pagination";
+import { compactNumber, fullDate, relativeTime } from "@/lib/format";
+import { getTopic } from "@/lib/hu60";
+import { sanitizeHu60Content } from "@/lib/sanitize";
+
+type TopicPageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ page?: string }>;
+};
+
+export async function generateMetadata({
+  params
+}: TopicPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const topic = await getTopic(Number(id));
+  return {
+    title: topic.tMeta.title,
+    description: `${topic.fName}中的社区讨论`
+  };
+}
+
+export default async function TopicPage({
+  params,
+  searchParams
+}: TopicPageProps) {
+  const [{ id }, query] = await Promise.all([params, searchParams]);
+  const topicId = Number(id);
+  const page = Math.max(1, Number(query.page) || 1);
+  const topic = await getTopic(topicId, page);
+  const [mainFloor, ...replies] = topic.tContents;
+  const meta = topic.tMeta;
+
+  return (
+    <main className="page-shell topic-page">
+      <nav className="breadcrumbs" aria-label="面包屑">
+        <Link href="/forums">社区版块</Link>
+        <ChevronRight size={14} />
+        {topic.fIndex.slice(-2).map((item) => (
+          <span className="breadcrumb-item" key={item.id}>
+            <Link href={`/forum/${item.id}`}>{item.name}</Link>
+            <ChevronRight size={14} />
+          </span>
+        ))}
+        <span>{topic.fName}</span>
+      </nav>
+
+      {topic.__fallback && (
+        <div className="data-notice">
+          暂时无法读取这个帖子，正在展示安全的离线示例。
+        </div>
+      )}
+
+      <div className="topic-layout">
+        <div className="topic-content-column">
+          <article className="topic-article">
+            <Link href="/" className="back-link">
+              <ArrowLeft size={15} /> 返回讨论
+            </Link>
+            <div className="topic-labels">
+              <Link href={`/forum/${topic.fIndex.at(-1)?.id ?? 0}`}>
+                {topic.fName}
+              </Link>
+              {meta.essence ? (
+                <span className="topic-state essence">
+                  <Flame size={13} /> 精华
+                </span>
+              ) : null}
+              {meta.locked ? (
+                <span className="topic-state locked">
+                  <LockKeyhole size={13} /> 已锁定
+                </span>
+              ) : null}
+            </div>
+            <h1>{meta.title}</h1>
+            <div className="article-meta">
+              <Avatar src={meta._u_avatar} name={meta._u_name} size="lg" />
+              <div>
+                <strong>{meta._u_name || `用户 ${meta.uid}`}</strong>
+                <span title={fullDate(meta.ctime)}>
+                  <Clock3 size={14} />
+                  {relativeTime(meta.ctime)}
+                  {meta.mtime !== meta.ctime && " · 已编辑"}
+                </span>
+              </div>
+              <div className="article-stats">
+                <span>
+                  <Eye size={15} /> {compactNumber(meta.read_count)}
+                </span>
+                <span>
+                  <MessageCircle size={15} /> {topic.floorCount - 1}
+                </span>
+              </div>
+            </div>
+            {mainFloor ? (
+              <div
+                className="rich-content"
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHu60Content(mainFloor.content)
+                }}
+              />
+            ) : (
+              <p className="missing-content">帖子正文暂时无法显示。</p>
+            )}
+            <div className="article-actions">
+              <Link href="/login">
+                <Bookmark size={17} /> 收藏
+              </Link>
+              <button type="button">
+                <Share2 size={17} /> 分享
+              </button>
+              <a
+                href={`https://hu60.cn/q.php/bbs.topic.${topicId}.html`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                在原站查看
+              </a>
+            </div>
+          </article>
+
+          <section className="reply-section" id="replies">
+            <div className="reply-heading">
+              <div>
+                <span className="eyebrow">
+                  <MessageCircle size={14} />
+                  楼层讨论
+                </span>
+                <h2>{topic.floorCount - 1} 条回复</h2>
+              </div>
+              <span>默认正序</span>
+            </div>
+            <div className="reply-list">
+              {replies.map((floor) => (
+                <article className="reply-card" id={`floor-${floor.floor}`} key={floor.id}>
+                  <div className="reply-author">
+                    <Avatar
+                      src={floor._u_avatar}
+                      name={floor._u_name}
+                      size="md"
+                    />
+                    <div>
+                      <strong>{floor._u_name || `用户 ${floor.uid}`}</strong>
+                      <span title={fullDate(floor.ctime)}>
+                        {relativeTime(floor.ctime)}
+                      </span>
+                    </div>
+                    <a href={`#floor-${floor.floor}`} className="floor-number">
+                      #{floor.floor}
+                    </a>
+                  </div>
+                  <div
+                    className="rich-content reply-content"
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeHu60Content(floor.content)
+                    }}
+                  />
+                  <div className="reply-actions">
+                    <Link href="/login">
+                      <Reply size={14} /> 回复
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+            {!replies.length && (
+              <div className="empty-replies">
+                <MessageCircle size={24} />
+                <p>还没有回复，来留下第一个观点。</p>
+              </div>
+            )}
+          </section>
+
+          <div className="quick-reply">
+            <div>
+              <strong>加入这场讨论</strong>
+              <span>登录后即可在原社区中回复</span>
+            </div>
+            <Link href="/login">
+              登录并回复 <Reply size={16} />
+            </Link>
+          </div>
+
+          <Pagination
+            current={topic.currPage}
+            max={topic.maxPage}
+            path={`/topic/${topicId}`}
+          />
+        </div>
+
+        <aside className="topic-aside">
+          <section className="author-card">
+            <span className="aside-label">关于作者</span>
+            <Avatar src={meta._u_avatar} name={meta._u_name} size="xl" />
+            <strong>{meta._u_name || `用户 ${meta.uid}`}</strong>
+            <p>{meta._u_signature || "这位用户还没有留下个人签名。"}</p>
+            <a
+              href={`https://hu60.cn/q.php/user.info.${meta.uid}.html`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              查看原站主页
+            </a>
+          </section>
+          <section className="topic-info-card">
+            <span className="aside-label">帖子信息</span>
+            <div>
+              <span>发布于</span>
+              <strong>{fullDate(meta.ctime)}</strong>
+            </div>
+            <div>
+              <span>最后更新</span>
+              <strong>{fullDate(meta.mtime)}</strong>
+            </div>
+            <div>
+              <span>阅读</span>
+              <strong>{compactNumber(meta.read_count)}</strong>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </main>
+  );
+}
