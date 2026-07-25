@@ -37,13 +37,6 @@ export function LeftRail({ forums }: { forums: Forum[] }) {
           );
         })}
       </nav>
-      <div className="rail-note">
-        <span className="live-dot" />
-        <div>
-          <strong>hu60 社区</strong>
-          <p>持续更新的技术讨论</p>
-        </div>
-      </div>
     </aside>
   );
 }

@@ -1,12 +1,12 @@
 import {
   Activity,
-  ArrowRight,
   Clock3,
   Flame,
   Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { LeftRail } from "@/components/left-rail";
+import { Pagination } from "@/components/pagination";
 import { TopicCard } from "@/components/topic-card";
 import {
   getActiveTopics,
@@ -42,6 +42,11 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
   const topics = [
     ...(isHomeFeed ? feed.newTopicList : (feed.topicList ?? []))
   ];
+  const currentPage = feed.currPage ?? page;
+  const maxPage = isHomeFeed ? undefined : (feed.maxPage ?? page);
+  const hasNextPage = isHomeFeed
+    ? feed.hasNextPage
+    : currentPage < (maxPage ?? currentPage);
 
   if (activeTab === "hot") {
     topics.sort(
@@ -77,7 +82,13 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
               </Link>
             ))}
           </div>
-          <span>{topics.length} 条讨论</span>
+          <Pagination
+            current={currentPage}
+            max={maxPage}
+            hasNext={hasNextPage}
+            path={`/explore/${activeTab}`}
+            className="feed-pagination-top"
+          />
         </div>
 
         <div className="topic-list">
@@ -86,21 +97,12 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
           ))}
         </div>
 
-        <div className="feed-pager">
-          {page > 1 && (
-            <Link href={`/explore/${activeTab}?page=${page - 1}`}>
-              上一页
-            </Link>
-          )}
-          <span>第 {page} 页</span>
-          {(isHomeFeed
-            ? feed.hasNextPage
-            : page < (feed.maxPage ?? page)) && (
-            <Link href={`/explore/${activeTab}?page=${page + 1}`}>
-              查看更多 <ArrowRight size={15} />
-            </Link>
-          )}
-        </div>
+        <Pagination
+          current={currentPage}
+          max={maxPage}
+          hasNext={hasNextPage}
+          path={`/explore/${activeTab}`}
+        />
       </section>
     </main>
   );
