@@ -12,6 +12,15 @@ type UserPageProps = {
   searchParams: Promise<{ page?: string }>;
 };
 
+function getMemberTitle(regtime?: number) {
+  if (!regtime) return "创世会员";
+
+  const registrationYear = new Date(regtime * 1000).getUTCFullYear();
+  if (registrationYear <= 2014) return "传奇会员";
+  if (registrationYear < 2018) return "骨灰会员";
+  return null;
+}
+
 export async function generateMetadata({
   params
 }: UserPageProps): Promise<Metadata> {
@@ -46,6 +55,9 @@ export default async function UserPage({
   const topics = await getUserTopics(displayName, page);
   const signature =
     profile.signature || profile._u_signature || "这位用户还没有留下个人签名。";
+  const memberTitle = profile.__fallback
+    ? null
+    : getMemberTitle(profile.regtime);
 
   return (
     <main className="page-shell content-page user-page">
@@ -68,9 +80,7 @@ export default async function UserPage({
           </span>
           <div className="user-profile-title">
             <h1>{displayName}</h1>
-            {!profile.__fallback && !profile.regtime ? (
-              <span>创世会员</span>
-            ) : null}
+            {memberTitle ? <span>{memberTitle}</span> : null}
           </div>
           <p>{signature}</p>
         </div>
