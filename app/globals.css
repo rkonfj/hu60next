@@ -814,7 +814,7 @@ select:focus-visible {
   align-items: center;
   padding-top: 12px;
   color: var(--faint);
-  border-top: 1px solid #edf0ed;
+  border-top: 1px solid var(--line);
   font-size: 10px;
   gap: 9px;
 }
