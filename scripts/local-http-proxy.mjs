@@ -14,6 +14,20 @@ function normalizeRequestTarget(value = "/") {
   }
 }
 
+function redactRequestTarget(value = "/") {
+  try {
+    const url = new URL(value, "http://local");
+    for (const key of ["name", "pass", "password"]) {
+      if (url.searchParams.has(key)) {
+        url.searchParams.set(key, "[redacted]");
+      }
+    }
+    return `${url.pathname}${url.search}`;
+  } catch {
+    return "/";
+  }
+}
+
 const server = http.createServer((request, response) => {
   const requestTarget = normalizeRequestTarget(request.url);
   const headers = {
@@ -34,7 +48,7 @@ const server = http.createServer((request, response) => {
     (upstreamResponse) => {
       const location = upstreamResponse.headers.location ?? "-";
       process.stdout.write(
-        `${request.method} ${request.url} as ${requestTarget} -> ${upstreamResponse.statusCode} location=${location}\n`
+        `${request.method} ${redactRequestTarget(request.url)} as ${redactRequestTarget(requestTarget)} -> ${upstreamResponse.statusCode} location=${location}\n`
       );
       response.writeHead(
         upstreamResponse.statusCode ?? 502,

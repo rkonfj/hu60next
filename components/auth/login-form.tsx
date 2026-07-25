@@ -4,12 +4,14 @@ import { ArrowRight, LoaderCircle, LockKeyhole, UserRound } from "lucide-react";
 import { FormEvent, useState } from "react";
 
 export function LoginForm({
-  redirectTo = "/explore/latest"
+  redirectTo = "/explore/latest",
+  initialNotice = ""
 }: {
   redirectTo?: string;
+  initialNotice?: string;
 }) {
   const [loading, setLoading] = useState(false);
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState(initialNotice);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -42,7 +44,13 @@ export function LoginForm({
   }
 
   return (
-    <form className="login-form" onSubmit={handleSubmit}>
+    <form
+      className="login-form"
+      method="post"
+      action="/api/login"
+      onSubmit={handleSubmit}
+    >
+      <input type="hidden" name="next" value={redirectTo} />
       <label>
         <span>用户名</span>
         <span className="input-shell">

@@ -1,12 +1,18 @@
 import { ExternalLink, Leaf, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Brand } from "@/components/brand";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = { title: "登录" };
 
 type LoginPageProps = {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{
+    next?: string;
+    error?: string;
+    name?: string;
+    pass?: string;
+  }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -15,6 +21,21 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     query.next?.startsWith("/") && !query.next.startsWith("//")
       ? query.next
       : "/explore/latest";
+  const cleanLoginUrl =
+    redirectTo === "/explore/latest"
+      ? "/login"
+      : `/login?next=${encodeURIComponent(redirectTo)}`;
+
+  if (query.name !== undefined || query.pass !== undefined) {
+    redirect(cleanLoginUrl);
+  }
+
+  const initialNotice =
+    query.error === "service"
+      ? "暂时无法连接登录服务，请稍后再试。"
+      : query.error === "invalid"
+        ? "登录失败，请检查账号信息。"
+        : "";
 
   return (
     <main className="auth-page">
@@ -26,11 +47,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               <Leaf size={14} />
               欢迎回来
             </span>
-            <h1>
-              回到熟悉的社区，
-              <br />
-              继续上次的讨论。
-            </h1>
+            <h1>回到熟悉的社区，继续上次的讨论。</h1>
             <p>
               登录后可查看消息状态；发帖与回复将在账号联调完成后逐步开放。
             </p>
@@ -55,7 +72,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </span>
           <h2>登录虎绿林</h2>
           <p>使用你在原社区已有的账号，无需重新注册。</p>
-          <LoginForm redirectTo={redirectTo} />
+          <LoginForm
+            redirectTo={redirectTo}
+            initialNotice={initialNotice}
+          />
           <div className="auth-links">
             <a
               href="https://hu60.cn/q.php/user.reset_pwd.html"

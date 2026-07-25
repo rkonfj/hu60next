@@ -3,6 +3,53 @@ import { NextResponse } from "next/server";
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
 
+function getSafeRedirectPath(value: FormDataEntryValue | null) {
+  const path = typeof value === "string" ? value : "";
+  return path.startsWith("/") && !path.startsWith("//")
+    ? path
+    : "/explore/latest";
+}
+
+function isDocumentSubmission(request: Request) {
+  return request.headers.get("accept")?.includes("text/html") ?? false;
+}
+
+function getPublicOrigin(request: Request) {
+  const forwardedHost = request.headers
+    .get("x-forwarded-host")
+    ?.split(",")[0]
+    .trim();
+  const forwardedProtocol = request.headers
+    .get("x-forwarded-proto")
+    ?.split(",")[0]
+    .trim();
+  const requestUrl = new URL(request.url);
+  const host = forwardedHost || request.headers.get("host");
+  const protocol =
+    forwardedProtocol || requestUrl.protocol.replace(/:$/, "");
+
+  return host ? `${protocol}://${host}` : requestUrl.origin;
+}
+
+function loginFailure(
+  request: Request,
+  redirectTo: string,
+  notice: string,
+  status: number,
+  error: "invalid" | "service" = "invalid"
+) {
+  if (isDocumentSubmission(request)) {
+    const url = new URL("/login", getPublicOrigin(request));
+    url.searchParams.set("error", error);
+    if (redirectTo !== "/explore/latest") {
+      url.searchParams.set("next", redirectTo);
+    }
+    return NextResponse.redirect(url, 303);
+  }
+
+  return NextResponse.json({ success: false, notice }, { status });
+}
+
 function findSid(
   data: Record<string, unknown>,
   setCookie: string | null,
@@ -24,11 +71,14 @@ export async function POST(request: Request) {
   const form = await request.formData();
   const name = String(form.get("name") ?? "").trim();
   const pass = String(form.get("pass") ?? "");
+  const redirectTo = getSafeRedirectPath(form.get("next"));
 
   if (!name || !pass || name.length > 60 || pass.length > 200) {
-    return NextResponse.json(
-      { success: false, notice: "请输入有效的用户名和密码。" },
-      { status: 400 }
+    return loginFailure(
+      request,
+      redirectTo,
+      "请输入有效的用户名和密码。",
+      400
     );
   }
 
@@ -57,19 +107,22 @@ export async function POST(request: Request) {
     );
 
     if (!upstream.ok || data.success === false || !sid) {
-      return NextResponse.json(
-        {
-          success: false,
-          notice:
-            typeof data.notice === "string"
-              ? data.notice
-              : "登录失败，请检查账号信息。"
-        },
-        { status: 401 }
+      return loginFailure(
+        request,
+        redirectTo,
+        typeof data.notice === "string"
+          ? data.notice
+          : "登录失败，请检查账号信息。",
+        401
       );
     }
 
-    const response = NextResponse.json({ success: true });
+    const response = isDocumentSubmission(request)
+      ? NextResponse.redirect(
+          new URL(redirectTo, getPublicOrigin(request)),
+          303
+        )
+      : NextResponse.json({ success: true });
     const forwardedProtocol = request.headers
       .get("x-forwarded-proto")
       ?.split(",")[0]
@@ -86,9 +139,12 @@ export async function POST(request: Request) {
     });
     return response;
   } catch {
-    return NextResponse.json(
-      { success: false, notice: "暂时无法连接虎绿林登录服务。" },
-      { status: 502 }
+    return loginFailure(
+      request,
+      redirectTo,
+      "暂时无法连接虎绿林登录服务。",
+      502,
+      "service"
     );
   }
 }
