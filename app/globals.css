@@ -1072,6 +1072,26 @@ select:focus-visible {
   display: none;
 }
 
+.mobile-menu-button {
+  list-style: none;
+}
+
+.mobile-menu-button::-webkit-details-marker {
+  display: none;
+}
+
+.mobile-menu-close-icon {
+  display: none;
+}
+
+.mobile-menu[open] .mobile-menu-open-icon {
+  display: none;
+}
+
+.mobile-menu[open] .mobile-menu-close-icon {
+  display: block;
+}
+
 .mobile-menu-popover {
   position: absolute;
   z-index: 80;
@@ -1085,19 +1105,33 @@ select:focus-visible {
   backdrop-filter: blur(18px);
 }
 
-.mobile-menu-popover a {
+.mobile-menu-popover :is(a, button) {
   display: flex;
+  width: 100%;
   align-items: center;
   padding: 9px 10px;
   color: var(--muted);
+  border: 0;
+  background: transparent;
   font-size: 14px;
   font-weight: 700;
+  text-align: left;
   gap: 9px;
 }
 
 .mobile-menu-popover a.active {
   color: var(--green);
   background: var(--green-soft);
+}
+
+.mobile-menu-popover form {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
+}
+
+.mobile-menu-popover form button {
+  color: var(--faint);
 }
 
 /* Shared content pages */
