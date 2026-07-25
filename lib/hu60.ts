@@ -7,6 +7,7 @@ import {
 } from "@/lib/fallback-data";
 import type {
   ChatResponse,
+  ForumTree,
   ForumsResponse,
   HomeResponse,
   MessagesResponse,
@@ -141,7 +142,7 @@ export async function getForums(): Promise<ForumsResponse> {
 }
 
 export async function getNewTopicForm(): Promise<NewTopicFormResponse> {
-  return requestJson(
+  const form = await requestJson(
     "bbs.newtopic.json",
     {},
     {
@@ -157,6 +158,26 @@ export async function getNewTopicForm(): Promise<NewTopicFormResponse> {
     },
     { cache: "no-store" }
   );
+
+  function normalizeForum(forum: ForumTree): ForumTree {
+    return {
+      id: Number(forum.id),
+      name: String(forum.name ?? ""),
+      notopic: Number(forum.notopic ?? 0),
+      access:
+        forum.access === undefined ? undefined : Number(forum.access),
+      child: Array.isArray(forum.child)
+        ? forum.child.map(normalizeForum)
+        : []
+    };
+  }
+
+  return {
+    ...form,
+    forums: Array.isArray(form.forums)
+      ? form.forums.map(normalizeForum)
+      : []
+  };
 }
 
 export async function getForum(

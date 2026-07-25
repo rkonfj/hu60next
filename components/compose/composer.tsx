@@ -247,7 +247,9 @@ export function Composer({
           title,
           content,
           forumId:
-            targetForum && targetForum.notopic !== 1 ? targetForum.id : null,
+            targetForum && Number(targetForum.notopic) !== 1
+              ? targetForum.id
+              : null,
           forumPath
         })
       );
@@ -298,9 +300,8 @@ export function Composer({
 
   function selectForum(levelIndex: number, value: string) {
     const currentLevel = levels[levelIndex];
-    const selectedId = Number(value);
     const selectedNode = currentLevel.options.find(
-      (option) => option.id === selectedId
+      (option) => String(option.id) === value
     );
     const parentLevel = levelIndex > 0 ? levels[levelIndex - 1] : undefined;
     const parentNode = parentLevel?.options.find(
@@ -396,7 +397,9 @@ export function Composer({
     }
   }
 
-  const canPostToTarget = Boolean(targetForum && targetForum.notopic !== 1);
+  const canPostToTarget = Boolean(
+    targetForum && Number(targetForum.notopic) !== 1
+  );
   const canSubmit =
     canPostToTarget && Boolean(title.trim()) && Boolean(content.trim());
 
