@@ -3075,11 +3075,15 @@ body:has(> .auth-page) > .site-header {
 
 /* Compact, low-radius interface */
 :root {
-  --radius: 2px;
+  --radius: 8px;
 }
 
 body * {
-  border-radius: 2px !important;
+  border-radius: 8px !important;
+}
+
+body :is(input, textarea, select) {
+  font-size: 16px !important;
 }
 
 body :is(
