@@ -3081,6 +3081,16 @@ body:has(> .auth-page) > .site-header {
     background: linear-gradient(155deg, #18231d, #1a2a20);
   }
 
+  .skeleton {
+    background: linear-gradient(
+      100deg,
+      #171e1a 30%,
+      #202923 50%,
+      #171e1a 70%
+    );
+    background-size: 400%;
+  }
+
   .data-notice {
     color: #e3ba83;
     border-color: #473724;
