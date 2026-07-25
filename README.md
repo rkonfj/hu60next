@@ -239,38 +239,6 @@ Codex Sites 要求保存版本时提供的提交 SHA、已推送的源码和构�
 5. `/api/session` 是否返回有效用户信息；
 6. 虎绿林上游会话是否已经失效。
 
-## 常见问题
-
-### 页面发生 `ERR_TOO_MANY_REDIRECTS`
-
-- 清除该开发域名下的旧 Cookie；
-- 确认登录和跳转使用同一个协议及主机名；
-- 检查代理传递的转发协议是否正确；
-- 局域网调试时可使用 `scripts/local-http-proxy.mjs` 观察状态码和 `Location`。
-
-### 构建时 Wrangler 无法写日志
-
-受限环境可能不允许写入默认的 Wrangler 配置目录。可以临时指定可写目录：
-
-```bash
-XDG_CONFIG_HOME=/tmp/hulvlin-wrangler \
-WRANGLER_LOG_PATH=/tmp/hulvlin-wrangler.log \
-npm run build
-```
-
-`scripts/prepare-sites.mjs` 自身会为内部的 Wrangler 打包步骤创建临时配置目录。
-
-### 页面显示备用数据或内容不完整
-
-这通常表示虎绿林上游 API 暂时不可达、响应异常或会话失效。检查网络、Worker 日志、`HU60_API_BASE` 和对应的 `.json` 接口响应。
-
-### 手机无法访问本地开发服务器
-
-- 确认开发服务器监听 `0.0.0.0`；
-- 确认手机和电脑处于同一局域网；
-- 检查系统防火墙是否允许 TCP `3000` 端口；
-- 使用电脑真实局域网 IP，不要使用手机上的 `127.0.0.1`。
-
 ## 更新部署
 
 日常更新建议执行：
@@ -283,4 +251,3 @@ npx wrangler deploy
 ```
 
 部署前应检查 Git 工作区，避免把本地环境文件、会话信息或无关改动带入版本。
-
