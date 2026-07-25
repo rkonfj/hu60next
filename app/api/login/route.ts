@@ -67,6 +67,24 @@ function findSid(
   return setCookie?.match(/(?:^|,\s*)hu60_sid=([^;,\s]+)/)?.[1] ?? null;
 }
 
+async function verifySid(sid: string) {
+  const response = await fetch(`${API_BASE}/user.stat.json?pageSize=1`, {
+    headers: {
+      accept: "application/json",
+      "user-agent": "Hulvlin-Next/0.1",
+      "x-sid": sid
+    },
+    cache: "no-store"
+  });
+
+  if (!response.ok) return false;
+  const status = (await response.json()) as {
+    uid?: number | string | null;
+    isLogin?: boolean | null;
+  };
+  return Boolean(status.uid) || status.isLogin === true;
+}
+
 export async function POST(request: Request) {
   const form = await request.formData();
   const name = String(form.get("name") ?? "").trim();
@@ -113,6 +131,15 @@ export async function POST(request: Request) {
         typeof data.notice === "string"
           ? data.notice
           : "登录失败，请检查账号信息。",
+        401
+      );
+    }
+
+    if (!(await verifySid(sid))) {
+      return loginFailure(
+        request,
+        redirectTo,
+        "登录会话验证失败，请重新登录。",
         401
       );
     }

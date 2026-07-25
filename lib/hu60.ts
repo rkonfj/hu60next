@@ -29,6 +29,7 @@ async function requestJson<T>(
       if (value !== undefined) url.searchParams.set(key, String(value));
     });
 
+    const shouldRevalidate = !init?.method && init?.cache !== "no-store";
     const response = await fetch(url, {
       ...init,
       headers: {
@@ -36,7 +37,7 @@ async function requestJson<T>(
         "user-agent": "Hulvlin-Next/0.1",
         ...init?.headers
       },
-      next: init?.method ? undefined : { revalidate: 90 }
+      ...(shouldRevalidate ? { next: { revalidate: 90 } } : {})
     });
 
     if (!response.ok) return fallback;
