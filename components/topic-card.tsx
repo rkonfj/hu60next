@@ -40,20 +40,6 @@ export function TopicCard({
 
   return (
     <article className="topic-card">
-      <div className="topic-card-author">
-        <Avatar src={topic._u_avatar} name={author} size="md" />
-        <div>
-          <strong>{author}</strong>
-          <span>{relativeTime(topic.mtime || topic.ctime, now)}</span>
-        </div>
-        <Link
-          href={`/forum/${topic.forum_id}`}
-          className="forum-pill"
-          aria-label={`进入${topic.forum_name}版块`}
-        >
-          {topic.forum_name}
-        </Link>
-      </div>
       <Link href={`/topic/${topic.topic_id || topic.id}`} className="topic-main">
         <h2>
           {topic.essence ? (
@@ -70,17 +56,33 @@ export function TopicCard({
         </h2>
         <p>{cleanSummary(topic._topic_summary)}</p>
       </Link>
-      <div className="topic-card-footer">
-        <span>
+      <div className="topic-card-meta">
+        <Avatar src={topic._u_avatar} name={author} size="sm" />
+        <div className="topic-card-author-copy">
+          <strong>{author}</strong>
+          <span>{relativeTime(topic.mtime || topic.ctime, now)}</span>
+        </div>
+        <Link
+          href={`/forum/${topic.forum_id}`}
+          className="forum-pill"
+          aria-label={`进入${topic.forum_name}版块`}
+        >
+          {topic.forum_name}
+        </Link>
+        <span className="topic-card-stat">
           <MessageCircle size={15} />
           {compactNumber(topic.reply_count)} 回复
         </span>
-        <span>
+        <span className="topic-card-stat">
           <Eye size={15} />
           {compactNumber(topic.read_count)} 阅读
         </span>
-        <Link href={`/topic/${topic.topic_id || topic.id}`}>
-          进入讨论 <ArrowUpRight size={14} />
+        <Link
+          href={`/topic/${topic.topic_id || topic.id}`}
+          className="topic-card-open"
+          aria-label="进入讨论"
+        >
+          <ArrowUpRight size={16} />
         </Link>
       </div>
     </article>

@@ -675,29 +675,26 @@ select:focus-visible {
   background: #fdfefd;
 }
 
-.topic-card-author {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.topic-card-author > div {
+.topic-card-author-copy {
   min-width: 0;
 }
 
-.topic-card-author strong,
-.topic-card-author span {
+.topic-card-author-copy strong,
+.topic-card-author-copy span {
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.topic-card-author strong {
-  font-size: 12px;
+.topic-card-author-copy strong {
+  font-size: 11px;
 }
 
-.topic-card-author > div > span {
-  margin-top: 3px;
+.topic-card-author-copy span {
+  margin-top: 2px;
   color: var(--faint);
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .forum-pill {
@@ -800,25 +797,34 @@ select:focus-visible {
   background: #edf0ee;
 }
 
-.topic-card-footer {
-  display: flex;
+.topic-card-meta {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
   align-items: center;
   padding-top: 12px;
   color: var(--faint);
   border-top: 1px solid #edf0ed;
   font-size: 10px;
-  gap: 15px;
+  gap: 9px;
 }
 
-.topic-card-footer span,
-.topic-card-footer a {
+.topic-card-meta .forum-pill {
+  max-width: 92px;
+  margin-left: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topic-card-stat,
+.topic-card-open {
   display: flex;
   align-items: center;
-  gap: 5px;
+  white-space: nowrap;
+  gap: 4px;
 }
 
-.topic-card-footer a {
-  margin-left: auto;
+.topic-card-open {
   color: var(--green);
   font-weight: 700;
 }
@@ -2757,17 +2763,13 @@ body:has(> .auth-page) > .site-header {
     font-size: 16px;
   }
 
-  .topic-card-footer {
-    gap: 11px;
+  .topic-card-meta {
+    gap: 6px;
+    font-size: 9px;
   }
 
-  .topic-card-footer a {
-    font-size: 0;
-  }
-
-  .topic-card-footer a svg {
-    width: 17px;
-    height: 17px;
+  .topic-card-meta .forum-pill {
+    max-width: 72px;
   }
 
   .mobile-nav {
@@ -3157,12 +3159,12 @@ body :is(
 }
 
 .topic-main {
-  padding: 8px 0 9px;
+  padding: 0 0 10px;
 }
 
-.topic-card-footer {
+.topic-card-meta {
   padding-top: 8px;
-  gap: 11px;
+  gap: 8px;
 }
 
 .feed-pager {
