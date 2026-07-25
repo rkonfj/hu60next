@@ -3082,7 +3082,7 @@ body * {
   border-radius: 8px !important;
 }
 
-body :is(.topic-card-meta, hr) {
+body :is(.site-header, .header-inner, .topic-card-meta, hr) {
   border-radius: 0 !important;
 }
 
