@@ -36,6 +36,21 @@ export type ForumIndex = {
   notopic?: number;
 };
 
+export type ForumTree = {
+  id: number;
+  name: string;
+  notopic: number;
+  access?: number;
+  child: ForumTree[];
+};
+
+export type NewTopicFormResponse = {
+  isLogin?: boolean | null;
+  token?: string;
+  forums: ForumTree[];
+  __fallback?: boolean;
+};
+
 export type HomeResponse = {
   userInfo?: {
     uid?: number | null;

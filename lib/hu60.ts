@@ -10,6 +10,7 @@ import type {
   ForumsResponse,
   HomeResponse,
   MessagesResponse,
+  NewTopicFormResponse,
   SearchResponse,
   Topic,
   TopicResponse,
@@ -136,6 +137,25 @@ export async function getForums(): Promise<ForumsResponse> {
       _uinfo: "name,avatar"
     },
     fallbackForums
+  );
+}
+
+export async function getNewTopicForm(): Promise<NewTopicFormResponse> {
+  return requestJson(
+    "bbs.newtopic.json",
+    {},
+    {
+      isLogin: null,
+      forums: fallbackForums.childForum.map((forum) => ({
+        id: forum.id,
+        name: forum.name,
+        notopic: 0,
+        access: 0,
+        child: []
+      })),
+      __fallback: true
+    },
+    { cache: "no-store" }
   );
 }
 

@@ -1,12 +1,12 @@
 import { PenLine, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import { Composer } from "@/components/compose/composer";
-import { getForums } from "@/lib/hu60";
+import { getNewTopicForm } from "@/lib/hu60";
 
 export const metadata: Metadata = { title: "发起讨论" };
 
 export default async function ComposePage() {
-  const forums = await getForums();
+  const form = await getNewTopicForm();
 
   return (
     <main className="page-shell narrow-page compose-page">
@@ -21,14 +21,13 @@ export default async function ComposePage() {
       <div className="compose-tip">
         <Sparkles size={17} />
         <p>
-          当前支持本地草稿和预览，内容发布功能正在完善。
+          支持多级板块、实时预览、本地草稿和附件上传。
         </p>
       </div>
       <Composer
-        rootForums={forums.childForum.map((forum) => ({
-          id: forum.id,
-          name: forum.name
-        }))}
+        rootForums={form.forums}
+        isLogin={form.isLogin === true}
+        token={form.token}
       />
     </main>
   );

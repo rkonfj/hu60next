@@ -2486,6 +2486,65 @@ body:has(> .auth-page) > .site-header {
   background: var(--green-soft);
 }
 
+.attachment-input {
+  display: none;
+}
+
+.attachment-list {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-soft);
+}
+
+.attachment-item {
+  display: grid;
+  align-items: center;
+  padding: 8px 10px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.attachment-item + .attachment-item {
+  border-top: 1px solid var(--line);
+}
+
+.attachment-state-icon {
+  display: grid;
+  color: var(--green);
+  place-items: center;
+}
+
+.attachment-item:has(.lucide-triangle-alert) .attachment-state-icon {
+  color: #b15f35;
+}
+
+.attachment-copy {
+  min-width: 0;
+}
+
+.attachment-copy strong,
+.attachment-copy small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-copy strong {
+  font-size: 10px;
+}
+
+.attachment-copy small {
+  margin-top: 2px;
+  color: var(--faint);
+  font-size: 9px;
+}
+
+.attachment-item > a {
+  color: var(--green);
+  font-size: 9px;
+  font-weight: 700;
+}
+
 .editor-shell textarea,
 .composer-preview {
   width: 100%;
@@ -2505,6 +2564,71 @@ body:has(> .auth-page) > .site-header {
 
 .composer-preview p {
   margin: 0 0 0.8em;
+}
+
+.composer-preview h2,
+.composer-preview h3,
+.composer-preview h4 {
+  margin: 0.8em 0 0.4em;
+  color: var(--ink);
+}
+
+.composer-preview h2 {
+  font-size: 20px;
+}
+
+.composer-preview h3 {
+  font-size: 17px;
+}
+
+.composer-preview h4 {
+  font-size: 14px;
+}
+
+.composer-preview blockquote {
+  margin: 0 0 0.8em;
+  padding-left: 11px;
+  color: var(--faint);
+  border-left: 3px solid var(--line-strong);
+}
+
+.composer-preview img {
+  display: block;
+  max-height: 520px;
+  margin: 8px 0;
+  object-fit: contain;
+}
+
+.composer-attachment-preview {
+  margin: 8px 0 14px;
+}
+
+.composer-attachment-preview img {
+  max-width: 100%;
+  margin-bottom: 4px;
+}
+
+.composer-attachment-preview figcaption,
+.composer-attachment-link span {
+  color: var(--faint);
+  font-size: 9px;
+}
+
+.composer-preview .composer-attachment-link {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  gap: 6px;
+}
+
+.composer-attachment-link span {
+  margin-left: auto;
+}
+
+.composer-preview a {
+  color: var(--green);
+  text-decoration: underline;
 }
 
 .composer-preview > span {
@@ -2546,13 +2670,21 @@ body:has(> .auth-page) > .site-header {
 }
 
 .publish-draft {
+  justify-content: center;
   color: #fff;
+  border: 0;
   background: var(--green);
 }
 
 .publish-draft.disabled {
   cursor: not-allowed;
   opacity: 0.45;
+}
+
+.composer-footer .form-notice {
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 /* Messages */
