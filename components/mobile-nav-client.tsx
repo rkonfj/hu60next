@@ -23,7 +23,7 @@ export function MobileNavClient({ isLoggedIn }: MobileNavClientProps) {
   const pathname = usePathname();
   const menuRef = useRef<HTMLDetailsElement>(null);
   const links = [
-    { href: "/explore/latest", label: "发现", icon: Compass },
+    { href: "/explore/active", label: "发现", icon: Compass },
     { href: "/forums", label: "版块", icon: Grid2X2 },
     { href: "/compose", label: "发布", icon: PenLine },
     { href: "/messages", label: "消息", icon: Bell },
@@ -46,7 +46,7 @@ export function MobileNavClient({ isLoggedIn }: MobileNavClientProps) {
       <nav className="mobile-menu-popover" aria-label="移动端导航">
         {links.map(({ href, label, icon: Icon }) => {
           const isActive =
-            href === "/explore/latest"
+            href === "/explore/active"
               ? pathname.startsWith("/explore/")
               : href === "/forums"
                 ? pathname === "/forums" || pathname.startsWith("/forum/")

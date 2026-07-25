@@ -10,7 +10,7 @@ export function Header() {
       <div className="header-inner">
         <Brand />
         <nav className="desktop-nav" aria-label="主导航">
-          <Link href="/explore/latest">
+          <Link href="/explore/active">
             <Compass size={17} />
             发现
           </Link>

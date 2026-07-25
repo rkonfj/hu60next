@@ -60,7 +60,7 @@ export function avatarUrl(value?: string | null) {
   return value.replace("http://", "https://");
 }
 
-export async function getHome(page = 1): Promise<HomeResponse> {
+export async function getActiveTopics(page = 1): Promise<HomeResponse> {
   return requestJson(
     "index.index.json",
     {

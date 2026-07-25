@@ -7,7 +7,7 @@ type HomeProps = {
 
 export default async function Home({ searchParams }: HomeProps) {
   const query = await searchParams;
-  const tab = isExploreTab(query.tab) ? query.tab : "latest";
+  const tab = isExploreTab(query.tab) ? query.tab : "active";
   const page = Math.max(1, Number(query.page) || 1);
   const pageQuery = page > 1 ? `?page=${page}` : "";
 

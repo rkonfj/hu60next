@@ -20,9 +20,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const redirectTo =
     query.next?.startsWith("/") && !query.next.startsWith("//")
       ? query.next
-      : "/explore/latest";
+      : "/explore/active";
   const cleanLoginUrl =
-    redirectTo === "/explore/latest"
+    redirectTo === "/explore/active"
       ? "/login"
       : `/login?next=${encodeURIComponent(redirectTo)}`;
 

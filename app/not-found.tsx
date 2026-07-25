@@ -8,7 +8,7 @@ export default function NotFound() {
         <Compass size={34} />
         <h1>这里暂时没有内容</h1>
         <p>链接可能已经变更，也可能是对应页面仍在建设中。</p>
-        <Link href="/explore/latest">返回社区首页</Link>
+        <Link href="/explore/active">返回社区首页</Link>
       </div>
     </main>
   );

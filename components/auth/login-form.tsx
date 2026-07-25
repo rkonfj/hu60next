@@ -4,7 +4,7 @@ import { ArrowRight, LoaderCircle, LockKeyhole, UserRound } from "lucide-react";
 import { FormEvent, useState } from "react";
 
 export function LoginForm({
-  redirectTo = "/explore/latest",
+  redirectTo = "/explore/active",
   initialNotice = ""
 }: {
   redirectTo?: string;

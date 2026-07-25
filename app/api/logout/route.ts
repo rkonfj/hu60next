@@ -19,7 +19,7 @@ function getPublicOrigin(request: Request) {
 
 export async function POST(request: Request) {
   const response = NextResponse.redirect(
-    new URL("/explore/latest", getPublicOrigin(request)),
+    new URL("/explore/active", getPublicOrigin(request)),
     303
   );
   const forwardedProtocol = request.headers

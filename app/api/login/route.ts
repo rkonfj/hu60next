@@ -7,7 +7,7 @@ function getSafeRedirectPath(value: FormDataEntryValue | null) {
   const path = typeof value === "string" ? value : "";
   return path.startsWith("/") && !path.startsWith("//")
     ? path
-    : "/explore/latest";
+    : "/explore/active";
 }
 
 function isDocumentSubmission(request: Request) {
@@ -41,7 +41,7 @@ function loginFailure(
   if (isDocumentSubmission(request)) {
     const url = new URL("/login", getPublicOrigin(request));
     url.searchParams.set("error", error);
-    if (redirectTo !== "/explore/latest") {
+    if (redirectTo !== "/explore/active") {
       url.searchParams.set("next", redirectTo);
     }
     return NextResponse.redirect(url, 303);

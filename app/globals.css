@@ -3535,6 +3535,16 @@ body :is(
     display: none;
   }
 
+  .auth-form-panel {
+    min-height: 100svh;
+    padding: 16px 18px 28px;
+    place-items: start center;
+  }
+
+  .mobile-auth-brand {
+    margin-bottom: 18px;
+  }
+
   .topic-card-meta {
     gap: 5px;
     overflow: hidden;

@@ -8,7 +8,11 @@ import {
 import Link from "next/link";
 import { LeftRail } from "@/components/left-rail";
 import { TopicCard } from "@/components/topic-card";
-import { getForums, getGlobalTopics, getHome } from "@/lib/hu60";
+import {
+  getActiveTopics,
+  getForums,
+  getGlobalTopics
+} from "@/lib/hu60";
 
 export type ExploreTab = "latest" | "active" | "hot" | "essence";
 
@@ -18,8 +22,8 @@ type ExploreFeedProps = {
 };
 
 const tabs = [
-  { key: "latest", label: "最新", icon: Clock3 },
   { key: "active", label: "活跃", icon: Activity },
+  { key: "latest", label: "最新", icon: Clock3 },
   { key: "hot", label: "热议", icon: Flame },
   { key: "essence", label: "精华", icon: Sparkles }
 ] as const;
@@ -32,7 +36,7 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
   const feedRequest =
     activeTab === "latest" || activeTab === "essence"
       ? getGlobalTopics(page, activeTab === "essence")
-      : getHome(page);
+      : getActiveTopics(page);
   const [feed, forums] = await Promise.all([feedRequest, getForums()]);
   const isHomeFeed = "newTopicList" in feed;
   const topics = [
