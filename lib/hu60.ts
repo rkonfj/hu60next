@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import {
   fallbackForums,
   fallbackHome,
@@ -30,15 +31,29 @@ async function requestJson<T>(
       if (value !== undefined) url.searchParams.set(key, String(value));
     });
 
-    const shouldRevalidate = !init?.method && init?.cache !== "no-store";
+    const headers = new Headers(init?.headers);
+    if (!headers.has("accept")) headers.set("accept", "application/json");
+    if (!headers.has("user-agent")) {
+      headers.set("user-agent", "Hulvlin-Next/0.1");
+    }
+    let sid = headers.get("x-sid");
+
+    if (!sid) {
+      const cookieStore = await cookies();
+      sid = cookieStore.get("hulvlin_sid")?.value ?? null;
+      if (sid) headers.set("x-sid", sid);
+    }
+
+    const shouldRevalidate =
+      !sid && !init?.method && init?.cache !== "no-store";
     const response = await fetch(url, {
       ...init,
-      headers: {
-        accept: "application/json",
-        "user-agent": "Hulvlin-Next/0.1",
-        ...init?.headers
-      },
-      ...(shouldRevalidate ? { next: { revalidate: 90 } } : {})
+      headers,
+      ...(sid
+        ? { cache: "no-store" }
+        : shouldRevalidate
+          ? { next: { revalidate: 90 } }
+          : {})
     });
 
     if (!response.ok) return fallback;

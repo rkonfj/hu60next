@@ -25,6 +25,6 @@ export async function GET(
         name: child.name
       }))
     },
-    { headers: { "cache-control": "public, max-age=60" } }
+    { headers: { "cache-control": "private, no-store" } }
   );
 }
