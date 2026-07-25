@@ -1649,12 +1649,13 @@ select:focus-visible {
   gap: 5px;
 }
 
-.article-actions button.saved {
+.article-actions .saved {
   color: var(--green);
   border-color: var(--line-strong);
   background: var(--green-soft);
 }
 
+.article-actions :is(a, button)[aria-disabled="true"],
 .article-actions button:disabled {
   cursor: default;
 }

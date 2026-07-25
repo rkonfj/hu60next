@@ -97,3 +97,43 @@ export async function DELETE(
 ) {
   return updateFavorite(context, "unset");
 }
+
+export async function GET(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const url = new URL(request.url);
+  const action = url.searchParams.get("action");
+
+  if (action !== "set" && action !== "unset") {
+    return NextResponse.json(
+      { success: false, notice: "收藏操作无效。" },
+      { status: 400 }
+    );
+  }
+
+  const response = await updateFavorite(context, action);
+
+  if (!request.headers.get("accept")?.includes("text/html")) {
+    return response;
+  }
+
+  const requestedNext = url.searchParams.get("next");
+  const next =
+    requestedNext?.startsWith("/") && !requestedNext.startsWith("//")
+      ? requestedNext
+      : "/";
+
+  if (response.status === 401) {
+    const loginParams = new URLSearchParams({ next });
+    return new NextResponse(null, {
+      status: 303,
+      headers: { location: `/login?${loginParams.toString()}` }
+    });
+  }
+
+  return new NextResponse(null, {
+    status: 303,
+    headers: { location: next }
+  });
+}

@@ -2,7 +2,7 @@
 
 import { Bookmark, LoaderCircle } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { type MouseEvent, useState } from "react";
 
 export function FavoriteButton({
   topicId,
@@ -25,15 +25,22 @@ export function FavoriteButton({
     );
   }
 
-  async function toggleFavorite() {
+  const action = isFavorite ? "unset" : "set";
+  const favoriteUrl = `/api/topics/${topicId}/favorite?action=${action}&next=/topic/${topicId}`;
+
+  async function toggleFavorite(event: MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    if (state === "loading") return;
+
     const nextFavorite = !isFavorite;
     setState("loading");
     setNotice(null);
 
     try {
-      const response = await fetch(`/api/topics/${topicId}/favorite`, {
+      const response = await fetch(favoriteUrl, {
+        cache: "no-store",
         credentials: "same-origin",
-        method: nextFavorite ? "POST" : "DELETE"
+        headers: { accept: "application/json" }
       });
       const result = (await response.json()) as {
         success?: boolean;
@@ -58,10 +65,10 @@ export function FavoriteButton({
 
   return (
     <>
-      <button
-        type="button"
+      <a
+        href={favoriteUrl}
         className={isFavorite ? "saved" : undefined}
-        disabled={state === "loading"}
+        aria-disabled={state === "loading"}
         onClick={toggleFavorite}
       >
         {state === "loading" ? (
@@ -80,7 +87,7 @@ export function FavoriteButton({
             : isFavorite
               ? "取消收藏"
               : "加入收藏"}
-      </button>
+      </a>
       {notice ? (
         <span className="favorite-notice" role="status">
           {notice}
