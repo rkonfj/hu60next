@@ -5,7 +5,17 @@ import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = { title: "登录" };
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{ next?: string }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const query = await searchParams;
+  const redirectTo =
+    query.next?.startsWith("/") && !query.next.startsWith("//")
+      ? query.next
+      : "/explore/latest";
+
   return (
     <main className="auth-page">
       <section className="auth-promo">
@@ -45,7 +55,7 @@ export default function LoginPage() {
           </span>
           <h2>登录虎绿林</h2>
           <p>使用你在原社区已有的账号，无需重新注册。</p>
-          <LoginForm />
+          <LoginForm redirectTo={redirectTo} />
           <div className="auth-links">
             <a
               href="https://hu60.cn/q.php/user.reset_pwd.html"

@@ -1,11 +1,13 @@
 "use client";
 
 import { ArrowRight, LoaderCircle, LockKeyhole, UserRound } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
-export function LoginForm() {
-  const router = useRouter();
+export function LoginForm({
+  redirectTo = "/explore/latest"
+}: {
+  redirectTo?: string;
+}) {
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
 
@@ -31,8 +33,7 @@ export function LoginForm() {
       }
 
       window.dispatchEvent(new Event("hulvlin:session-changed"));
-      router.push("/");
-      router.refresh();
+      window.location.replace(redirectTo);
     } catch {
       setNotice("暂时无法连接登录服务，请稍后再试。");
     } finally {
