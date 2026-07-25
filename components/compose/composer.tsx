@@ -200,12 +200,10 @@ function ComposerPreview({ content }: { content: string }) {
 
 export function Composer({
   rootForums,
-  isLogin,
-  token
+  isLogin
 }: {
   rootForums: ForumTree[];
   isLogin: boolean;
-  token?: string;
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<"write" | "preview">("write");
@@ -405,7 +403,7 @@ export function Composer({
 
   async function publishTopic(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!canSubmit || !isLogin || !token || publishing) return;
+    if (!canSubmit || !isLogin || publishing) return;
 
     setPublishing(true);
     setPublishNotice("");
@@ -458,7 +456,6 @@ export function Composer({
         name="forumId"
         value={canPostToTarget ? targetForum?.id : ""}
       />
-      <input type="hidden" name="token" value={token ?? ""} />
       <input type="hidden" name="content" value={content} />
       <div className="composer-top">
         <div className="composer-forum-picker" id="forum-picker">
@@ -647,7 +644,7 @@ export function Composer({
             <button className="publish-draft disabled" type="button" disabled>
               先选择板块 <Send size={16} />
             </button>
-          ) : !isLogin || !token ? (
+          ) : !isLogin ? (
             <a className="publish-draft" href="/login?next=/compose">
               登录后发布 <Send size={16} />
             </a>

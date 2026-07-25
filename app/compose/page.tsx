@@ -27,7 +27,6 @@ export default async function ComposePage() {
       <Composer
         rootForums={form.forums}
         isLogin={form.isLogin === true}
-        token={form.token}
       />
     </main>
   );

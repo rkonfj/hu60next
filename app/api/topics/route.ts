@@ -69,7 +69,6 @@ export async function POST(request: Request) {
   const forumId = Number(form.get("forumId"));
   const title = String(form.get("title") ?? "").trim();
   const content = String(form.get("content") ?? "").trim();
-  const token = String(form.get("token") ?? "");
   const cookieStore = await cookies();
   const sid = cookieStore.get("hulvlin_sid")?.value;
 
@@ -91,13 +90,48 @@ export async function POST(request: Request) {
     !title ||
     title.length > 120 ||
     !content ||
-    content.length > 20000 ||
-    !token
+    content.length > 20000
   ) {
     return failure(request, "请选择板块并填写有效的标题和正文。", 400);
   }
 
   try {
+    const tokenResponse = await fetch(
+      `${API_BASE}/bbs.newtopic.${forumId}.json`,
+      {
+        headers: {
+          accept: "application/json",
+          "user-agent": "Hulvlin-Next/0.1",
+          "x-origin": "*",
+          "x-sid": sid
+        },
+        cache: "no-store"
+      }
+    );
+    const tokenData = (await tokenResponse.json()) as {
+      isLogin?: boolean | null;
+      token?: string;
+      error?: string | boolean;
+      notice?: string;
+    };
+    const token =
+      typeof tokenData.token === "string" ? tokenData.token : "";
+
+    if (
+      !tokenResponse.ok ||
+      tokenData.error ||
+      tokenData.isLogin !== true ||
+      !token
+    ) {
+      return failure(
+        request,
+        tokenData.isLogin === false
+          ? "登录状态已失效，请重新登录。"
+          : tokenData.notice || "暂时无法获取发帖凭证，请稍后再试。",
+        tokenData.isLogin === false ? 401 : 502
+      );
+    }
+
     const upstream = await fetch(
       `${API_BASE}/bbs.newtopic.${forumId}.json`,
       {
