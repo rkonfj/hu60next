@@ -1,20 +1,47 @@
-import { cp, mkdir, rm } from "node:fs/promises";
-import { resolve } from "node:path";
+import { execFile } from "node:child_process";
+import { cp, mkdir, mkdtemp, rename, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { promisify } from "node:util";
 
 const source = resolve(".open-next");
 const destination = resolve("dist");
+const server = resolve(destination, "server");
+const run = promisify(execFile);
+const wranglerConfig = await mkdtemp(
+  join(tmpdir(), "hulvlin-wrangler-config-")
+);
 
 await rm(destination, { recursive: true, force: true });
-await cp(source, destination, { recursive: true, dereference: true });
-await mkdir(resolve(destination, "server"), { recursive: true });
-await cp(source, resolve(destination, "server"), {
+await mkdir(server, { recursive: true });
+await cp(resolve(source, "assets"), resolve(destination, "assets"), {
   recursive: true,
   dereference: true
 });
-await cp(
-  resolve("scripts/sites-entry.js"),
-  resolve(destination, "server/index.js")
-);
+
+try {
+  await run(
+    process.execPath,
+    [
+      resolve("node_modules/wrangler/bin/wrangler.js"),
+      "deploy",
+      "--dry-run",
+      "--outdir",
+      server
+    ],
+    {
+      env: {
+        ...process.env,
+        XDG_CONFIG_HOME: wranglerConfig,
+        WRANGLER_LOG_PATH: resolve(wranglerConfig, "wrangler.log")
+      }
+    }
+  );
+} finally {
+  await rm(wranglerConfig, { recursive: true, force: true });
+}
+
+await rename(resolve(server, "worker.js"), resolve(server, "index.js"));
 await mkdir(resolve(destination, ".openai"), { recursive: true });
 await cp(
   resolve(".openai/hosting.json"),
