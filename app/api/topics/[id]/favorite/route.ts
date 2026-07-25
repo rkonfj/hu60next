@@ -35,6 +35,7 @@ async function updateFavorite(
         headers: {
           accept: "application/json",
           "user-agent": "Hulvlin-Next/0.1",
+          "x-origin": "*",
           "x-sid": sid
         },
         cache: "no-store",

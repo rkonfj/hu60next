@@ -1659,6 +1659,11 @@ select:focus-visible {
   cursor: default;
 }
 
+.favorite-notice {
+  color: var(--danger);
+  font-size: 13px;
+}
+
 .reply-section {
   margin-top: 18px;
 }
