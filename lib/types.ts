@@ -116,6 +116,7 @@ export type SearchResponse = {
   currPage: number;
   maxPage: number;
   topicList: Topic[];
+  _time?: number;
   __fallback?: boolean;
 };
 
@@ -127,4 +128,23 @@ export type UserStatus = {
   newMsg: number;
   newAtInfo: number;
   newChats: unknown;
+};
+
+export type UserProfile = {
+  uid: number;
+  name: string;
+  signature?: string | null;
+  contact?: string | null;
+  regtime?: number;
+  blockPostStat?: boolean;
+  isFollow?: boolean;
+  isBlock?: boolean;
+  hideUserCSS?: boolean;
+  permissions?: string[];
+  _time?: number;
+  _u_name?: string | null;
+  _u_avatar?: string | null;
+  _u_signature?: string | null;
+  _u_contact?: string | null;
+  __fallback?: boolean;
 };

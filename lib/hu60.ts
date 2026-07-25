@@ -9,6 +9,7 @@ import type {
   HomeResponse,
   SearchResponse,
   TopicResponse,
+  UserProfile,
   UserStatus
 } from "@/lib/types";
 
@@ -170,6 +171,58 @@ export async function searchTopics(
       _uinfo: "name,avatar"
     },
     fallbackSearch(query)
+  );
+}
+
+export async function getUserProfile(uid: number): Promise<UserProfile> {
+  const safeUid = Math.max(1, Math.trunc(uid) || 1);
+
+  return requestJson(
+    `user.info.${safeUid}.json`,
+    {
+      _uinfo: "name,avatar,sign",
+      _time: 1
+    },
+    {
+      uid: safeUid,
+      name: `用户 ${safeUid}`,
+      signature: "暂时无法读取这位用户的资料。",
+      regtime: 0,
+      _u_name: `用户 ${safeUid}`,
+      _u_avatar: null,
+      _u_signature: "暂时无法读取这位用户的资料。",
+      __fallback: true
+    }
+  );
+}
+
+export async function getUserTopics(
+  username: string,
+  page = 1
+): Promise<SearchResponse> {
+  const fallbackTopics = fallbackHome.newTopicList.filter(
+    (topic) => topic._u_name === username
+  );
+
+  return requestJson(
+    "bbs.search.json",
+    {
+      keywords: "",
+      username,
+      p: Math.max(1, page),
+      pageSize: 12,
+      _topic_summary: 180,
+      _uinfo: "name,avatar,sign",
+      _time: 1
+    },
+    {
+      success: true,
+      topicCount: fallbackTopics.length,
+      currPage: 1,
+      maxPage: 1,
+      topicList: fallbackTopics,
+      __fallback: true
+    }
   );
 }
 

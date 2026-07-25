@@ -58,11 +58,11 @@ export default async function MePage() {
             <small>发起一条新的技术讨论</small>
           </span>
         </Link>
-        <Link href="/explore/latest">
+        <Link href={`/user/${status.uid}`}>
           <MessageSquareText size={20} />
           <span>
-            <strong>我的社区</strong>
-            <small>继续浏览最新讨论</small>
+            <strong>我的主页</strong>
+            <small>查看我的资料和发布内容</small>
           </span>
         </Link>
       </div>

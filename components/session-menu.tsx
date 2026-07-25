@@ -25,10 +25,10 @@ export async function SessionMenu() {
         <Bell size={18} />
         {unread > 0 && <span className="notification-dot">{unread}</span>}
       </Link>
-      <span className="session-user">
+      <Link href={`/user/${session.uid}`} className="session-user">
         <UserRound size={17} />
         {session.name || "已登录"}
-      </span>
+      </Link>
       <form action="/api/logout" method="post">
         <button className="icon-button" type="submit" aria-label="退出登录">
           <LogOut size={17} />

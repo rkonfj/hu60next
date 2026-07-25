@@ -68,11 +68,13 @@ export function TopicCard({
         </Link>
       </div>
       <div className="topic-card-meta">
-        <Avatar src={topic._u_avatar} name={author} size="sm" />
-        <div className="topic-card-author-copy">
-          <strong>{author}</strong>
-          <span>{relativeTime(topic.mtime || topic.ctime, now)}</span>
-        </div>
+        <Link href={`/user/${topic.uid}`} className="topic-card-author-link">
+          <Avatar src={topic._u_avatar} name={author} size="sm" />
+          <div className="topic-card-author-copy">
+            <strong>{author}</strong>
+            <span>{relativeTime(topic.mtime || topic.ctime, now)}</span>
+          </div>
+        </Link>
         <span className="topic-card-stat">
           <MessageCircle size={15} />
           {compactNumber(topic.reply_count)}

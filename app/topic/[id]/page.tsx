@@ -73,9 +73,13 @@ export default async function TopicPage({
             ) : null}
             <h1>{meta.title}</h1>
             <div className="article-meta">
-              <Avatar src={meta._u_avatar} name={meta._u_name} size="lg" />
+              <Link href={`/user/${meta.uid}`} className="article-author-avatar">
+                <Avatar src={meta._u_avatar} name={meta._u_name} size="lg" />
+              </Link>
               <div>
-                <strong>{meta._u_name || `用户 ${meta.uid}`}</strong>
+                <Link href={`/user/${meta.uid}`}>
+                  <strong>{meta._u_name || `用户 ${meta.uid}`}</strong>
+                </Link>
                 <div className="article-author-subline">
                   <span
                     className="article-author-time"
@@ -134,13 +138,17 @@ export default async function TopicPage({
               {replies.map((floor) => (
                 <article className="reply-card" id={`floor-${floor.floor}`} key={floor.id}>
                   <div className="reply-author">
-                    <Avatar
-                      src={floor._u_avatar}
-                      name={floor._u_name}
-                      size="md"
-                    />
+                    <Link href={`/user/${floor.uid}`}>
+                      <Avatar
+                        src={floor._u_avatar}
+                        name={floor._u_name}
+                        size="md"
+                      />
+                    </Link>
                     <div>
-                      <strong>{floor._u_name || `用户 ${floor.uid}`}</strong>
+                      <Link href={`/user/${floor.uid}`}>
+                        <strong>{floor._u_name || `用户 ${floor.uid}`}</strong>
+                      </Link>
                       <span title={fullDate(floor.ctime)}>
                         {relativeTime(floor.ctime)}
                       </span>
@@ -210,16 +218,14 @@ export default async function TopicPage({
         <aside className="topic-aside">
           <section className="author-card">
             <span className="aside-label">关于作者</span>
-            <Avatar src={meta._u_avatar} name={meta._u_name} size="xl" />
-            <strong>{meta._u_name || `用户 ${meta.uid}`}</strong>
+            <Link href={`/user/${meta.uid}`} className="author-card-identity">
+              <Avatar src={meta._u_avatar} name={meta._u_name} size="xl" />
+              <strong>{meta._u_name || `用户 ${meta.uid}`}</strong>
+            </Link>
             <p>{meta._u_signature || "这位用户还没有留下个人签名。"}</p>
-            <a
-              href={`https://hu60.cn/q.php/user.info.${meta.uid}.html`}
-              target="_blank"
-              rel="noreferrer"
-            >
+            <Link href={`/user/${meta.uid}`} className="author-card-link">
               查看用户主页
-            </a>
+            </Link>
           </section>
           <section className="topic-info-card">
             <span className="aside-label">帖子信息</span>

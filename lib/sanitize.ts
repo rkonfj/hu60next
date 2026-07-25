@@ -4,6 +4,9 @@ function resolveHref(value = "") {
   const topicMatch = value.match(/(?:^|\/)bbs\.topic\.(\d+)\.(?:json|html)/);
   if (topicMatch) return `/topic/${topicMatch[1]}`;
 
+  const userMatch = value.match(/(?:^|\/)user\.info\.(\d+)\.(?:json|html)/);
+  if (userMatch) return `/user/${userMatch[1]}`;
+
   if (value.startsWith("/")) return `https://hu60.cn${value}`;
   if (/^(bbs|user|msg|addin|index)\./.test(value)) {
     return `https://hu60.cn/q.php/${value.replace(".json", ".html")}`;
@@ -84,15 +87,20 @@ export function sanitizeHu60Content(content: string) {
     },
     allowedSchemes: ["http", "https", "mailto"],
     transformTags: {
-      a: (_tagName, attribs) => ({
-        tagName: "a",
-        attribs: {
-          ...attribs,
-          href: resolveHref(attribs.href),
-          target: "_blank",
-          rel: "noopener noreferrer"
-        }
-      }),
+      a: (_tagName, attribs) => {
+        const href = resolveHref(attribs.href);
+        const internal = href.startsWith("/");
+        return {
+          tagName: "a",
+          attribs: {
+            ...attribs,
+            href,
+            ...(internal
+              ? {}
+              : { target: "_blank", rel: "noopener noreferrer" })
+          }
+        };
+      },
       img: (_tagName, attribs) => ({
         tagName: "img",
         attribs: {
