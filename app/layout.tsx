@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Header } from "@/components/header";
-import { MobileNav } from "@/components/mobile-nav";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -34,7 +33,6 @@ export default function RootLayout({
           <span>虎绿林</span>
           <span>让技术讨论持续生长</span>
         </footer>
-        <MobileNav />
       </body>
     </html>
   );
