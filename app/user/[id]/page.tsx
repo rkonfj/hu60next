@@ -18,7 +18,7 @@ function getMemberTitle(regtime?: number) {
   const registrationYear = new Date(regtime * 1000).getUTCFullYear();
   if (registrationYear <= 2014) return "传奇会员";
   if (registrationYear < 2018) return "骨灰会员";
-  return null;
+  return "会员";
 }
 
 export async function generateMetadata({
