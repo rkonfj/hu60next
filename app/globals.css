@@ -3082,6 +3082,10 @@ body * {
   border-radius: 8px !important;
 }
 
+body :is(.topic-card-meta, hr) {
+  border-radius: 0 !important;
+}
+
 body :is(input, textarea, select) {
   font-size: 16px !important;
 }
