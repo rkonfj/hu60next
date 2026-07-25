@@ -1411,6 +1411,7 @@ select:focus-visible {
   width: 30px;
   height: 30px;
   padding: 0;
+  border: 0;
 }
 
 .empty-state {
@@ -3430,6 +3431,7 @@ body:has(> .auth-page) > .site-header {
     width: 34px;
     height: 34px;
     padding: 0;
+    border: 0;
   }
 
   .feed-pagination-top {
