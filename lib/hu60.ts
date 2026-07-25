@@ -60,7 +60,10 @@ export function avatarUrl(value?: string | null) {
   return value.replace("http://", "https://");
 }
 
-export async function getActiveTopics(page = 1): Promise<HomeResponse> {
+export async function getActiveTopics(
+  page = 1,
+  sid?: string
+): Promise<HomeResponse> {
   return requestJson(
     "index.index.json",
     {
@@ -70,13 +73,18 @@ export async function getActiveTopics(page = 1): Promise<HomeResponse> {
       _uinfo: "name,avatar,sign",
       _time: 1
     },
-    fallbackHome
+    fallbackHome,
+    {
+      ...(sid ? { headers: { "x-sid": sid } } : {}),
+      cache: "no-store"
+    }
   );
 }
 
 export async function getGlobalTopics(
   page = 1,
-  essence = false
+  essence = false,
+  sid?: string
 ): Promise<ForumsResponse> {
   return requestJson(
     `bbs.forum.0.${Math.max(1, page)}.${essence ? 1 : 0}.json`,
@@ -93,6 +101,10 @@ export async function getGlobalTopics(
       topicList: essence
         ? [{ ...fallbackHome.newTopicList[0], essence: 1 }]
         : fallbackHome.newTopicList
+    },
+    {
+      ...(sid ? { headers: { "x-sid": sid } } : {}),
+      cache: "no-store"
     }
   );
 }

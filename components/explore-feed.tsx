@@ -5,6 +5,7 @@ import {
   Flame,
   Sparkles
 } from "lucide-react";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { LeftRail } from "@/components/left-rail";
 import { TopicCard } from "@/components/topic-card";
@@ -33,10 +34,12 @@ export function isExploreTab(value?: string): value is ExploreTab {
 }
 
 export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
+  const cookieStore = await cookies();
+  const sid = cookieStore.get("hulvlin_sid")?.value;
   const feedRequest =
     activeTab === "latest" || activeTab === "essence"
-      ? getGlobalTopics(page, activeTab === "essence")
-      : getActiveTopics(page);
+      ? getGlobalTopics(page, activeTab === "essence", sid)
+      : getActiveTopics(page, sid);
   const [feed, forums] = await Promise.all([feedRequest, getForums()]);
   const isHomeFeed = "newTopicList" in feed;
   const topics = [
