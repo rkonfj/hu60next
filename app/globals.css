@@ -3046,6 +3046,12 @@ body:has(> .auth-page) > .site-header {
     background: linear-gradient(155deg, #18231d, #1a2a20);
   }
 
+  .topic-card:hover {
+    border-color: var(--line-strong);
+    background: var(--surface-soft);
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.16);
+  }
+
   .data-notice {
     color: #e3ba83;
     border-color: #473724;
