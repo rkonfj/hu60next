@@ -1124,7 +1124,7 @@ select:focus-visible {
   background: var(--green-soft);
 }
 
-.mobile-menu-popover form {
+.mobile-menu-popover :is(form, .mobile-menu-auth) {
   margin-top: 4px;
   padding-top: 4px;
   border-top: 1px solid var(--line);
@@ -2749,6 +2749,10 @@ body:has(> .auth-page) > .site-header {
   }
 
   .header-login span {
+    display: none;
+  }
+
+  .header-actions > :is(.header-login, .session-actions) {
     display: none;
   }
 

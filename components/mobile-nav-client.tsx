@@ -4,6 +4,7 @@ import {
   Bell,
   Compass,
   Grid2X2,
+  LogIn,
   LogOut,
   Menu,
   PenLine,
@@ -73,7 +74,17 @@ export function MobileNavClient({ isLoggedIn }: MobileNavClientProps) {
               <span>退出登录</span>
             </button>
           </form>
-        ) : null}
+        ) : (
+          <div className="mobile-menu-auth">
+            <Link
+              href="/login"
+              onClick={() => menuRef.current?.removeAttribute("open")}
+            >
+              <LogIn size={18} />
+              <span>登录</span>
+            </Link>
+          </div>
+        )}
       </nav>
     </details>
   );
