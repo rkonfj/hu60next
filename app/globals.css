@@ -1825,7 +1825,7 @@ select:focus-visible {
 /* Authentication */
 .auth-page {
   display: grid;
-  min-height: calc(100vh - 70px);
+  min-height: 100vh;
   grid-template-columns: minmax(380px, 0.95fr) minmax(420px, 1.05fr);
 }
 
@@ -2444,7 +2444,7 @@ select:focus-visible {
   }
 
   .auth-form-panel {
-    min-height: calc(100vh - 70px);
+    min-height: 100vh;
   }
 
   .mobile-auth-brand {

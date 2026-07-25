@@ -1,9 +1,18 @@
+"use client";
+
 import { Compass, Grid2X2, PenLine, Search } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Brand } from "@/components/brand";
 import { SessionMenu } from "@/components/session-menu";
 
 export function Header() {
+  const pathname = usePathname();
+
+  if (pathname === "/login") {
+    return null;
+  }
+
   return (
     <header className="site-header">
       <div className="header-inner">
