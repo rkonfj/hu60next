@@ -3053,6 +3053,313 @@ body:has(> .auth-page) > .site-header {
   }
 }
 
+/* Compact, low-radius interface */
+:root {
+  --radius: 2px;
+}
+
+body * {
+  border-radius: 2px !important;
+}
+
+body :is(
+    .avatar,
+    .avatar img,
+    .live-dot,
+    .notification-dot,
+    .message-count,
+    .brand-mark svg:last-child,
+    .auth-pattern i
+  ) {
+  border-radius: 50% !important;
+}
+
+.header-inner {
+  height: 58px;
+  gap: 16px;
+}
+
+.brand-mark {
+  width: 34px;
+  height: 34px;
+}
+
+.desktop-nav a {
+  padding: 6px 8px;
+}
+
+.header-search {
+  height: 36px;
+  padding: 0 9px;
+}
+
+.compose-button,
+.header-login {
+  height: 34px;
+  padding: 0 10px;
+}
+
+.icon-button {
+  width: 34px;
+  height: 34px;
+}
+
+.session-user {
+  padding: 6px 8px;
+}
+
+.home-grid {
+  padding-top: 8px;
+  padding-bottom: 42px;
+  gap: 18px;
+}
+
+.left-rail,
+.right-rail {
+  top: 70px;
+}
+
+.forum-nav > a {
+  padding: 6px 5px;
+  gap: 7px;
+}
+
+.forum-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.rail-title {
+  margin-bottom: 6px;
+  padding: 0 4px;
+}
+
+.rail-note {
+  margin-top: 12px;
+  padding: 8px;
+}
+
+.feed-tabs {
+  padding: 2px;
+}
+
+.feed-tabs a {
+  padding: 5px 9px;
+}
+
+.topic-list,
+.reply-list {
+  gap: 6px;
+}
+
+.topic-card {
+  padding: 11px 12px 9px;
+}
+
+.topic-main {
+  padding: 8px 0 9px;
+}
+
+.topic-card-footer {
+  padding-top: 8px;
+  gap: 11px;
+}
+
+.feed-pager {
+  padding-top: 12px;
+}
+
+.feed-pager a {
+  padding: 6px 9px;
+}
+
+.content-page,
+.narrow-page {
+  padding-top: 22px;
+  padding-bottom: 48px;
+}
+
+.page-heading {
+  margin-bottom: 18px;
+}
+
+.forum-card,
+.community-card,
+.forum-heading,
+.message-grid > a,
+.account-summary,
+.account-links > a,
+.author-card,
+.topic-info-card {
+  padding: 12px;
+}
+
+.forum-grid,
+.message-grid,
+.account-links {
+  gap: 8px;
+}
+
+.forum-card-icon,
+.forum-heading-icon {
+  margin-bottom: 10px;
+}
+
+.forum-card-head {
+  padding-bottom: 9px;
+}
+
+.forum-heading {
+  margin-bottom: 14px;
+  gap: 12px;
+}
+
+.topic-page {
+  padding-top: 14px;
+  padding-bottom: 50px;
+}
+
+.topic-layout {
+  gap: 12px;
+}
+
+.topic-article {
+  padding: 20px;
+}
+
+.back-link {
+  margin-bottom: 13px;
+}
+
+.article-meta {
+  margin: 16px 0 20px;
+  padding-bottom: 13px;
+}
+
+.article-actions {
+  margin-top: 22px;
+  padding-top: 12px;
+}
+
+.reply-section {
+  margin-top: 10px;
+}
+
+.reply-heading {
+  padding: 10px 2px 8px;
+}
+
+.reply-card {
+  padding: 11px 12px 9px;
+}
+
+.quick-reply {
+  margin-top: 7px;
+  padding: 10px 11px;
+}
+
+.reply-composer textarea {
+  min-height: 92px;
+  margin-top: 9px;
+  padding: 9px 10px;
+}
+
+.author-card,
+.topic-info-card {
+  box-shadow: none;
+}
+
+.auth-form-panel {
+  padding: 30px;
+}
+
+.login-form {
+  gap: 12px;
+}
+
+.input-shell {
+  height: 42px;
+  padding: 0 9px;
+}
+
+.login-form > button {
+  height: 42px;
+}
+
+.composer-title {
+  padding: 15px 15px 11px;
+}
+
+.editor-shell {
+  margin: 0 12px;
+}
+
+.editor-tabs {
+  padding: 4px 5px 0;
+}
+
+.editor-tabs button {
+  padding: 6px 8px;
+}
+
+.editor-toolbar {
+  padding: 4px 6px;
+}
+
+.editor-shell textarea,
+.composer-preview {
+  min-height: 280px;
+  padding: 12px;
+}
+
+.composer-footer {
+  padding: 10px 12px 12px;
+}
+
+.site-footer {
+  min-height: 48px;
+  padding: 10px;
+}
+
+.mobile-nav {
+  height: 58px;
+  padding-top: 3px;
+  padding-bottom: max(3px, env(safe-area-inset-bottom));
+}
+
+@media (max-width: 640px) {
+  body {
+    padding-bottom: 60px;
+  }
+
+  .header-inner {
+    width: calc(100% - 16px);
+  }
+
+  .page-shell {
+    width: calc(100% - 12px);
+  }
+
+  .home-grid {
+    padding-top: 6px;
+    padding-bottom: 20px;
+  }
+
+  .topic-card,
+  .reply-card,
+  .forum-card {
+    padding: 10px;
+  }
+
+  .topic-article {
+    padding: 14px;
+  }
+
+  .account-summary {
+    padding: 12px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
