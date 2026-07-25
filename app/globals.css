@@ -1357,7 +1357,7 @@ select:focus-visible {
 
 .forum-layout {
   display: grid;
-  grid-template-columns: minmax(0, 65fr) minmax(280px, 35fr);
+  grid-template-columns: minmax(0, 1fr) 280px;
   align-items: start;
   gap: 12px;
 }
@@ -3261,6 +3261,10 @@ body:has(> .auth-page) > .site-header {
   }
 
   .topic-layout {
+    grid-template-columns: minmax(0, 1fr) 240px;
+  }
+
+  .forum-layout {
     grid-template-columns: minmax(0, 1fr) 240px;
   }
 }
