@@ -1635,7 +1635,7 @@ select:focus-visible {
   gap: 8px;
 }
 
-.article-actions a {
+.article-actions :is(a, button) {
   display: inline-flex;
   align-items: center;
   height: 34px;
@@ -1647,6 +1647,16 @@ select:focus-visible {
   font-size: 10px;
   font-weight: 700;
   gap: 5px;
+}
+
+.article-actions button.saved {
+  color: var(--green);
+  border-color: var(--line-strong);
+  background: var(--green-soft);
+}
+
+.article-actions button:disabled {
+  cursor: default;
 }
 
 .reply-section {
@@ -2639,6 +2649,13 @@ body:has(> .auth-page) > .site-header {
   min-width: 0;
 }
 
+.user-profile-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .user-profile-copy h1,
 .user-profile-copy p {
   margin: 0;
@@ -2648,6 +2665,19 @@ body:has(> .auth-page) > .site-header {
   margin-top: 5px;
   font-size: clamp(24px, 4vw, 34px);
   letter-spacing: -0.04em;
+}
+
+.user-profile-title > span {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 5px;
+  padding: 2px 7px;
+  color: var(--orange);
+  border: 1px solid var(--line-strong);
+  background: var(--orange-soft);
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .user-profile-copy p {

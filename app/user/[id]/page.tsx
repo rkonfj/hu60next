@@ -66,7 +66,12 @@ export default async function UserPage({
             <UserRound size={14} />
             用户主页
           </span>
-          <h1>{displayName}</h1>
+          <div className="user-profile-title">
+            <h1>{displayName}</h1>
+            {!profile.__fallback && !profile.regtime ? (
+              <span>创世会员</span>
+            ) : null}
+          </div>
           <p>{signature}</p>
         </div>
         <div className="user-profile-stats">

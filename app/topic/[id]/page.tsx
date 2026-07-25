@@ -1,5 +1,4 @@
 import {
-  Bookmark,
   Clock3,
   Eye,
   Flame,
@@ -11,6 +10,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
+import { FavoriteButton } from "@/components/favorite-button";
 import { Pagination } from "@/components/pagination";
 import { ReplyForm } from "@/components/reply-form";
 import { compactNumber, fullDate, relativeTime } from "@/lib/format";
@@ -117,9 +117,10 @@ export default async function TopicPage({
               <p className="missing-content">帖子正文暂时无法显示。</p>
             )}
             <div className="article-actions">
-              <Link href="/login">
-                <Bookmark size={17} /> 收藏
-              </Link>
+              <FavoriteButton
+                topicId={topicId}
+                isLoggedIn={topic.isLogin === true}
+              />
             </div>
           </article>
 
