@@ -142,7 +142,7 @@ export const fallbackTopic: TopicResponse = {
       _u_avatar: "https://file.hu60.cn/avatar/1.jpg?r=1660225893",
       _u_signature: "你好，这里是虎绿林。",
       content:
-        "<div class=\"markdown-body\"><h2>社区是内容与人的共同记忆</h2><p>新版界面保留版块、楼层和长文章，同时让搜索、阅读与移动端体验更加自然。</p><pre><code>API → 数据适配层 → 现代社区界面</code></pre><p>真实接口暂时不可用时，你正在看到的是安全的离线示例。</p></div>"
+        "<div class=\"markdown-body\"><h2>社区是内容与人的共同记忆</h2><p>当前界面保留版块、楼层和长文章，同时让搜索、阅读与移动端体验更加自然。</p><pre><code>API → 数据适配层 → 现代社区界面</code></pre><p>内容服务暂时不可用时，你正在看到的是安全的离线示例。</p></div>"
     },
     {
       uid: 17189,

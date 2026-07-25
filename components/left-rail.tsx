@@ -40,8 +40,8 @@ export function LeftRail({ forums }: { forums: Forum[] }) {
       <div className="rail-note">
         <span className="live-dot" />
         <div>
-          <strong>连接真实社区</strong>
-          <p>内容实时来自 hu60 JSON Page</p>
+          <strong>hu60 社区</strong>
+          <p>持续更新的技术讨论</p>
         </div>
       </div>
     </aside>

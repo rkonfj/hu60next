@@ -42,7 +42,7 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
       <section className="feed-column">
         {home.__fallback && (
           <div className="data-notice">
-            当前无法连接原站，正在展示离线示例；连接恢复后会自动显示实时内容。
+            暂时无法获取最新内容，正在展示离线示例；服务恢复后会自动刷新。
           </div>
         )}
 

@@ -64,7 +64,7 @@ export function ReplyForm({
       <input type="hidden" name="token" value={token} />
       <div>
         <strong>加入这场讨论</strong>
-        <span>已识别登录状态，回复将发布到原社区。</span>
+        <span>已识别登录状态，回复将直接发布。</span>
       </div>
       <textarea
         name="content"

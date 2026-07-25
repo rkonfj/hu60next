@@ -48,9 +48,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               欢迎回来
             </span>
             <h1>回到熟悉的社区，继续上次的讨论。</h1>
-            <p>
-              登录后可查看消息状态；发帖与回复将在账号联调完成后逐步开放。
-            </p>
+            <p>登录后可查看消息、参与讨论并管理你的社区状态。</p>
           </div>
           <blockquote>
             “好的社区不是信息经过的地方，而是经验留下来的地方。”
@@ -71,7 +69,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <ShieldCheck size={15} /> 服务端安全会话
           </span>
           <h2>登录虎绿林</h2>
-          <p>使用你在原社区已有的账号，无需重新注册。</p>
+          <p>使用你的 hu60 账号登录，无需重新注册。</p>
           <LoginForm
             redirectTo={redirectTo}
             initialNotice={initialNotice}

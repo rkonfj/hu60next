@@ -31,15 +31,8 @@ export default function RootLayout({
         <Header />
         {children}
         <footer className="site-footer">
-          <span>虎绿林 Next</span>
-          <span>内容来自 hu60 JSON Page</span>
-          <a
-            href="https://hu60.cn/q.php/index.index.html"
-            target="_blank"
-            rel="noreferrer"
-          >
-            访问原站
-          </a>
+          <span>虎绿林</span>
+          <span>让技术讨论持续生长</span>
         </footer>
         <MobileNav />
       </body>

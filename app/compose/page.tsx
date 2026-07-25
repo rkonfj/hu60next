@@ -21,7 +21,7 @@ export default async function ComposePage() {
       <div className="compose-tip">
         <Sparkles size={17} />
         <p>
-          当前版本已支持本地草稿和预览。向原站发布需要登录后完成表单联调。
+          当前支持本地草稿和预览，内容发布功能正在完善。
         </p>
       </div>
       <Composer

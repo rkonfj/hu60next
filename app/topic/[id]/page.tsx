@@ -127,13 +127,6 @@ export default async function TopicPage({
               <button type="button">
                 <Share2 size={17} /> 分享
               </button>
-              <a
-                href={`https://hu60.cn/q.php/bbs.topic.${topicId}.html`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                在原站查看
-              </a>
             </div>
           </article>
 
@@ -210,7 +203,7 @@ export default async function TopicPage({
             <div className="quick-reply" id="quick-reply">
               <div>
                 <strong>加入这场讨论</strong>
-                <span>登录后即可在原社区中回复</span>
+                <span>登录后即可参与讨论</span>
               </div>
               <Link href={`/login?next=/topic/${topicId}`}>
                 登录并回复 <Reply size={16} />
@@ -236,7 +229,7 @@ export default async function TopicPage({
               target="_blank"
               rel="noreferrer"
             >
-              查看原站主页
+              查看用户主页
             </a>
           </section>
           <section className="topic-info-card">
