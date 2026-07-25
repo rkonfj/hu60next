@@ -21,7 +21,7 @@ export async function SessionMenu() {
 
   return (
     <div className="session-actions">
-      <Link href="/messages" className="icon-button" aria-label="消息">
+      <Link href="/messages/inbox" className="icon-button" aria-label="消息">
         <Bell size={18} />
         {unread > 0 && <span className="notification-dot">{unread}</span>}
       </Link>

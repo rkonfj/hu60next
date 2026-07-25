@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Bell,
   Compass,
   Grid2X2,
   LogIn,
@@ -26,7 +25,6 @@ export function MobileNavClient({ isLoggedIn }: MobileNavClientProps) {
     { href: "/explore/active", label: "发现", icon: Compass },
     { href: "/forums", label: "版块", icon: Grid2X2 },
     { href: "/compose", label: "发布", icon: PenLine },
-    { href: "/messages", label: "消息", icon: Bell },
     {
       href: isLoggedIn ? "/me" : "/login?next=/me",
       label: "我的",

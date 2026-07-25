@@ -6,8 +6,10 @@ import {
   fallbackTopic
 } from "@/lib/fallback-data";
 import type {
+  ChatResponse,
   ForumsResponse,
   HomeResponse,
+  MessagesResponse,
   SearchResponse,
   Topic,
   TopicResponse,
@@ -322,5 +324,52 @@ export async function getUserStatus(sid?: string): Promise<UserStatus> {
       headers: { "x-sid": sid },
       cache: "no-store"
     }
+  );
+}
+
+export async function getMessages(
+  type: "inbox" | "mentions",
+  page = 1
+): Promise<MessagesResponse> {
+  return requestJson(
+    type === "inbox" ? "msg.index.inbox.all.json" : "msg.index.@.json",
+    {
+      p: Math.max(1, page),
+      pageSize: 15,
+      _content: "html",
+      _uinfo: "name,avatar,sign",
+      _time: 1
+    },
+    {
+      msgCount: 0,
+      currPage: 1,
+      maxPage: 1,
+      msgList: [],
+      __fallback: true
+    },
+    { cache: "no-store" }
+  );
+}
+
+export async function getPublicChat(page = 1): Promise<ChatResponse> {
+  return requestJson(
+    "addin.chat.公共聊天室.json",
+    {
+      p: Math.max(1, page),
+      pageSize: 20,
+      _content: "html",
+      _uinfo: "name,avatar,sign",
+      _time: 1
+    },
+    {
+      chatRomName: "公共聊天室",
+      isLogin: null,
+      chatCount: 0,
+      currPage: 1,
+      maxPage: 1,
+      chatList: [],
+      __fallback: true
+    },
+    { cache: "no-store" }
   );
 }

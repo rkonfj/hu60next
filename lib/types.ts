@@ -130,6 +130,62 @@ export type UserStatus = {
   newChats: unknown;
 };
 
+export type MessageItem = {
+  id: number;
+  touid: number;
+  byuid: number;
+  type: 0 | 1;
+  isread: 0 | 1;
+  content: string;
+  ctime: number;
+  rtime?: number;
+  to_u_name?: string | null;
+  to_u_avatar?: string | null;
+  to_u_signature?: string | null;
+  by_u_name?: string | null;
+  by_u_avatar?: string | null;
+  by_u_signature?: string | null;
+};
+
+export type MessagesResponse = {
+  uid?: number | null;
+  msgCount: number;
+  currPage: number;
+  maxPage: number;
+  msgList: MessageItem[];
+  _time?: number;
+  __fallback?: boolean;
+};
+
+export type ChatItem = {
+  id: number;
+  lid: number;
+  room: string;
+  uid: number;
+  time: number;
+  content: string;
+  review?: number;
+  hidden?: number;
+  flags?: number;
+  canDel?: boolean;
+  _u_name?: string | null;
+  _u_avatar?: string | null;
+  _u_signature?: string | null;
+};
+
+export type ChatResponse = {
+  chatRomName: string;
+  isLogin?: boolean | null;
+  chatCount: number;
+  currPage: number;
+  maxPage: number;
+  blockedReply?: number;
+  token?: string;
+  chatList: ChatItem[];
+  _time?: number;
+  __fallback?: boolean;
+};
+
 export type UserProfile = {
   uid: number;
   name: string;
