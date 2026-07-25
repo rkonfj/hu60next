@@ -2,8 +2,7 @@ import {
   Activity,
   ArrowRight,
   Clock3,
-  Flame,
-  Sparkles
+  Flame
 } from "lucide-react";
 import Link from "next/link";
 import { LeftRail } from "@/components/left-rail";
@@ -44,27 +43,6 @@ export default async function Home({ searchParams }: HomeProps) {
     <main className="page-shell home-grid">
       <LeftRail forums={forums.childForum} />
       <section className="feed-column">
-        <div className="welcome-panel">
-          <div className="welcome-copy">
-            <span className="eyebrow">
-              <Sparkles size={14} />
-              技术在这里持续生长
-            </span>
-            <h1>让有用的技术经验被看见</h1>
-            <p>
-              一个关于软件、设备与创造的中文社区。认真提问，也认真留下答案。
-            </p>
-            <div className="welcome-actions">
-              <Link href="/compose" className="primary-action">
-                发起讨论 <ArrowRight size={16} />
-              </Link>
-              <Link href="/forums" className="secondary-action">
-                探索版块
-              </Link>
-            </div>
-          </div>
-        </div>
-
         {home.__fallback && (
           <div className="data-notice">
             当前无法连接原站，正在展示离线示例；连接恢复后会自动显示实时内容。
