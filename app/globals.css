@@ -1853,7 +1853,7 @@ select:focus-visible {
 
 .topic-aside {
   position: sticky;
-  top: 94px;
+  top: 72px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1872,7 +1872,7 @@ select:focus-visible {
   display: block;
   margin-bottom: 15px;
   color: var(--faint);
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1896,13 +1896,13 @@ select:focus-visible {
 
 .author-card-identity strong {
   display: block;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .author-card > p {
   margin: 7px 0 14px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 13px;
   line-height: 1.6;
 }
 
@@ -1913,7 +1913,7 @@ select:focus-visible {
   border: 1px solid var(--line);
   border-radius: 9px;
   background: var(--surface-soft);
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -1923,7 +1923,7 @@ select:focus-visible {
   justify-content: space-between;
   padding: 8px 0;
   border-bottom: 1px solid var(--line);
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .topic-info-card > div:last-child {
@@ -1935,7 +1935,7 @@ select:focus-visible {
 }
 
 .topic-info-card > div strong {
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
 }
 
