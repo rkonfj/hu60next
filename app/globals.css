@@ -1410,29 +1410,11 @@ select:focus-visible {
   box-shadow: var(--shadow);
 }
 
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  margin-bottom: 22px;
-  color: var(--faint);
-  font-size: 10px;
-  gap: 5px;
-}
-
 .topic-labels {
   display: flex;
   align-items: center;
   margin-bottom: 12px;
   gap: 5px;
-}
-
-.topic-labels > a {
-  padding: 4px 7px;
-  color: var(--green);
-  border-radius: 6px;
-  background: var(--green-soft);
-  font-size: 9px;
-  font-weight: 800;
 }
 
 .topic-article > h1 {
@@ -1473,6 +1455,28 @@ select:focus-visible {
   color: var(--faint);
   font-size: 9px;
   gap: 4px;
+}
+
+.article-author-subline {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+  gap: 6px;
+}
+
+.article-meta > div:nth-child(2) .article-author-time {
+  margin-top: 0;
+}
+
+.article-forum-pill {
+  display: inline-flex;
+  flex: 0 1 auto;
+  max-width: 130px;
+  overflow: hidden;
+  padding: 1px 5px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .article-stats {
@@ -3121,6 +3125,7 @@ body :is(
     .site-header,
     .header-inner,
     .topic-card-meta,
+    .article-meta,
     .mobile-menu-popover form,
     .mobile-menu-auth,
     hr
@@ -3295,10 +3300,6 @@ body :is(
 
 .topic-article {
   padding: 20px;
-}
-
-.back-link {
-  margin-bottom: 13px;
 }
 
 .article-meta {

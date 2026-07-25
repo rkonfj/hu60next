@@ -1,7 +1,5 @@
 import {
-  ArrowLeft,
   Bookmark,
-  ChevronRight,
   Clock3,
   Eye,
   Flame,
@@ -51,18 +49,6 @@ export default async function TopicPage({
 
   return (
     <main className="page-shell topic-page">
-      <nav className="breadcrumbs" aria-label="面包屑">
-        <Link href="/forums">社区版块</Link>
-        <ChevronRight size={14} />
-        {topic.fIndex.slice(-2).map((item) => (
-          <span className="breadcrumb-item" key={item.id}>
-            <Link href={`/forum/${item.id}`}>{item.name}</Link>
-            <ChevronRight size={14} />
-          </span>
-        ))}
-        <span>{topic.fName}</span>
-      </nav>
-
       {topic.__fallback && (
         <div className="data-notice">
           暂时无法读取这个帖子，正在展示安全的离线示例。
@@ -72,34 +58,41 @@ export default async function TopicPage({
       <div className="topic-layout">
         <div className="topic-content-column">
           <article className="topic-article">
-            <Link href="/explore/latest" className="back-link">
-              <ArrowLeft size={15} /> 返回讨论
-            </Link>
-            <div className="topic-labels">
-              <Link href={`/forum/${topic.fIndex.at(-1)?.id ?? 0}`}>
-                {topic.fName}
-              </Link>
-              {meta.essence ? (
-                <span className="topic-state essence">
-                  <Flame size={13} /> 精华
-                </span>
-              ) : null}
-              {meta.locked ? (
-                <span className="topic-state locked">
-                  <LockKeyhole size={13} /> 已锁定
-                </span>
-              ) : null}
-            </div>
+            {meta.essence || meta.locked ? (
+              <div className="topic-labels">
+                {meta.essence ? (
+                  <span className="topic-state essence">
+                    <Flame size={13} /> 精华
+                  </span>
+                ) : null}
+                {meta.locked ? (
+                  <span className="topic-state locked">
+                    <LockKeyhole size={13} /> 已锁定
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
             <h1>{meta.title}</h1>
             <div className="article-meta">
               <Avatar src={meta._u_avatar} name={meta._u_name} size="lg" />
               <div>
                 <strong>{meta._u_name || `用户 ${meta.uid}`}</strong>
-                <span title={fullDate(meta.ctime)}>
-                  <Clock3 size={14} />
-                  {relativeTime(meta.ctime)}
-                  {meta.mtime !== meta.ctime && " · 已编辑"}
-                </span>
+                <div className="article-author-subline">
+                  <span
+                    className="article-author-time"
+                    title={fullDate(meta.ctime)}
+                  >
+                    <Clock3 size={14} />
+                    {relativeTime(meta.ctime)}
+                    {meta.mtime !== meta.ctime && " · 已编辑"}
+                  </span>
+                  <Link
+                    href={`/forum/${topic.fIndex.at(-1)?.id ?? 0}`}
+                    className="forum-pill article-forum-pill"
+                  >
+                    {topic.fName}
+                  </Link>
+                </div>
               </div>
               <div className="article-stats">
                 <span>
