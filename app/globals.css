@@ -1823,6 +1823,10 @@ select:focus-visible {
 }
 
 /* Authentication */
+body:has(> .auth-page) > .site-header {
+  display: none;
+}
+
 .auth-page {
   display: grid;
   min-height: 100vh;

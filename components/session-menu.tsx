@@ -1,51 +1,14 @@
-"use client";
-
 import { Bell, LogIn, LogOut, UserRound } from "lucide-react";
+import { cookies } from "next/headers";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { getUserStatus } from "@/lib/hu60";
 
-type Session = {
-  uid: number | null;
-  name: string | null;
-  isLogin: boolean | null;
-  newMsg: number;
-  newAtInfo: number;
-};
+export async function SessionMenu() {
+  const cookieStore = await cookies();
+  const sid = cookieStore.get("hulvlin_sid")?.value;
+  const session = await getUserStatus(sid);
 
-export function SessionMenu() {
-  const [session, setSession] = useState<Session | null>(null);
-  const pathname = usePathname();
-
-  const refreshSession = useCallback(() => {
-    const controller = new AbortController();
-    fetch("/api/session", {
-      signal: controller.signal,
-      cache: "no-store",
-      credentials: "same-origin"
-    })
-      .then((response) => response.json())
-      .then(setSession)
-      .catch(() => setSession(null));
-    return controller;
-  }, []);
-
-  useEffect(() => {
-    const controller = refreshSession();
-    const handleSessionChange = () => refreshSession();
-    const handleFocus = () => refreshSession();
-
-    window.addEventListener("hulvlin:session-changed", handleSessionChange);
-    window.addEventListener("focus", handleFocus);
-
-    return () => {
-      controller.abort();
-      window.removeEventListener("hulvlin:session-changed", handleSessionChange);
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, [pathname, refreshSession]);
-
-  if (!session?.uid) {
+  if (!session.uid && session.isLogin !== true) {
     return (
       <Link href="/login" className="header-login">
         <LogIn size={17} />
@@ -64,7 +27,7 @@ export function SessionMenu() {
       </Link>
       <span className="session-user">
         <UserRound size={17} />
-        {session.name}
+        {session.name || "已登录"}
       </span>
       <form action="/api/logout" method="post">
         <button className="icon-button" type="submit" aria-label="退出登录">

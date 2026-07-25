@@ -10,7 +10,7 @@ export default async function MessagesPage() {
   const cookieStore = await cookies();
   const status = await getUserStatus(cookieStore.get("hulvlin_sid")?.value);
 
-  if (!status.uid) {
+  if (!status.uid && status.isLogin !== true) {
     return (
       <main className="page-shell narrow-page">
         <div className="empty-state locked-state">
