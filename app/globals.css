@@ -709,8 +709,7 @@ select:focus-visible {
 }
 
 .forum-pill {
-  margin-left: auto;
-  padding: 5px 9px;
+  padding: 2px 7px;
   color: var(--green);
   border: 1px solid var(--line-strong);
   border-radius: 999px;
@@ -775,6 +774,18 @@ select:focus-visible {
   line-height: 1.42;
 }
 
+.topic-title-forum {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  vertical-align: 2px;
+  white-space: nowrap;
+}
+
 .topic-main p {
   display: -webkit-box;
   overflow: hidden;
@@ -817,16 +828,6 @@ select:focus-visible {
   border-top: 1px solid var(--line);
   font-size: 10px;
   gap: 9px;
-}
-
-.topic-card-meta .forum-pill {
-  flex: 0 1 auto;
-  max-width: 92px;
-  margin-left: 0;
-  padding: 2px 7px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .topic-card-stat,
@@ -2849,10 +2850,6 @@ body:has(> .auth-page) > .site-header {
     font-size: 9px;
   }
 
-  .topic-card-meta .forum-pill {
-    max-width: 72px;
-  }
-
   .mobile-menu {
     display: block;
   }
@@ -3421,12 +3418,9 @@ body :is(
     overflow: hidden;
   }
 
-  .topic-card-meta .forum-pill {
-    max-width: 64px;
-    padding-top: 1px;
-    padding-right: 5px;
-    padding-bottom: 1px;
-    padding-left: 5px;
+  .topic-title-forum {
+    margin-left: 6px;
+    padding: 1px 5px;
   }
 
   .topic-card-stat {

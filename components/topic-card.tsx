@@ -40,35 +40,39 @@ export function TopicCard({
 
   return (
     <article className="topic-card">
-      <Link href={`/topic/${topic.topic_id || topic.id}`} className="topic-main">
+      <div className="topic-main">
         <h2>
-          {topic.essence ? (
-            <span className="topic-state essence">
-              <Flame size={13} /> 精华
-            </span>
-          ) : null}
-          {topic.locked ? (
-            <span className="topic-state locked">
-              <LockKeyhole size={13} /> 已锁
-            </span>
-          ) : null}
-          {topic.title}
+          <Link href={`/topic/${topic.topic_id || topic.id}`}>
+            {topic.essence ? (
+              <span className="topic-state essence">
+                <Flame size={13} /> 精华
+              </span>
+            ) : null}
+            {topic.locked ? (
+              <span className="topic-state locked">
+                <LockKeyhole size={13} /> 已锁
+              </span>
+            ) : null}
+            {topic.title}
+          </Link>
+          <Link
+            href={`/forum/${topic.forum_id}`}
+            className="forum-pill topic-title-forum"
+            aria-label={`进入${topic.forum_name}版块`}
+          >
+            {topic.forum_name}
+          </Link>
         </h2>
-        <p>{cleanSummary(topic._topic_summary)}</p>
-      </Link>
+        <Link href={`/topic/${topic.topic_id || topic.id}`}>
+          <p>{cleanSummary(topic._topic_summary)}</p>
+        </Link>
+      </div>
       <div className="topic-card-meta">
         <Avatar src={topic._u_avatar} name={author} size="sm" />
         <div className="topic-card-author-copy">
           <strong>{author}</strong>
           <span>{relativeTime(topic.mtime || topic.ctime, now)}</span>
         </div>
-        <Link
-          href={`/forum/${topic.forum_id}`}
-          className="forum-pill"
-          aria-label={`进入${topic.forum_name}版块`}
-        >
-          {topic.forum_name}
-        </Link>
         <span className="topic-card-stat">
           <MessageCircle size={15} />
           {compactNumber(topic.reply_count)}
