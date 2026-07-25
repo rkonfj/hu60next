@@ -11,16 +11,18 @@ import {
   Share2
 } from "lucide-react";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
 import { Pagination } from "@/components/pagination";
+import { ReplyForm } from "@/components/reply-form";
 import { compactNumber, fullDate, relativeTime } from "@/lib/format";
 import { getTopic } from "@/lib/hu60";
 import { sanitizeHu60Content } from "@/lib/sanitize";
 
 type TopicPageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; replyError?: string }>;
 };
 
 export async function generateMetadata({
@@ -41,7 +43,9 @@ export default async function TopicPage({
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const topicId = Number(id);
   const page = Math.max(1, Number(query.page) || 1);
-  const topic = await getTopic(topicId, page);
+  const cookieStore = await cookies();
+  const sid = cookieStore.get("hulvlin_sid")?.value;
+  const topic = await getTopic(topicId, page, sid);
   const [mainFloor, ...replies] = topic.tContents;
   const meta = topic.tMeta;
 
@@ -170,9 +174,11 @@ export default async function TopicPage({
                     }}
                   />
                   <div className="reply-actions">
-                    <Link href="/login">
-                      <Reply size={14} /> 回复
-                    </Link>
+                    {topic.canReply ? (
+                      <a href="#quick-reply">
+                        <Reply size={14} /> 回复
+                      </a>
+                    ) : null}
                   </div>
                 </article>
               ))}
@@ -185,15 +191,32 @@ export default async function TopicPage({
             )}
           </section>
 
-          <div className="quick-reply">
-            <div>
-              <strong>加入这场讨论</strong>
-              <span>登录后即可在原社区中回复</span>
+          {topic.canReply && topic.token ? (
+            <ReplyForm
+              topicId={topicId}
+              token={topic.token}
+              initialNotice={
+                query.replyError ? "回复失败，请检查内容后重试。" : ""
+              }
+            />
+          ) : topic.isLogin ? (
+            <div className="quick-reply" id="quick-reply">
+              <div>
+                <strong>当前帖子不可回复</strong>
+                <span>帖子可能已锁定或限制了回复权限。</span>
+              </div>
             </div>
-            <Link href="/login">
-              登录并回复 <Reply size={16} />
-            </Link>
-          </div>
+          ) : (
+            <div className="quick-reply" id="quick-reply">
+              <div>
+                <strong>加入这场讨论</strong>
+                <span>登录后即可在原社区中回复</span>
+              </div>
+              <Link href={`/login?next=/topic/${topicId}`}>
+                登录并回复 <Reply size={16} />
+              </Link>
+            </div>
+          )}
 
           <Pagination
             current={topic.currPage}

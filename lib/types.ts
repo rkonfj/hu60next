@@ -103,6 +103,7 @@ export type TopicResponse = {
   blockedReply?: number;
   floorReverse?: boolean;
   canReply?: boolean;
+  token?: string;
   tContents: Floor[];
   __fallback?: boolean;
 };

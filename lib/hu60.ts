@@ -109,7 +109,8 @@ export async function getForum(
 
 export async function getTopic(
   id: number,
-  page = 1
+  page = 1,
+  sid?: string
 ): Promise<TopicResponse> {
   return requestJson(
     `bbs.topic.${id}.${Math.max(1, page)}.json`,
@@ -120,7 +121,13 @@ export async function getTopic(
       _content: "html",
       _time: 1
     },
-    fallbackTopic
+    fallbackTopic,
+    sid
+      ? {
+          headers: { "x-sid": sid },
+          cache: "no-store"
+        }
+      : undefined
   );
 }
 
