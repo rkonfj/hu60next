@@ -324,7 +324,7 @@ select:focus-visible {
 
 .home-grid {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-columns: 260px minmax(0, 1fr);
   padding: 14px 0 70px;
   gap: 28px;
 }
@@ -3253,7 +3253,7 @@ body:has(> .auth-page) > .site-header {
 
 @media (max-width: 1180px) {
   .home-grid {
-    grid-template-columns: 190px minmax(500px, 1fr);
+    grid-template-columns: 220px minmax(500px, 1fr);
   }
 
   .right-rail {
