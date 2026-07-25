@@ -677,6 +677,7 @@ select:focus-visible {
 
 .topic-card-author-copy {
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .topic-card-author-copy strong,
@@ -798,8 +799,8 @@ select:focus-visible {
 }
 
 .topic-card-meta {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto auto auto;
+  display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   padding-top: 12px;
   color: var(--faint);
@@ -809,6 +810,7 @@ select:focus-visible {
 }
 
 .topic-card-meta .forum-pill {
+  flex: 0 1 auto;
   max-width: 92px;
   margin-left: 0;
   overflow: hidden;
@@ -819,9 +821,14 @@ select:focus-visible {
 .topic-card-stat,
 .topic-card-open {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   white-space: nowrap;
   gap: 4px;
+}
+
+.topic-card-stat-label {
+  display: inline;
 }
 
 .topic-card-open {
@@ -3359,6 +3366,29 @@ body :is(
 
   .account-summary {
     padding: 12px;
+  }
+
+  .topic-card-meta {
+    gap: 5px;
+    overflow: hidden;
+  }
+
+  .topic-card-meta .forum-pill {
+    max-width: 64px;
+    padding-right: 5px;
+    padding-left: 5px;
+  }
+
+  .topic-card-stat {
+    gap: 2px;
+  }
+
+  .topic-card-stat-label {
+    display: none;
+  }
+
+  .topic-card-open {
+    margin-left: 1px;
   }
 }
 

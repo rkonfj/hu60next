@@ -71,11 +71,13 @@ export function TopicCard({
         </Link>
         <span className="topic-card-stat">
           <MessageCircle size={15} />
-          {compactNumber(topic.reply_count)} 回复
+          {compactNumber(topic.reply_count)}
+          <span className="topic-card-stat-label">回复</span>
         </span>
         <span className="topic-card-stat">
           <Eye size={15} />
-          {compactNumber(topic.read_count)} 阅读
+          {compactNumber(topic.read_count)}
+          <span className="topic-card-stat-label">阅读</span>
         </span>
         <Link
           href={`/topic/${topic.topic_id || topic.id}`}
