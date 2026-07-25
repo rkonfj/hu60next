@@ -2428,6 +2428,99 @@ body:has(> .auth-page) > .site-header {
   place-items: center;
 }
 
+/* Account */
+.account-summary {
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  gap: 15px;
+}
+
+.account-avatar {
+  display: grid;
+  flex: 0 0 auto;
+  width: 58px;
+  height: 58px;
+  color: var(--green);
+  border-radius: 17px;
+  background: var(--green-soft);
+  place-items: center;
+}
+
+.account-summary h1,
+.account-summary p {
+  margin: 0;
+}
+
+.account-summary h1 {
+  margin-top: 5px;
+  font-size: 24px;
+}
+
+.account-summary p {
+  margin-top: 3px;
+  color: var(--faint);
+  font-size: 10px;
+}
+
+.account-summary form {
+  margin-left: auto;
+}
+
+.account-summary button {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 12px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  font-size: 10px;
+  font-weight: 700;
+  gap: 6px;
+}
+
+.account-links {
+  display: grid;
+  margin-top: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.account-links > a {
+  display: flex;
+  align-items: center;
+  padding: 18px;
+  color: var(--green);
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  gap: 11px;
+}
+
+.account-links span,
+.account-links strong,
+.account-links small {
+  display: block;
+}
+
+.account-links strong {
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.account-links small {
+  margin-top: 4px;
+  color: var(--faint);
+  font-size: 9px;
+}
+
 /* Loading */
 .loading-page {
   max-width: 900px;
@@ -2739,8 +2832,25 @@ body:has(> .auth-page) > .site-header {
   }
 
   .forum-grid,
-  .message-grid {
+  .message-grid,
+  .account-links {
     grid-template-columns: 1fr;
+  }
+
+  .account-summary {
+    align-items: flex-start;
+    padding: 18px;
+    flex-wrap: wrap;
+  }
+
+  .account-summary form {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .account-summary button {
+    width: 100%;
+    justify-content: center;
   }
 
   .forum-card {
