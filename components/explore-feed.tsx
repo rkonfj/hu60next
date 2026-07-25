@@ -1,10 +1,16 @@
-import { Activity, ArrowRight, Clock3, Flame } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  Clock3,
+  Flame,
+  Sparkles
+} from "lucide-react";
 import Link from "next/link";
 import { LeftRail } from "@/components/left-rail";
 import { TopicCard } from "@/components/topic-card";
-import { getForums, getHome } from "@/lib/hu60";
+import { getForums, getGlobalTopics, getHome } from "@/lib/hu60";
 
-export type ExploreTab = "latest" | "active" | "hot";
+export type ExploreTab = "latest" | "active" | "hot" | "essence";
 
 type ExploreFeedProps = {
   activeTab: ExploreTab;
@@ -14,7 +20,8 @@ type ExploreFeedProps = {
 const tabs = [
   { key: "latest", label: "最新", icon: Clock3 },
   { key: "active", label: "活跃", icon: Activity },
-  { key: "hot", label: "热议", icon: Flame }
+  { key: "hot", label: "热议", icon: Flame },
+  { key: "essence", label: "精华", icon: Sparkles }
 ] as const;
 
 export function isExploreTab(value?: string): value is ExploreTab {
@@ -22,12 +29,17 @@ export function isExploreTab(value?: string): value is ExploreTab {
 }
 
 export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
-  const [home, forums] = await Promise.all([getHome(page), getForums()]);
-  const topics = [...home.newTopicList];
+  const feedRequest =
+    activeTab === "latest" || activeTab === "essence"
+      ? getGlobalTopics(page, activeTab === "essence")
+      : getHome(page);
+  const [feed, forums] = await Promise.all([feedRequest, getForums()]);
+  const isHomeFeed = "newTopicList" in feed;
+  const topics = [
+    ...(isHomeFeed ? feed.newTopicList : (feed.topicList ?? []))
+  ];
 
-  if (activeTab === "active") {
-    topics.sort((a, b) => b.mtime - a.mtime);
-  } else if (activeTab === "hot") {
+  if (activeTab === "hot") {
     topics.sort(
       (a, b) =>
         b.reply_count * 8 +
@@ -38,9 +50,9 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
 
   return (
     <main className="page-shell home-grid">
-      <LeftRail forums={forums.childForum} />
+        <LeftRail forums={forums.childForum} />
       <section className="feed-column">
-        {home.__fallback && (
+        {feed.__fallback && (
           <div className="data-notice">
             暂时无法获取最新内容，正在展示离线示例；服务恢复后会自动刷新。
           </div>
@@ -66,7 +78,7 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
 
         <div className="topic-list">
           {topics.map((topic) => (
-            <TopicCard key={topic.id} topic={topic} now={home._time} />
+            <TopicCard key={topic.id} topic={topic} now={feed._time} />
           ))}
         </div>
 
@@ -77,7 +89,9 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
             </Link>
           )}
           <span>第 {page} 页</span>
-          {home.hasNextPage && (
+          {(isHomeFeed
+            ? feed.hasNextPage
+            : page < (feed.maxPage ?? page)) && (
             <Link href={`/explore/${activeTab}?page=${page + 1}`}>
               查看更多 <ArrowRight size={15} />
             </Link>

@@ -56,6 +56,7 @@ export type ForumsResponse = {
   topicList: Topic[] | null;
   currPage?: number;
   maxPage?: number;
+  _time?: number;
   __fallback?: boolean;
 };
 

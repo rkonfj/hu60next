@@ -73,6 +73,29 @@ export async function getHome(page = 1): Promise<HomeResponse> {
   );
 }
 
+export async function getGlobalTopics(
+  page = 1,
+  essence = false
+): Promise<ForumsResponse> {
+  return requestJson(
+    `bbs.forum.0.${Math.max(1, page)}.${essence ? 1 : 0}.json`,
+    {
+      pageSize: 12,
+      _topic_summary: 180,
+      _uinfo: "name,avatar,sign",
+      _time: 1
+    },
+    {
+      ...fallbackForums,
+      currPage: 1,
+      maxPage: 1,
+      topicList: essence
+        ? [{ ...fallbackHome.newTopicList[0], essence: 1 }]
+        : fallbackHome.newTopicList
+    }
+  );
+}
+
 export async function getForums(): Promise<ForumsResponse> {
   return requestJson(
     "bbs.forum.json",
