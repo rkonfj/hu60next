@@ -68,7 +68,7 @@ export default async function TopicPage({
       <div className="topic-layout">
         <div className="topic-content-column">
           <article className="topic-article">
-            <Link href="/" className="back-link">
+            <Link href="/explore/latest" className="back-link">
               <ArrowLeft size={15} /> 返回讨论
             </Link>
             <div className="topic-labels">
