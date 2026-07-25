@@ -1826,7 +1826,7 @@ select:focus-visible {
 .auth-page {
   display: grid;
   min-height: 100vh;
-  grid-template-columns: minmax(0, 72fr) minmax(320px, 28fr);
+  grid-template-columns: minmax(0, 65fr) minmax(320px, 35fr);
 }
 
 .auth-page + .site-footer {
