@@ -5,8 +5,7 @@ import {
   Flame,
   LockKeyhole,
   MessageCircle,
-  Reply,
-  Share2
+  Reply
 } from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
@@ -117,9 +116,6 @@ export default async function TopicPage({
               <Link href="/login">
                 <Bookmark size={17} /> 收藏
               </Link>
-              <button type="button">
-                <Share2 size={17} /> 分享
-              </button>
             </div>
           </article>
 

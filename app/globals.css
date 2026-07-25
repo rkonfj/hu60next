@@ -1622,8 +1622,7 @@ select:focus-visible {
   gap: 8px;
 }
 
-.article-actions a,
-.article-actions button {
+.article-actions a {
   display: inline-flex;
   align-items: center;
   height: 34px;
@@ -1635,13 +1634,6 @@ select:focus-visible {
   font-size: 10px;
   font-weight: 700;
   gap: 5px;
-}
-
-.article-actions a:last-child {
-  margin-left: auto;
-  color: var(--green);
-  border: 0;
-  background: transparent;
 }
 
 .reply-section {
@@ -2943,10 +2935,6 @@ body:has(> .auth-page) > .site-header {
 
   .rich-content h2 {
     font-size: 19px;
-  }
-
-  .article-actions a:last-child {
-    display: none;
   }
 
   .reply-card {
