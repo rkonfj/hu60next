@@ -29,14 +29,14 @@ export default async function ForumPage({
   const topics =
     forum.topicList ??
     forum.childForum.flatMap((child) => child.newTopic ?? []);
+  const currentForum = forum.fIndex.find((item) => item.id === forumId);
+  const parentForum =
+    currentForum?.parent_id && currentForum.parent_id > 0
+      ? forum.fIndex.find((item) => item.id === currentForum.parent_id)
+      : undefined;
 
   return (
     <main className="page-shell content-page forum-page">
-      <nav className="breadcrumbs" aria-label="面包屑">
-        <Link href="/forums">社区版块</Link>
-        <ChevronRight size={14} />
-        <span>{forum.fName}</span>
-      </nav>
       <div className="forum-layout">
         <section className="forum-topic-column">
           <div className="topic-list">
@@ -69,7 +69,21 @@ export default async function ForumPage({
             <div>
               <span className="eyebrow">
                 <Layers3 size={14} />
-                主题版块
+                主题板块
+                {parentForum && (
+                  <>
+                    <span className="forum-parent-separator" aria-hidden="true">
+                      /
+                    </span>
+                    <Link
+                      className="forum-parent-link"
+                      href={`/forum/${parentForum.id}`}
+                      aria-label={`返回上级板块：${parentForum.name}`}
+                    >
+                      上级：{parentForum.name}
+                    </Link>
+                  </>
+                )}
               </span>
               <h1>{forum.fName}</h1>
               <p>这里收录该版块近期发布和回复的内容。</p>
