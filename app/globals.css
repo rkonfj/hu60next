@@ -2498,6 +2498,7 @@ select:focus-visible {
   }
 
   .home-grid {
+    padding-top: 10px;
     padding-bottom: 30px;
   }
 
@@ -2550,7 +2551,7 @@ select:focus-visible {
   }
 
   .feed-toolbar {
-    margin-top: 17px;
+    margin-top: 0;
   }
 
   .feed-toolbar > span {
