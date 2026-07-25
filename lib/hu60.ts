@@ -19,6 +19,7 @@ import type {
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
+const TOPICS_PER_PAGE = 30;
 
 type QueryValue = string | number | boolean | undefined;
 
@@ -86,7 +87,7 @@ export async function getActiveTopics(
     "index.index.json",
     {
       p: Math.max(1, page),
-      pageSize: 12,
+      pageSize: TOPICS_PER_PAGE,
       _topic_summary: 180,
       _uinfo: "name,avatar,sign",
       _time: 1
@@ -107,7 +108,7 @@ export async function getGlobalTopics(
   return requestJson(
     `bbs.forum.0.${Math.max(1, page)}.${essence ? 1 : 0}.json`,
     {
-      pageSize: 12,
+      pageSize: TOPICS_PER_PAGE,
       _topic_summary: 180,
       _uinfo: "name,avatar,sign",
       _time: 1
@@ -145,7 +146,7 @@ export async function getForum(
   return requestJson(
     `bbs.forum.${id}.${Math.max(1, page)}.0.json`,
     {
-      pageSize: 15,
+      pageSize: TOPICS_PER_PAGE,
       _topic_summary: 180,
       _uinfo: "name,avatar,sign",
       _time: 1
@@ -169,7 +170,7 @@ export async function getTopic(
   return requestJson(
     `bbs.topic.${id}.${Math.max(1, page)}.json`,
     {
-      pageSize: 30,
+      pageSize: TOPICS_PER_PAGE,
       floorReverse: 0,
       _uinfo: "name,avatar,sign",
       _content: "html",
@@ -244,7 +245,7 @@ export async function searchTopics(
     {
       keywords: query.trim(),
       p: Math.max(1, page),
-      pageSize: 15,
+      pageSize: TOPICS_PER_PAGE,
       _topic_summary: 180,
       _uinfo: "name,avatar"
     },
@@ -288,7 +289,7 @@ export async function getUserTopics(
       keywords: "",
       username,
       p: Math.max(1, page),
-      pageSize: 12,
+      pageSize: TOPICS_PER_PAGE,
       _topic_summary: 180,
       _uinfo: "name,avatar,sign",
       _time: 1
