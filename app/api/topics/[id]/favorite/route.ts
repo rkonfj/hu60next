@@ -4,9 +4,9 @@ import { NextResponse } from "next/server";
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
 
-export async function POST(
-  _request: Request,
-  context: { params: Promise<{ id: string }> }
+async function updateFavorite(
+  context: { params: Promise<{ id: string }> },
+  action: "set" | "unset"
 ) {
   const { id } = await context.params;
   const topicId = Number(id);
@@ -30,7 +30,7 @@ export async function POST(
 
   try {
     const upstream = await fetch(
-      `${API_BASE}/bbs.setfavoritetopic.${topicId}.json`,
+      `${API_BASE}/bbs.${action}favoritetopic.${topicId}.json`,
       {
         headers: {
           accept: "application/json",
@@ -59,14 +59,40 @@ export async function POST(
         success: result.success === true,
         notice:
           result.notice ||
-          (result.success ? "已加入收藏。" : "收藏失败，请稍后再试。")
+          (result.success
+            ? action === "set"
+              ? "已加入收藏。"
+              : "已取消收藏。"
+            : action === "set"
+              ? "收藏失败，请稍后再试。"
+              : "取消收藏失败，请稍后再试。")
       },
       { status: result.success === true ? 200 : 400 }
     );
   } catch {
     return NextResponse.json(
-      { success: false, notice: "暂时无法连接收藏服务。" },
+      {
+        success: false,
+        notice:
+          action === "set"
+            ? "暂时无法连接收藏服务。"
+            : "暂时无法连接取消收藏服务。"
+      },
       { status: 502 }
     );
   }
+}
+
+export async function POST(
+  _request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  return updateFavorite(context, "set");
+}
+
+export async function DELETE(
+  _request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  return updateFavorite(context, "unset");
 }

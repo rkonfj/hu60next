@@ -9,6 +9,7 @@ import type {
   ForumsResponse,
   HomeResponse,
   SearchResponse,
+  Topic,
   TopicResponse,
   UserProfile,
   UserStatus
@@ -180,6 +181,54 @@ export async function getTopic(
         }
       : undefined
   );
+}
+
+type FavoriteTopicsResponse = {
+  topicList?: Topic[] | null;
+  currPage?: number;
+  maxPage?: number;
+};
+
+export async function isTopicFavorite(
+  topicId: number,
+  sid?: string
+): Promise<boolean> {
+  if (!sid) return false;
+
+  let page = 1;
+  let maxPage = 1;
+
+  do {
+    const favorites = await requestJson<FavoriteTopicsResponse>(
+      "bbs.myfavorite.json",
+      {
+        p: page,
+        pageSize: 100
+      },
+      {
+        topicList: [],
+        currPage: page,
+        maxPage: page
+      },
+      {
+        headers: { "x-sid": sid },
+        cache: "no-store"
+      }
+    );
+
+    if (
+      favorites.topicList?.some(
+        (topic) => topic.id === topicId || topic.topic_id === topicId
+      )
+    ) {
+      return true;
+    }
+
+    maxPage = Math.max(page, favorites.maxPage ?? page);
+    page += 1;
+  } while (page <= maxPage);
+
+  return false;
 }
 
 export async function searchTopics(

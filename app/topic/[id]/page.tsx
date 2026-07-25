@@ -14,7 +14,7 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { Pagination } from "@/components/pagination";
 import { ReplyForm } from "@/components/reply-form";
 import { compactNumber, fullDate, relativeTime } from "@/lib/format";
-import { getTopic } from "@/lib/hu60";
+import { getTopic, isTopicFavorite } from "@/lib/hu60";
 import { sanitizeHu60Content } from "@/lib/sanitize";
 
 type TopicPageProps = {
@@ -42,7 +42,10 @@ export default async function TopicPage({
   const page = Math.max(1, Number(query.page) || 1);
   const cookieStore = await cookies();
   const sid = cookieStore.get("hulvlin_sid")?.value;
-  const topic = await getTopic(topicId, page, sid);
+  const [topic, isFavorite] = await Promise.all([
+    getTopic(topicId, page, sid),
+    isTopicFavorite(topicId, sid)
+  ]);
   const [mainFloor, ...replies] = topic.tContents;
   const meta = topic.tMeta;
 
@@ -120,6 +123,7 @@ export default async function TopicPage({
               <FavoriteButton
                 topicId={topicId}
                 isLoggedIn={topic.isLogin === true}
+                initialFavorite={isFavorite}
               />
             </div>
           </article>
