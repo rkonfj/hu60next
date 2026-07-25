@@ -2,7 +2,8 @@
 
 import { Bell, LogIn, LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 type Session = {
   uid: number | null;
@@ -14,15 +15,35 @@ type Session = {
 
 export function SessionMenu() {
   const [session, setSession] = useState<Session | null>(null);
+  const pathname = usePathname();
 
-  useEffect(() => {
+  const refreshSession = useCallback(() => {
     const controller = new AbortController();
-    fetch("/api/session", { signal: controller.signal })
+    fetch("/api/session", {
+      signal: controller.signal,
+      cache: "no-store",
+      credentials: "same-origin"
+    })
       .then((response) => response.json())
       .then(setSession)
       .catch(() => setSession(null));
-    return () => controller.abort();
+    return controller;
   }, []);
+
+  useEffect(() => {
+    const controller = refreshSession();
+    const handleSessionChange = () => refreshSession();
+    const handleFocus = () => refreshSession();
+
+    window.addEventListener("hulvlin:session-changed", handleSessionChange);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      controller.abort();
+      window.removeEventListener("hulvlin:session-changed", handleSessionChange);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [pathname, refreshSession]);
 
   if (!session?.uid) {
     return (

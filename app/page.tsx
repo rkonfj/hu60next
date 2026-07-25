@@ -3,12 +3,10 @@ import {
   ArrowRight,
   Clock3,
   Flame,
-  MessageCircleMore,
   Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { LeftRail } from "@/components/left-rail";
-import { RightRail } from "@/components/right-rail";
 import { TopicCard } from "@/components/topic-card";
 import { getForums, getHome } from "@/lib/hu60";
 
@@ -52,11 +50,7 @@ export default async function Home({ searchParams }: HomeProps) {
               <Sparkles size={14} />
               技术在这里持续生长
             </span>
-            <h1>
-              分享你真正
-              <br />
-              <em>踩过的坑</em>
-            </h1>
+            <h1>让有用的技术经验被看见</h1>
             <p>
               一个关于软件、设备与创造的中文社区。认真提问，也认真留下答案。
             </p>
@@ -67,21 +61,6 @@ export default async function Home({ searchParams }: HomeProps) {
               <Link href="/forums" className="secondary-action">
                 探索版块
               </Link>
-            </div>
-          </div>
-          <div className="welcome-visual" aria-hidden="true">
-            <span className="visual-ring ring-one" />
-            <span className="visual-ring ring-two" />
-            <span className="visual-bubble bubble-main">
-              <MessageCircleMore size={33} />
-            </span>
-            <span className="visual-bubble bubble-small">
-              <Flame size={18} />
-            </span>
-            <div className="visual-lines">
-              <i />
-              <i />
-              <i />
             </div>
           </div>
         </div>
@@ -128,7 +107,6 @@ export default async function Home({ searchParams }: HomeProps) {
           )}
         </div>
       </section>
-      <RightRail topics={home.newTopicList} />
     </main>
   );
 }

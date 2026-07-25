@@ -13,11 +13,32 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export function Composer() {
+type ForumOption = {
+  id: number;
+  name: string;
+};
+
+type ForumNode = ForumOption & {
+  postable: boolean;
+  children: ForumOption[];
+};
+
+type PickerLevel = {
+  options: ForumOption[];
+  selected: string;
+};
+
+export function Composer({ rootForums }: { rootForums: ForumOption[] }) {
   const [mode, setMode] = useState<"write" | "preview">("write");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [saved, setSaved] = useState(false);
+  const [levels, setLevels] = useState<PickerLevel[]>([
+    { options: rootForums, selected: "" }
+  ]);
+  const [targetForum, setTargetForum] = useState<ForumNode | null>(null);
+  const [forumPath, setForumPath] = useState<string[]>([]);
+  const [loadingForum, setLoadingForum] = useState(false);
 
   useEffect(() => {
     const raw = localStorage.getItem("hulvlin-draft");
@@ -32,7 +53,15 @@ export function Composer() {
   }, []);
 
   function saveDraft() {
-    localStorage.setItem("hulvlin-draft", JSON.stringify({ title, content }));
+    localStorage.setItem(
+      "hulvlin-draft",
+      JSON.stringify({
+        title,
+        content,
+        forumId: targetForum?.postable ? targetForum.id : null,
+        forumPath
+      })
+    );
     setSaved(true);
     window.setTimeout(() => setSaved(false), 1800);
   }
@@ -42,19 +71,92 @@ export function Composer() {
     setMode("write");
   }
 
+  async function selectForum(levelIndex: number, value: string) {
+    const selectedId = Number(value);
+    const currentLevel = levels[levelIndex];
+    const selectedOption = currentLevel.options.find(
+      (option) => option.id === selectedId
+    );
+    const nextPath = [
+      ...forumPath.slice(0, levelIndex),
+      ...(selectedOption ? [selectedOption.name] : [])
+    ];
+
+    setLevels((current) =>
+      current.slice(0, levelIndex + 1).map((level, index) =>
+        index === levelIndex ? { ...level, selected: value } : level
+      )
+    );
+    setForumPath(nextPath);
+    setTargetForum(null);
+
+    if (!value) return;
+
+    setLoadingForum(true);
+    try {
+      const response = await fetch(`/api/forums/${selectedId}`, {
+        cache: "no-store"
+      });
+      if (!response.ok) throw new Error("Forum request failed");
+      const node = (await response.json()) as ForumNode;
+      setTargetForum(node);
+
+      if (node.children.length) {
+        setLevels((current) => [
+          ...current.slice(0, levelIndex + 1),
+          { options: node.children, selected: "" }
+        ]);
+      }
+    } catch {
+      setTargetForum({
+        id: selectedId,
+        name: selectedOption?.name ?? "所选版块",
+        postable: true,
+        children: []
+      });
+    } finally {
+      setLoadingForum(false);
+    }
+  }
+
   return (
     <div className="composer-card">
       <div className="composer-top">
-        <label>
+        <div className="composer-forum-picker" id="forum-picker">
           <span>发布到</span>
-          <select defaultValue="212" aria-label="选择版块">
-            <option value="212">软件开发</option>
-            <option value="139">电脑</option>
-            <option value="142">人工智能</option>
-            <option value="206">移动设备</option>
-            <option value="47">建站</option>
-          </select>
-        </label>
+          <div className="forum-selects">
+            {levels.map((level, index) => (
+              <select
+                key={`${index}-${level.options[0]?.id ?? "empty"}`}
+                value={level.selected}
+                onChange={(event) => selectForum(index, event.target.value)}
+                aria-label={index === 0 ? "选择主版块" : `选择第${index + 1}级子版块`}
+              >
+                <option value="">
+                  {index === 0 ? "选择主版块" : "可继续选择子版块"}
+                </option>
+                {level.options.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.name}
+                  </option>
+                ))}
+              </select>
+            ))}
+          </div>
+          <small
+            className={
+              targetForum?.postable ? "forum-target valid" : "forum-target"
+            }
+          >
+            {loadingForum
+              ? "正在读取子版块…"
+              : targetForum?.postable
+                ? `当前发布到：${forumPath.join(" / ")}`
+                : targetForum
+                  ? "这是分类目录，请继续选择具体子版块"
+                  : "请选择发布版块"}
+          </small>
+        </div>
         <span className="draft-state">
           <Save size={14} />
           {saved ? "草稿已保存" : "草稿仅保存在本机"}
@@ -125,8 +227,15 @@ export function Composer() {
           <button className="save-draft" type="button" onClick={saveDraft}>
             <Save size={16} /> 保存草稿
           </button>
-          <a className="publish-draft" href="/login">
-            登录后发布 <Send size={16} />
+          <a
+            className={`publish-draft ${
+              targetForum?.postable ? "" : "disabled"
+            }`}
+            href={targetForum?.postable ? "/login" : "#forum-picker"}
+            aria-disabled={!targetForum?.postable}
+          >
+            {targetForum?.postable ? "登录后发布" : "先选择版块"}{" "}
+            <Send size={16} />
           </a>
         </div>
       </div>

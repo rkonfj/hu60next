@@ -30,6 +30,7 @@ export function LoginForm() {
         return;
       }
 
+      window.dispatchEvent(new Event("hulvlin:session-changed"));
       router.push("/");
       router.refresh();
     } catch {

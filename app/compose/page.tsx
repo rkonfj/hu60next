@@ -1,10 +1,13 @@
 import { PenLine, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import { Composer } from "@/components/compose/composer";
+import { getForums } from "@/lib/hu60";
 
 export const metadata: Metadata = { title: "发起讨论" };
 
-export default function ComposePage() {
+export default async function ComposePage() {
+  const forums = await getForums();
+
   return (
     <main className="page-shell narrow-page compose-page">
       <header className="page-heading">
@@ -21,7 +24,12 @@ export default function ComposePage() {
           当前版本已支持本地草稿和预览。向原站发布需要登录后完成表单联调。
         </p>
       </div>
-      <Composer />
+      <Composer
+        rootForums={forums.childForum.map((forum) => ({
+          id: forum.id,
+          name: forum.name
+        }))}
+      />
     </main>
   );
 }

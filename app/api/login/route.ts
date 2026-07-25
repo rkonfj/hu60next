@@ -70,9 +70,16 @@ export async function POST(request: Request) {
     }
 
     const response = NextResponse.json({ success: true });
+    const forwardedProtocol = request.headers
+      .get("x-forwarded-proto")
+      ?.split(",")[0]
+      .trim();
+    const isSecureRequest = forwardedProtocol
+      ? forwardedProtocol === "https"
+      : new URL(request.url).protocol === "https:";
     response.cookies.set("hulvlin_sid", sid, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isSecureRequest,
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 30
