@@ -1,8 +1,10 @@
 import {
   Bell,
+  Bookmark,
   LogOut,
   MessageSquareText,
   PenLine,
+  Settings,
   UserRound
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -63,6 +65,20 @@ export default async function MePage() {
           <span>
             <strong>我的主页</strong>
             <small>查看我的资料和发布内容</small>
+          </span>
+        </Link>
+        <Link href="/favorites">
+          <Bookmark size={20} />
+          <span>
+            <strong>我的收藏</strong>
+            <small>查看收藏的主题</small>
+          </span>
+        </Link>
+        <Link href="/settings">
+          <Settings size={20} />
+          <span>
+            <strong>账号设置</strong>
+            <small>修改头像、资料和密码</small>
           </span>
         </Link>
       </div>

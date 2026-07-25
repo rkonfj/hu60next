@@ -3,7 +3,8 @@ import {
   CheckCircle2,
   Inbox,
   LockKeyhole,
-  MessageSquareText
+  MessageSquareText,
+  Send
 } from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
@@ -21,7 +22,7 @@ import { getMessages, getPublicChat, getUserStatus } from "@/lib/hu60";
 import { sanitizeHu60Content } from "@/lib/sanitize";
 import type { ChatItem, MessageItem } from "@/lib/types";
 
-type MessageTab = "inbox" | "mentions" | "chat";
+type MessageTab = "inbox" | "mentions" | "sent" | "chat";
 
 type MessagesPageProps = {
   params: Promise<{ tab: string }>;
@@ -34,6 +35,7 @@ const tabMeta: Record<
 > = {
   inbox: { label: "私信", title: "私信", icon: Inbox },
   mentions: { label: "@我的", title: "@我的", icon: AtSign },
+  sent: { label: "已发送", title: "已发送", icon: Send },
   chat: { label: "聊天室", title: "公共聊天室", icon: MessageSquareText }
 };
 
@@ -45,7 +47,12 @@ export async function generateMetadata({
 }
 
 function isMessageTab(value: string): value is MessageTab {
-  return value === "inbox" || value === "mentions" || value === "chat";
+  return (
+    value === "inbox" ||
+    value === "mentions" ||
+    value === "sent" ||
+    value === "chat"
+  );
 }
 
 function UserIdentity({
@@ -75,11 +82,18 @@ function UserIdentity({
 
 function MessageCard({
   message,
-  now
+  now,
+  sent = false
 }: {
   message: MessageItem;
   now?: number;
+  sent?: boolean;
 }) {
+  const uid = sent ? message.touid : message.byuid;
+  const name = sent
+    ? message.to_u_name || message.toUinfo?.name
+    : message.by_u_name || message.byUinfo?.name;
+  const avatar = sent ? message.to_u_avatar : message.by_u_avatar;
   return (
     <article
       className={`message-card${message.isread ? "" : " unread"}`}
@@ -87,9 +101,9 @@ function MessageCard({
     >
       <header>
         <UserIdentity
-          uid={message.byuid}
-          name={message.by_u_name}
-          avatar={message.by_u_avatar}
+          uid={uid}
+          name={name}
+          avatar={avatar}
         />
         <time dateTime={new Date(message.ctime * 1000).toISOString()}>
           {relativeTime(message.ctime, now)}
@@ -173,8 +187,8 @@ export default async function MessageTabPage({
   const page = Math.max(1, Number(query.page) || 1);
   const data =
     tab === "chat"
-      ? await getPublicChat(page)
-      : await getMessages(tab, page);
+      ? await getPublicChat(page, sid)
+      : await getMessages(tab, page, sid);
   const current = tabMeta[tab];
   const CurrentIcon = current.icon;
 
@@ -277,6 +291,7 @@ export default async function MessageTabPage({
                   <MessageCard
                     message={message}
                     now={data._time}
+                    sent={tab === "sent"}
                     key={message.id}
                   />
                 ))}

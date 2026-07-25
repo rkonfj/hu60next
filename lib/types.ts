@@ -160,6 +160,8 @@ export type MessageItem = {
   by_u_name?: string | null;
   by_u_avatar?: string | null;
   by_u_signature?: string | null;
+  byUinfo?: { name?: string | null };
+  toUinfo?: { name?: string | null };
 };
 
 export type MessagesResponse = {
@@ -217,5 +219,30 @@ export type UserProfile = {
   _u_avatar?: string | null;
   _u_signature?: string | null;
   _u_contact?: string | null;
+  __fallback?: boolean;
+};
+
+export type AccountProfile = {
+  uid: number;
+  name: string;
+  mail?: string | null;
+  signature?: string | null;
+  contact?: string | null;
+  regtime?: number;
+  hasRegPhone?: boolean;
+  floorReverse?: boolean;
+  siteAdmin?: boolean;
+  permissions?: string[];
+  __fallback?: boolean;
+};
+
+export type FavoriteTopicsResponse = {
+  success?: boolean;
+  notice?: string | null;
+  topicCount: number;
+  currPage: number;
+  maxPage: number;
+  topicList: Topic[];
+  _time?: number;
   __fallback?: boolean;
 };

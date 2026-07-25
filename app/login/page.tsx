@@ -1,5 +1,6 @@
-import { ExternalLink, Leaf, ShieldCheck } from "lucide-react";
+import { Leaf, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Brand } from "@/components/brand";
 import { LoginForm } from "@/components/auth/login-form";
@@ -75,20 +76,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             initialNotice={initialNotice}
           />
           <div className="auth-links">
-            <a
-              href="https://hu60.cn/q.php/user.reset_pwd.html"
-              target="_blank"
-              rel="noreferrer"
-            >
-              忘记密码 <ExternalLink size={13} />
-            </a>
-            <a
-              href="https://hu60.cn/q.php/user.reg.html"
-              target="_blank"
-              rel="noreferrer"
-            >
-              注册账号 <ExternalLink size={13} />
-            </a>
+            <Link href="/forgot-password">忘记密码</Link>
+            <Link href="/register">注册账号</Link>
           </div>
         </div>
       </section>

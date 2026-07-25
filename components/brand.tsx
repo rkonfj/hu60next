@@ -11,7 +11,7 @@ export function Brand({ compact = false }: { compact?: boolean }) {
       {!compact && (
         <span className="brand-copy">
           <strong>虎绿林</strong>
-          <small>HULVLIN</small>
+          <small>HU60.CN</small>
         </span>
       )}
     </Link>

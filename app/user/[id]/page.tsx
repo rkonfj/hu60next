@@ -1,11 +1,13 @@
 import { CalendarDays, MessageSquareText, UserRound } from "lucide-react";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { Avatar } from "@/components/avatar";
 import { Pagination } from "@/components/pagination";
 import { TopicCard } from "@/components/topic-card";
+import { UserRelationshipActions } from "@/components/user-relationship-actions";
 import { fullDate } from "@/lib/format";
-import { getUserProfile, getUserTopics } from "@/lib/hu60";
+import { getUserProfile, getUserStatus, getUserTopics } from "@/lib/hu60";
 
 type UserPageProps = {
   params: Promise<{ id: string }>;
@@ -50,7 +52,12 @@ export default async function UserPage({
   }
 
   const page = Math.max(1, Number(query.page) || 1);
-  const profile = await getUserProfile(uid);
+  const cookieStore = await cookies();
+  const sid = cookieStore.get("hulvlin_sid")?.value;
+  const [profile, status] = await Promise.all([
+    getUserProfile(uid),
+    getUserStatus(sid)
+  ]);
   const displayName = profile.name || profile._u_name || `用户 ${uid}`;
   const topics = await getUserTopics(displayName, page);
   const signature =
@@ -83,6 +90,16 @@ export default async function UserPage({
             {memberTitle ? <span>{memberTitle}</span> : null}
           </div>
           <p>{signature}</p>
+          {profile.contact ? (
+            <p className="user-profile-contact">{profile.contact}</p>
+          ) : null}
+          <UserRelationshipActions
+            uid={uid}
+            isLoggedIn={status.isLogin === true}
+            isSelf={status.uid === uid}
+            initialFollow={profile.isFollow === true}
+            initialBlock={profile.isBlock === true}
+          />
         </div>
         <div className="user-profile-stats">
           <span>

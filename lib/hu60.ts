@@ -7,6 +7,8 @@ import {
 } from "@/lib/fallback-data";
 import type {
   ChatResponse,
+  AccountProfile,
+  FavoriteTopicsResponse,
   ForumTree,
   ForumsResponse,
   HomeResponse,
@@ -227,7 +229,7 @@ export async function getTopic(
   );
 }
 
-type FavoriteTopicsResponse = {
+type FavoriteLookupResponse = {
   topicList?: Topic[] | null;
   currPage?: number;
   maxPage?: number;
@@ -243,7 +245,7 @@ export async function isTopicFavorite(
   let maxPage = 1;
 
   do {
-    const favorites = await requestJson<FavoriteTopicsResponse>(
+    const favorites = await requestJson<FavoriteLookupResponse>(
       "bbs.myfavorite.json",
       {
         p: page,
@@ -370,11 +372,18 @@ export async function getUserStatus(sid?: string): Promise<UserStatus> {
 }
 
 export async function getMessages(
-  type: "inbox" | "mentions",
-  page = 1
+  type: "inbox" | "mentions" | "sent",
+  page = 1,
+  sid?: string
 ): Promise<MessagesResponse> {
+  const route =
+    type === "inbox"
+      ? "msg.index.inbox.all.json"
+      : type === "mentions"
+        ? "msg.index.@.json"
+        : "msg.index.outbox.all.json";
   return requestJson(
-    type === "inbox" ? "msg.index.inbox.all.json" : "msg.index.@.json",
+    route,
     {
       p: Math.max(1, page),
       pageSize: 15,
@@ -389,11 +398,17 @@ export async function getMessages(
       msgList: [],
       __fallback: true
     },
-    { cache: "no-store" }
+    {
+      ...(sid ? { headers: { "x-sid": sid } } : {}),
+      cache: "no-store"
+    }
   );
 }
 
-export async function getPublicChat(page = 1): Promise<ChatResponse> {
+export async function getPublicChat(
+  page = 1,
+  sid?: string
+): Promise<ChatResponse> {
   return requestJson(
     "addin.chat.公共聊天室.json",
     {
@@ -412,6 +427,59 @@ export async function getPublicChat(page = 1): Promise<ChatResponse> {
       chatList: [],
       __fallback: true
     },
-    { cache: "no-store" }
+    {
+      ...(sid ? { headers: { "x-sid": sid } } : {}),
+      cache: "no-store"
+    }
+  );
+}
+
+export async function getFavoriteTopics(
+  page = 1,
+  sid?: string
+): Promise<FavoriteTopicsResponse> {
+  return requestJson(
+    "bbs.myfavorite.json",
+    {
+      p: Math.max(1, page),
+      pageSize: TOPICS_PER_PAGE,
+      _topic_summary: 180,
+      _uinfo: "name,avatar,sign",
+      _time: 1
+    },
+    {
+      success: false,
+      notice: "暂时无法读取收藏。",
+      topicCount: 0,
+      currPage: 1,
+      maxPage: 1,
+      topicList: [],
+      __fallback: true
+    },
+    {
+      ...(sid ? { headers: { "x-sid": sid } } : {}),
+      cache: "no-store"
+    }
+  );
+}
+
+export async function getAccountProfile(
+  sid?: string
+): Promise<AccountProfile> {
+  return requestJson(
+    "user.index.json",
+    { _time: 1 },
+    {
+      uid: 0,
+      name: "",
+      signature: "",
+      contact: "",
+      hasRegPhone: false,
+      __fallback: true
+    },
+    {
+      ...(sid ? { headers: { "x-sid": sid } } : {}),
+      cache: "no-store"
+    }
   );
 }
