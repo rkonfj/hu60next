@@ -3113,9 +3113,20 @@ body :is(
     .site-header,
     .header-inner,
     .topic-card-meta,
+    .site-footer,
+    .forum-card-head,
     .article-meta,
+    .article-actions,
+    .rich-content h2,
+    .rich-content hr,
+    .topic-info-card > div,
+    .auth-promo blockquote,
+    .auth-links,
     .mobile-menu-popover form,
     .mobile-menu-auth,
+    .composer-top,
+    .editor-tabs,
+    .editor-toolbar,
     hr
   ) {
   border-radius: 0 !important;
