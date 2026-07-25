@@ -813,6 +813,7 @@ select:focus-visible {
   flex: 0 1 auto;
   max-width: 92px;
   margin-left: 0;
+  padding: 2px 7px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3375,7 +3376,9 @@ body :is(
 
   .topic-card-meta .forum-pill {
     max-width: 64px;
+    padding-top: 1px;
     padding-right: 5px;
+    padding-bottom: 1px;
     padding-left: 5px;
   }
 
