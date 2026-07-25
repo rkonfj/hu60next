@@ -1826,7 +1826,11 @@ select:focus-visible {
 .auth-page {
   display: grid;
   min-height: 100vh;
-  grid-template-columns: minmax(380px, 0.95fr) minmax(420px, 1.05fr);
+  grid-template-columns: minmax(0, 72fr) minmax(320px, 28fr);
+}
+
+.auth-page + .site-footer {
+  display: none;
 }
 
 .auth-promo {
@@ -2400,6 +2404,25 @@ select:focus-visible {
   }
 }
 
+@media (max-width: 1100px) {
+  .auth-page {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-promo {
+    display: none;
+  }
+
+  .auth-form-panel {
+    min-height: 100vh;
+  }
+
+  .mobile-auth-brand {
+    display: inline-flex;
+    margin-bottom: 35px;
+  }
+}
+
 @media (max-width: 900px) {
   .header-inner,
   .page-shell {
@@ -2435,22 +2458,6 @@ select:focus-visible {
     margin-top: 14px;
   }
 
-  .auth-page {
-    grid-template-columns: 1fr;
-  }
-
-  .auth-promo {
-    display: none;
-  }
-
-  .auth-form-panel {
-    min-height: 100vh;
-  }
-
-  .mobile-auth-brand {
-    display: inline-flex;
-    margin-bottom: 35px;
-  }
 }
 
 @media (max-width: 640px) {
