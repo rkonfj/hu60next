@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
@@ -21,14 +22,18 @@ function isSecureRequest(request: Request) {
     : new URL(request.url).protocol === "https:";
 }
 
-async function requestRegistration(body: URLSearchParams) {
+async function requestRegistration(
+  body: URLSearchParams,
+  incomingHeaders: Headers
+) {
+  const { headers } = createHu60UpstreamHeaders(incomingHeaders, {
+    accept: "application/json",
+    "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+    "user-agent": "Hulvlin-Next/0.1"
+  });
   const response = await fetch(`${API_BASE}/user.reg.json`, {
     method: "POST",
-    headers: {
-      accept: "application/json",
-      "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
-      "user-agent": "Hulvlin-Next/0.1"
-    },
+    headers,
     body,
     cache: "no-store"
   });
@@ -36,13 +41,14 @@ async function requestRegistration(body: URLSearchParams) {
   return { response, data };
 }
 
-async function verifySid(sid: string) {
+async function verifySid(sid: string, incomingHeaders: Headers) {
+  const { headers } = createHu60UpstreamHeaders(incomingHeaders, {
+    accept: "application/json",
+    "user-agent": "Hulvlin-Next/0.1",
+    "x-sid": sid
+  });
   const response = await fetch(`${API_BASE}/user.stat.json?pageSize=1`, {
-    headers: {
-      accept: "application/json",
-      "user-agent": "Hulvlin-Next/0.1",
-      "x-sid": sid
-    },
+    headers,
     cache: "no-store"
   });
   if (!response.ok) return false;
@@ -86,7 +92,8 @@ export async function POST(request: Request) {
         pass,
         mail,
         check: "1"
-      })
+      }),
+      request.headers
     );
 
     if (
@@ -113,7 +120,8 @@ export async function POST(request: Request) {
         pass2,
         mail,
         go: "1"
-      })
+      }),
+      request.headers
     );
     const sid =
       typeof created.data.sid === "string" ? created.data.sid : "";
@@ -122,7 +130,7 @@ export async function POST(request: Request) {
       !created.response.ok ||
       created.data.success !== true ||
       !sid ||
-      !(await verifySid(sid))
+      !(await verifySid(sid, request.headers))
     ) {
       return NextResponse.json(
         {

@@ -1,7 +1,8 @@
 import {
   getWeeklyGlobalTopicsPage,
   getWeeklyReplyFeedPage,
-  getWeeklyUserTopicsPage
+  getWeeklyUserTopicsPage,
+  hasCustomHu60RequestHeaders
 } from "@/lib/hu60";
 import type {
   PersonalWeeklyReport,
@@ -160,6 +161,10 @@ async function buildReplySource(): Promise<ReplySource> {
 }
 
 async function getReplySource(): Promise<ReplySource> {
+  if (await hasCustomHu60RequestHeaders()) {
+    return buildReplySource();
+  }
+
   const now = Date.now();
   if (
     replySourceMemoryCache &&
@@ -234,6 +239,10 @@ async function buildGlobalTopicSource(
 }
 
 async function getGlobalTopicSource(cutoff: number) {
+  if (await hasCustomHu60RequestHeaders()) {
+    return buildGlobalTopicSource(cutoff);
+  }
+
   const now = Date.now();
   if (
     globalTopicSourceMemoryCache &&
@@ -417,6 +426,10 @@ async function buildWeeklyMvpRanking(): Promise<WeeklyMvpRanking> {
 }
 
 export async function getWeeklyMvpRanking(): Promise<WeeklyMvpRanking> {
+  if (await hasCustomHu60RequestHeaders()) {
+    return buildWeeklyMvpRanking();
+  }
+
   const now = Date.now();
   if (mvpMemoryCache && mvpMemoryCache.expiresAt > now) {
     return mvpMemoryCache.value;
@@ -683,6 +696,10 @@ export async function getPersonalWeeklyReport(
   uid: number,
   username: string
 ): Promise<PersonalWeeklyReport> {
+  if (await hasCustomHu60RequestHeaders()) {
+    return buildPersonalWeeklyReport(uid, username);
+  }
+
   const cacheKey = `${uid}:${username}`;
   const now = Date.now();
   const cached = reportMemoryCache.get(cacheKey);

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
@@ -32,13 +33,14 @@ export async function POST(request: Request) {
   try {
     const body = new FormData();
     body.set("avatar", avatar, "avatar.jpg");
+    const { headers } = createHu60UpstreamHeaders(request.headers, {
+      accept: "application/json",
+      "user-agent": "Hulvlin-Next/0.1",
+      "x-sid": sid
+    });
     const upstream = await fetch(`${API_BASE}/user.avatar.json`, {
       method: "POST",
-      headers: {
-        accept: "application/json",
-        "user-agent": "Hulvlin-Next/0.1",
-        "x-sid": sid
-      },
+      headers,
       body,
       cache: "no-store"
     });

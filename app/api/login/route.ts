@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
@@ -67,13 +68,14 @@ function findSid(
   return setCookie?.match(/(?:^|,\s*)hu60_sid=([^;,\s]+)/)?.[1] ?? null;
 }
 
-async function verifySid(sid: string) {
+async function verifySid(sid: string, incomingHeaders: Headers) {
+  const { headers } = createHu60UpstreamHeaders(incomingHeaders, {
+    accept: "application/json",
+    "user-agent": "Hulvlin-Next/0.1",
+    "x-sid": sid
+  });
   const response = await fetch(`${API_BASE}/user.stat.json?pageSize=1`, {
-    headers: {
-      accept: "application/json",
-      "user-agent": "Hulvlin-Next/0.1",
-      "x-sid": sid
-    },
+    headers,
     cache: "no-store"
   });
 
@@ -107,13 +109,14 @@ export async function POST(request: Request) {
       pass,
       go: "1"
     });
+    const { headers } = createHu60UpstreamHeaders(request.headers, {
+      accept: "application/json",
+      "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+      "user-agent": "Hulvlin-Next/0.1"
+    });
     const upstream = await fetch(`${API_BASE}/user.login.json`, {
       method: "POST",
-      headers: {
-        accept: "application/json",
-        "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
-        "user-agent": "Hulvlin-Next/0.1"
-      },
+      headers,
       body,
       cache: "no-store"
     });
@@ -135,7 +138,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!(await verifySid(sid))) {
+    if (!(await verifySid(sid, request.headers))) {
       return loginFailure(
         request,
         redirectTo,

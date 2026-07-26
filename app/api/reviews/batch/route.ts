@@ -5,6 +5,7 @@ import {
   getTopic,
   getUserStatus
 } from "@/lib/hu60";
+import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
 import type { ReviewQueueFilter } from "@/lib/hu60";
 import type { Floor, UserReply } from "@/lib/types";
 
@@ -237,15 +238,16 @@ export async function POST(request: Request) {
   }
 
   try {
+    const { headers } = createHu60UpstreamHeaders(request.headers, {
+      accept: "application/json",
+      "content-type": "application/json;charset=UTF-8",
+      "user-agent": "Hulvlin-Next/0.1",
+      "x-origin": "*",
+      "x-sid": sid
+    });
     const upstream = await fetch(`${API_BASE}/bbs.review-all.json`, {
       method: "POST",
-      headers: {
-        accept: "application/json",
-        "content-type": "application/json;charset=UTF-8",
-        "user-agent": "Hulvlin-Next/0.1",
-        "x-origin": "*",
-        "x-sid": sid
-      },
+      headers,
       body: JSON.stringify(upstreamItems),
       cache: "no-store"
     });

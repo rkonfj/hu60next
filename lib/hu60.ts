@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers as requestHeaders } from "next/headers";
 import {
   fallbackForums,
   fallbackHome,
@@ -29,6 +29,10 @@ import type {
   UserStatus
 } from "@/lib/types";
 import { getMemberTitle } from "@/lib/member";
+import {
+  createHu60UpstreamHeaders,
+  hasForwardableHu60Headers
+} from "@/lib/hu60-headers";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
@@ -56,7 +60,11 @@ async function requestJson<T>(
       if (value !== undefined) url.searchParams.set(key, String(value));
     });
 
-    const headers = new Headers(init?.headers);
+    const incomingHeaders = await requestHeaders();
+    const {
+      headers,
+      forwardedCustomHeaders
+    } = createHu60UpstreamHeaders(incomingHeaders, init?.headers);
     if (!headers.has("accept")) headers.set("accept", "application/json");
     if (!headers.has("user-agent")) {
       headers.set("user-agent", "Hulvlin-Next/0.1");
@@ -70,11 +78,14 @@ async function requestJson<T>(
     }
 
     const shouldRevalidate =
-      !sid && !init?.method && init?.cache !== "no-store";
+      !sid &&
+      !forwardedCustomHeaders &&
+      !init?.method &&
+      init?.cache !== "no-store";
     const response = await fetch(url, {
       ...init,
       headers,
-      ...(sid
+      ...(sid || forwardedCustomHeaders
         ? { cache: "no-store" }
         : shouldRevalidate
           ? { next: { revalidate: 90 } }
@@ -104,11 +115,13 @@ async function requestPublicJson<T>(
       if (value !== undefined) url.searchParams.set(key, String(value));
     });
 
+    const incomingHeaders = await requestHeaders();
+    const { headers } = createHu60UpstreamHeaders(incomingHeaders, {
+      accept: "application/json",
+      "user-agent": "Hulvlin-Next/0.1"
+    });
     const response = await fetch(url, {
-      headers: {
-        accept: "application/json",
-        "user-agent": "Hulvlin-Next/0.1"
-      },
+      headers,
       cache: "no-store"
     });
     if (!response.ok) return fallback;
@@ -120,6 +133,10 @@ async function requestPublicJson<T>(
   } catch {
     return fallback;
   }
+}
+
+export async function hasCustomHu60RequestHeaders() {
+  return hasForwardableHu60Headers(await requestHeaders());
 }
 
 export async function getFaces(): Promise<ForumFace[]> {
@@ -349,6 +366,10 @@ async function buildHonorRoll(): Promise<HonorRoll> {
 }
 
 export async function getHonorRoll(): Promise<HonorRoll> {
+  if (await hasCustomHu60RequestHeaders()) {
+    return buildHonorRoll();
+  }
+
   const now = Date.now();
   if (honorMemoryCache && honorMemoryCache.expiresAt > now) {
     return honorMemoryCache.value;

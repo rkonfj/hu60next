@@ -6516,17 +6516,18 @@ body :is(
   gap: 4px;
 }
 
-.review-log-panel {
+.review-log-shell {
   min-width: 0;
 }
 
-.review-actions-row > .review-log-panel {
+.review-actions-row > .review-log-shell {
   margin-left: auto;
 }
 
-.review-log-panel > summary {
+.review-log-trigger {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-height: 31px;
   padding: 0 8px;
   color: var(--muted);
@@ -6540,11 +6541,8 @@ body :is(
   gap: 4px;
 }
 
-.review-log-panel > summary::-webkit-details-marker {
-  display: none;
-}
-
-.review-log-panel > summary span {
+.review-log-trigger span,
+.review-log-panel-header strong span {
   display: inline-grid;
   min-width: 17px;
   height: 17px;
@@ -6555,13 +6553,53 @@ body :is(
   place-items: center;
 }
 
-.review-log-panel[open] {
+.review-log-shell.is-open {
   flex: 1 0 100%;
   width: 100%;
+  margin-left: 0;
 }
 
-.review-log-panel[open] > summary {
-  margin-bottom: 8px;
+.review-log-panel {
+  padding: 9px 0 2px;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.review-log-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 9px;
+  gap: 10px;
+}
+
+.review-log-panel-header strong {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ink);
+  font-size: 10px;
+  gap: 5px;
+}
+
+.review-log-close {
+  display: inline-grid;
+  width: 29px;
+  height: 29px;
+  padding: 0;
+  color: var(--ink);
+  cursor: pointer;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface-soft);
+  place-items: center;
+}
+
+.review-log-close:hover {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 38%, var(--line));
+  background: color-mix(in srgb, var(--danger) 7%, var(--surface));
 }
 
 .review-log-timeline {
@@ -6810,33 +6848,16 @@ body :is(
     font-size: 11px;
   }
 
-  .review-actions-row > .review-log-panel {
+  .review-actions-row > .review-log-shell {
     margin-left: 0;
   }
 
-  .review-log-panel[open] {
-    position: fixed;
-    z-index: 60;
-    right: 8px;
-    bottom: 8px;
-    left: 8px;
-    width: auto;
-    max-height: 76svh;
-    overflow: auto;
-    padding: 10px;
-    border: 1px solid var(--line-strong);
-    border-radius: 14px;
-    background: var(--surface);
-    box-shadow: 0 18px 60px rgba(7, 24, 15, 0.28);
+  .review-log-shell.is-open {
+    flex-basis: 100%;
   }
 
-  .review-log-panel[open] > summary {
-    position: sticky;
-    z-index: 1;
-    top: 0;
-    width: 100%;
-    justify-content: flex-start;
-    background: var(--surface-soft);
+  .review-log-panel {
+    padding-top: 8px;
   }
 
   .review-log-heading {

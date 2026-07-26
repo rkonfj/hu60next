@@ -40,6 +40,7 @@ export function ReviewActions({
   const [reason, setReason] = useState("");
   const [notice, setNotice] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
   const canReview = Number(reviewState || 0) !== 0;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -98,6 +99,7 @@ export function ReviewActions({
               type="button"
               className="review-pass-button"
               onClick={() => {
+                setShowLogs(false);
                 setDecision("pass");
                 setNotice("");
               }}
@@ -109,6 +111,7 @@ export function ReviewActions({
               type="button"
               className="review-reject-button"
               onClick={() => {
+                setShowLogs(false);
                 setDecision("reject");
                 setNotice("");
               }}
@@ -123,7 +126,18 @@ export function ReviewActions({
             已处理
           </span>
         )}
-        <ReviewLogTimeline logs={logs} />
+        <ReviewLogTimeline
+          logs={logs}
+          open={showLogs}
+          onOpenChange={(open) => {
+            setShowLogs(open);
+            if (open) {
+              setDecision(null);
+              setReason("");
+              setNotice("");
+            }
+          }}
+        />
       </div>
 
       {decision ? (

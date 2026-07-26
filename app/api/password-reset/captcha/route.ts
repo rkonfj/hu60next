@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
@@ -15,10 +16,13 @@ function isSecureRequest(request: Request) {
 
 export async function GET(request: Request) {
   try {
+    const { headers } = createHu60UpstreamHeaders(request.headers, {
+      "user-agent": "Hulvlin-Next/0.1"
+    });
     const upstream = await fetch(
       `${API_BASE}/user.reset_pwd_captcha.php?r=${Date.now()}`,
       {
-        headers: { "user-agent": "Hulvlin-Next/0.1" },
+        headers,
         cache: "no-store"
       }
     );
