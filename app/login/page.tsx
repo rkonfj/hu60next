@@ -62,7 +62,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </div>
       </section>
       <section className="auth-form-panel">
-        <div className="auth-form-wrap">
+        <div className="auth-form-wrap login-auth-form-wrap">
           <div className="mobile-auth-brand">
             <Brand />
           </div>
@@ -70,7 +70,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <ShieldCheck size={15} /> 服务端安全会话
           </span>
           <h2>登录虎绿林</h2>
-          <p>使用你的 hu60 账号登录，无需重新注册。</p>
           <LoginForm
             redirectTo={redirectTo}
             initialNotice={initialNotice}

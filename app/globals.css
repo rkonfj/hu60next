@@ -2217,6 +2217,10 @@ body:has(> .auth-page) > .site-header {
   font-size: 11px;
 }
 
+.login-auth-form-wrap h2 {
+  margin-bottom: 24px;
+}
+
 .login-form {
   display: flex;
   flex-direction: column;

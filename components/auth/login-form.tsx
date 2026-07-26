@@ -90,9 +90,6 @@ export function LoginForm({
           </>
         )}
       </button>
-      <p className="login-privacy">
-        凭据仅通过服务端转发至 hu60.cn，不会写入浏览器存储。
-      </p>
     </form>
   );
 }
