@@ -311,7 +311,6 @@ export function sanitizeHu60Content(content: string) {
         "margin-bottom": [/^(?:0|(?:[0-9]|1[0-2])px)$/],
         "margin-left": [/^(?:0|(?:[0-9]|1[0-2])px)$/],
         "border-radius": [/^(?:0|[0-6](?:\.\d+)?px)$/],
-        float: [/^(?:left|right|none)$/],
         "text-align": [/^(?:left|right|center)$/]
       }
     },
