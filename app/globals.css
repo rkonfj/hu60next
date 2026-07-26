@@ -53,6 +53,7 @@ body {
   margin: 0;
   color: var(--ink);
   background: var(--bg);
+  font-size: 15px;
   font-family:
     Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
     "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
@@ -373,7 +374,6 @@ select:focus-visible {
   padding: 8px 10px;
   border-radius: 10px;
   background: var(--green-soft);
-  font-size: 12px;
   font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -867,10 +867,6 @@ select:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.topic-card-author-copy strong {
-  font-size: 11px;
 }
 
 .topic-card-author-copy span {
@@ -1701,10 +1697,6 @@ select:focus-visible {
   display: block;
 }
 
-.article-meta strong {
-  font-size: 12px;
-}
-
 .article-meta > div:nth-child(2) span {
   display: flex;
   align-items: center;
@@ -1755,13 +1747,7 @@ select:focus-visible {
 .rich-content {
   overflow-wrap: anywhere;
   color: #27322c;
-  font-size: 14px;
   line-height: 1.85;
-}
-
-.topic-article > .rich-content,
-.reply-card .reply-content {
-  font-size: 14px;
 }
 
 .rich-content > :first-child,
@@ -2224,10 +2210,6 @@ select:focus-visible {
   display: block;
 }
 
-.reply-author strong {
-  font-size: 11px;
-}
-
 .reply-author span {
   margin-top: 3px;
   color: var(--faint);
@@ -2243,7 +2225,6 @@ select:focus-visible {
 
 .reply-content {
   padding-left: 46px;
-  font-size: 12px;
   line-height: 1.75;
 }
 
@@ -2412,7 +2393,6 @@ select:focus-visible {
   border: 0;
   border-radius: 9px;
   background: var(--green);
-  font-size: 10px;
   font-weight: 750;
   gap: 6px;
 }
@@ -2467,7 +2447,6 @@ select:focus-visible {
 
 .author-card-identity strong {
   display: block;
-  font-size: 16px;
 }
 
 .author-card-name {
@@ -3317,7 +3296,6 @@ body:has(> .auth-page) > .site-header {
   outline: 0;
   resize: vertical;
   background: transparent;
-  font-size: 12px;
   line-height: 1.75;
 }
 
@@ -3445,7 +3423,6 @@ body:has(> .auth-page) > .site-header {
   height: 38px;
   padding: 0 13px;
   border-radius: 10px;
-  font-size: 10px;
   font-weight: 750;
   gap: 6px;
 }
@@ -3453,6 +3430,7 @@ body:has(> .auth-page) > .site-header {
 .save-draft {
   border: 1px solid var(--line);
   background: var(--surface-soft);
+  font-size: 10px;
 }
 
 .publish-draft {
@@ -3691,7 +3669,6 @@ body:has(> .auth-page) > .site-header {
 
 .message-author strong {
   overflow: hidden;
-  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3867,10 +3844,6 @@ body:has(> .auth-page) > .site-header {
   align-items: center;
   min-height: 27px;
   gap: 7px;
-}
-
-.chat-message-main > header strong {
-  font-size: 11px;
 }
 
 .chat-message-main > header a,
@@ -4585,7 +4558,6 @@ body:has(> .auth-page) > .site-header {
 
 .relationship-user strong {
   overflow: hidden;
-  font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -4821,7 +4793,6 @@ body:has(> .auth-page) > .site-header {
   overflow: hidden;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  font-size: 12px;
 }
 
 .user-reply-content img {
@@ -5214,10 +5185,6 @@ body:has(> .auth-page) > .site-header {
 
   .article-stats {
     display: none;
-  }
-
-  .rich-content {
-    font-size: 13px;
   }
 
   .rich-content h2 {
@@ -6221,7 +6188,6 @@ body :is(
 .honor-member-copy strong {
   overflow: hidden;
   min-width: 0;
-  font-size: 15px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -6570,7 +6536,6 @@ body :is(
   align-items: center;
   margin-top: 10px;
   color: var(--faint);
-  font-size: 9px;
   gap: 8px;
 }
 
@@ -6583,6 +6548,7 @@ body :is(
 
 .review-queue-author time {
   margin-left: auto;
+  font-size: 9px;
 }
 
 .review-queue-content {
@@ -6591,7 +6557,6 @@ body :is(
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-soft);
-  font-size: 12px;
   line-height: 1.65;
 }
 
@@ -6603,7 +6568,7 @@ body :is(
 }
 
 .review-actions-shell.is-pending {
-  border-top-width: 2px;
+  border-top-width: 5px;
   border-top-color: color-mix(in srgb, var(--orange) 72%, var(--line));
 }
 
