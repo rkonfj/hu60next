@@ -322,7 +322,7 @@ async function buildUserTopicSource(
   };
 }
 
-function weeklyMvpScore(stats: WeeklyReportStats) {
+export function weeklyMvpScore(stats: WeeklyReportStats) {
   return (
     stats.firstReplies * 5 +
     stats.continuedDiscussions * 4 +
