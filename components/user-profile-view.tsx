@@ -85,7 +85,9 @@ export async function UserProfileView({
           </span>
           <div className="user-profile-title">
             <h1>{displayName}</h1>
-            <span className="member-badge">{memberTitle}</span>
+            {memberTitle ? (
+              <span className="member-badge">{memberTitle}</span>
+            ) : null}
           </div>
           <p>{signature}</p>
           {profile.contact ? (
