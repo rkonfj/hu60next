@@ -67,14 +67,6 @@ function HonorBoard({
                       {member.memberTitle}
                     </span>
                   ) : null}
-                  {member.weeklyScore !== undefined ? (
-                    <span className="honor-score">
-                      {member.weeklyScore} 分
-                    </span>
-                  ) : null}
-                  {member.weeklySummary ? (
-                    <small>{member.weeklySummary}</small>
-                  ) : null}
                 </span>
                 <ChevronRight size={16} aria-hidden="true" />
               </Link>

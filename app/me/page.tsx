@@ -33,8 +33,8 @@ function shortDate(timestamp: number) {
 
 function changeLabel(current: number, previous: number) {
   const difference = current - previous;
-  if (difference === 0) return "与前 7 天持平";
-  return `较前 7 天${difference > 0 ? "增加" : "减少"} ${Math.abs(difference)}`;
+  if (difference === 0) return "与上周持平";
+  return `比上周 ${difference > 0 ? "+" : "−"}${Math.abs(difference)}`;
 }
 
 export default async function MePage() {

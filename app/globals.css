@@ -3956,6 +3956,7 @@ body:has(> .auth-page) > .site-header {
 
 .weekly-report-metrics article {
   display: flex;
+  align-items: center;
   min-width: 0;
   padding: 12px;
   border: 1px solid var(--line);
@@ -4020,7 +4021,7 @@ body:has(> .auth-page) > .site-header {
 
 .weekly-report-highlights > div {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 8px;
 }
 
@@ -6147,21 +6148,94 @@ body :is(
   }
 
   .weekly-report-panel {
-    padding: 15px;
+    margin-top: 10px;
+    padding: 12px;
   }
 
   .weekly-report-heading {
-    display: block;
+    gap: 8px;
+  }
+
+  .weekly-report-heading > div {
+    min-width: 0;
+  }
+
+  .weekly-report-heading h2 {
+    font-size: 19px;
+    line-height: 1.3;
   }
 
   .weekly-report-heading time {
-    display: block;
-    margin-top: 6px;
+    margin-top: 2px;
   }
 
-  .weekly-report-metrics,
+  .weekly-report-summary {
+    margin-top: 10px;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .weekly-report-summary strong {
+    font-size: 15px;
+  }
+
+  .weekly-report-metrics {
+    margin-top: 11px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .weekly-report-metrics article {
+    padding: 8px 7px;
+    gap: 6px;
+  }
+
+  .weekly-metric-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .weekly-metric-icon svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .weekly-report-metrics article > div {
+    min-width: 0;
+  }
+
+  .weekly-report-metrics strong {
+    font-size: 17px;
+  }
+
+  .weekly-report-metrics article span:not(.weekly-metric-icon) {
+    margin-top: 3px;
+    font-size: 9px;
+  }
+
+  .weekly-report-metrics small {
+    margin-top: 3px;
+    font-size: 8px;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+
+  .weekly-report-highlights {
+    margin-top: 12px;
+    padding-top: 11px;
+  }
+
+  .weekly-report-highlights h3 {
+    margin-bottom: 6px;
+  }
+
   .weekly-report-highlights > div {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .weekly-report-highlights a {
+    padding: 8px 9px;
   }
 
   .honor-board.featured .honor-list {
