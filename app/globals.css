@@ -367,7 +367,7 @@ select:focus-visible {
 }
 
 .page-shell {
-  width: min(1480px, calc(100% - 44px));
+  width: min(1240px, calc(100% - 44px));
   margin: 0 auto;
 }
 
@@ -3838,7 +3838,7 @@ body:has(> .auth-page) > .site-header {
 /* User profile */
 .user-profile-card {
   display: grid;
-  align-items: center;
+  align-items: start;
   margin-bottom: 18px;
   padding: 14px;
   border: 1px solid var(--line);
@@ -3955,9 +3955,11 @@ body:has(> .auth-page) > .site-header {
 .user-profile-stats {
   display: flex;
   align-items: center;
-  padding-left: 12px;
-  border-left: 1px solid var(--line);
-  gap: 14px;
+  flex-wrap: wrap;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+  grid-column: 1 / -1;
+  gap: 9px 14px;
 }
 
 .user-profile-stats > :is(.user-relationship-wrap, .user-relationship-actions) {
