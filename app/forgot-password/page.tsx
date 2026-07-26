@@ -1,4 +1,4 @@
-import { KeyRound, ShieldCheck } from "lucide-react";
+import { KeyRound } from "lucide-react";
 import type { Metadata } from "next";
 import { PasswordResetForm } from "@/components/auth/password-reset-form";
 import { Brand } from "@/components/brand";
@@ -34,9 +34,6 @@ export default function ForgotPasswordPage() {
           <div className="mobile-auth-brand">
             <Brand />
           </div>
-          <span className="secure-label">
-            <ShieldCheck size={15} /> 服务端安全验证
-          </span>
           <h2>忘记密码</h2>
           <p>使用账号已绑定的手机号码找回。</p>
           <PasswordResetForm />

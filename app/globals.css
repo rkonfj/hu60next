@@ -2318,18 +2318,6 @@ body:has(> .auth-page) > .site-header {
   display: none;
 }
 
-.secure-label {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 9px;
-  color: var(--green);
-  border-radius: 8px;
-  background: var(--green-soft);
-  font-size: 9px;
-  font-weight: 800;
-  gap: 5px;
-}
-
 .auth-form-wrap h2 {
   margin: 16px 0 6px;
   font-size: 32px;
@@ -2472,13 +2460,14 @@ body:has(> .auth-page) > .site-header {
 .captcha-row {
   display: flex;
   align-items: stretch;
-  min-height: 58px;
+  min-height: 42px;
   gap: 8px;
 }
 
 .captcha-row img {
   min-width: 140px;
   max-width: 220px;
+  height: 42px;
   flex: 1;
   border: 1px solid var(--line-strong);
   background: #fff;
@@ -4176,11 +4165,19 @@ body:has(> .auth-page) > .site-header {
 
   .auth-form-panel {
     min-height: 100vh;
+    position: relative;
+  }
+
+  .auth-form-wrap {
+    padding-top: 64px;
   }
 
   .mobile-auth-brand {
     display: inline-flex;
-    margin-bottom: 35px;
+    position: absolute;
+    top: 12px;
+    left: 22px;
+    margin: 0;
   }
 }
 
@@ -4197,6 +4194,10 @@ body:has(> .auth-page) > .site-header {
 
   .header-actions {
     margin-left: auto;
+  }
+
+  .mobile-auth-brand {
+    left: max(14px, calc((100% - 760px) / 2));
   }
 
   .home-grid {
@@ -4980,8 +4981,9 @@ body :is(
   }
 
   .mobile-auth-brand {
-    margin-bottom: 34px;
-    margin-left: -10px;
+    top: 12px;
+    left: 8px;
+    margin: 0;
   }
 
   .topic-card-meta {

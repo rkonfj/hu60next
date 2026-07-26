@@ -1,4 +1,4 @@
-import { Leaf, ShieldCheck } from "lucide-react";
+import { Leaf } from "lucide-react";
 import type { Metadata } from "next";
 import { RegisterForm } from "@/components/auth/register-form";
 import { Brand } from "@/components/brand";
@@ -34,9 +34,6 @@ export default function RegisterPage() {
           <div className="mobile-auth-brand">
             <Brand />
           </div>
-          <span className="secure-label">
-            <ShieldCheck size={15} /> 服务端安全注册
-          </span>
           <h2>注册虎绿林</h2>
           <p>用户名最长 16 个字符，密码支持中文和表情。</p>
           <RegisterForm />
