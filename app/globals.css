@@ -1905,10 +1905,20 @@ select:focus-visible {
 }
 
 .reply-editor-tools {
+  position: relative;
   display: flex;
   align-items: center;
   min-height: 36px;
   border-bottom: 1px solid var(--line);
+}
+
+.reply-editor-tools .face-picker {
+  position: static;
+}
+
+.reply-editor-tools .face-picker-popover {
+  right: auto;
+  left: 0;
 }
 
 .reply-editor-tools .face-picker > summary {
@@ -2625,6 +2635,7 @@ body:has(> .auth-page) > .site-header {
 }
 
 .editor-toolbar {
+  position: relative;
   display: flex;
   padding: 7px 10px;
   border-bottom: 1px solid var(--line);
@@ -2650,6 +2661,10 @@ body:has(> .auth-page) > .site-header {
 
 .face-picker {
   position: relative;
+}
+
+.editor-toolbar .face-picker {
+  position: static;
 }
 
 .face-picker > summary {
@@ -2694,6 +2709,11 @@ body:has(> .auth-page) > .site-header {
   border: 1px solid var(--line-strong);
   background: var(--surface);
   box-shadow: var(--shadow);
+}
+
+.editor-toolbar .face-picker-popover {
+  right: 8px;
+  left: auto;
 }
 
 .face-picker-grid {
@@ -4058,6 +4078,13 @@ body:has(> .auth-page) > .site-header {
 @media (max-width: 640px) {
   body {
     padding-bottom: 0;
+  }
+
+  .editor-toolbar .face-picker-popover,
+  .reply-editor-tools .face-picker-popover {
+    right: 6px;
+    left: 6px;
+    width: auto;
   }
 
   .header-inner {

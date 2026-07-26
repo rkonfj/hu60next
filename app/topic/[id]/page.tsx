@@ -192,7 +192,12 @@ export default async function TopicPage({
                   />
                   <div className="reply-actions">
                     {topic.canReply ? (
-                      <a href="#quick-reply">
+                      <a
+                        href="#quick-reply"
+                        data-reply-author={floor._u_name || String(floor.uid)}
+                        data-reply-floor={floor.floor}
+                        aria-label={`回复${floor._u_name || `用户 ${floor.uid}`}`}
+                      >
                         <Reply size={14} /> 回复
                       </a>
                     ) : null}

@@ -2,7 +2,13 @@
 
 import { LoaderCircle, Reply } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useRef, useState } from "react";
+import {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from "react";
 import { FacePicker } from "@/components/face-picker";
 import type { ForumFace } from "@/lib/types";
 
@@ -26,9 +32,8 @@ export function ReplyForm({
   const [content, setContent] = useState("");
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
-  function insertFace(face: ForumFace) {
+  const insertText = useCallback((text: string, scrollToEditor = false) => {
     const textarea = textAreaRef.current;
-    const text = `{${face.name}}`;
     let cursor = 0;
 
     setContent((value) => {
@@ -39,10 +44,34 @@ export function ReplyForm({
     });
 
     window.requestAnimationFrame(() => {
-      textAreaRef.current?.focus();
-      textAreaRef.current?.setSelectionRange(cursor, cursor);
+      const editor = textAreaRef.current;
+      editor?.focus();
+      editor?.setSelectionRange(cursor, cursor);
+      if (scrollToEditor) {
+        editor?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     });
+  }, []);
+
+  function insertFace(face: ForumFace) {
+    insertText(`{${face.name}}`);
   }
+
+  useEffect(() => {
+    function handleFloorReply(event: MouseEvent) {
+      if (!(event.target instanceof Element)) return;
+      const trigger = event.target.closest<HTMLElement>("[data-reply-author]");
+      const author = trigger?.dataset.replyAuthor?.trim();
+      const floor = trigger?.dataset.replyFloor?.trim();
+      if (!author) return;
+
+      event.preventDefault();
+      insertText(`@${author}${floor ? ` #${floor}` : ""} `, true);
+    }
+
+    document.addEventListener("click", handleFloorReply);
+    return () => document.removeEventListener("click", handleFloorReply);
+  }, [insertText]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
