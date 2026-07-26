@@ -1664,6 +1664,11 @@ select:focus-visible {
   line-height: 1.85;
 }
 
+.topic-article > .rich-content,
+.reply-card .reply-content {
+  font-size: 14px;
+}
+
 .rich-content > :first-child,
 .rich-content .markdown-body > :first-child {
   margin-top: 0;
