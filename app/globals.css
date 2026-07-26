@@ -1985,6 +1985,24 @@ select:focus-visible {
   position: static;
 }
 
+.reply-editor-tools > button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 7px;
+  color: var(--muted);
+  border: 0;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 700;
+  gap: 5px;
+}
+
+.reply-editor-tools > button:hover {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
 .reply-editor-tools .face-picker-popover {
   right: auto;
   left: 0;

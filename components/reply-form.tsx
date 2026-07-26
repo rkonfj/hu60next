@@ -1,14 +1,28 @@
 "use client";
 
-import { LoaderCircle, Reply } from "lucide-react";
+import {
+  CheckCircle2,
+  LoaderCircle,
+  Paperclip,
+  Reply,
+  TriangleAlert
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
+  ChangeEvent,
   FormEvent,
   useCallback,
   useEffect,
   useRef,
   useState
 } from "react";
+import {
+  checksumFile,
+  formatFileSize,
+  type AttachmentState,
+  type UploadFormResult,
+  uploadToObjectStorage
+} from "@/components/compose/composer";
 import { FacePicker } from "@/components/face-picker";
 import type { ForumFace } from "@/lib/types";
 
@@ -30,7 +44,9 @@ export function ReplyForm({
   const [notice, setNotice] = useState(initialNotice);
   const [success, setSuccess] = useState(false);
   const [content, setContent] = useState("");
+  const [attachments, setAttachments] = useState<AttachmentState[]>([]);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const insertText = useCallback((text: string, scrollToEditor = false) => {
     const textarea = textAreaRef.current;
@@ -55,6 +71,77 @@ export function ReplyForm({
 
   function insertFace(face: ForumFace) {
     insertText(`{${face.name}}`);
+  }
+
+  function updateAttachment(id: string, patch: Partial<AttachmentState>) {
+    setAttachments((current) =>
+      current.map((item) => (item.id === id ? { ...item, ...patch } : item))
+    );
+  }
+
+  async function uploadAttachment(file: File, id: string) {
+    try {
+      const md5 = await checksumFile(file, (progress) => {
+        updateAttachment(id, { status: "hashing", progress });
+      });
+      updateAttachment(id, { status: "signing", progress: 0 });
+
+      const response = await fetch("/api/attachments/sign", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: file.name, size: file.size, md5 })
+      });
+      const form = (await response.json()) as UploadFormResult;
+
+      if (
+        !response.ok ||
+        !form.success ||
+        !form.contentUbb ||
+        !form.downloadUrl
+      ) {
+        throw new Error(form.notice || "获取附件上传凭证失败。");
+      }
+
+      if (!form.fileExists) {
+        updateAttachment(id, { status: "uploading", progress: 0 });
+        await uploadToObjectStorage(file, form, (progress) => {
+          updateAttachment(id, { status: "uploading", progress });
+        });
+      }
+
+      insertText(form.contentUbb);
+      updateAttachment(id, {
+        status: "done",
+        progress: 100,
+        downloadUrl: form.downloadUrl
+      });
+    } catch (error) {
+      updateAttachment(id, {
+        status: "error",
+        progress: 0,
+        notice: error instanceof Error ? error.message : "附件上传失败。"
+      });
+    }
+  }
+
+  async function selectAttachments(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+
+    for (const [index, file] of files.entries()) {
+      const id = `${Date.now()}-${index}-${file.name}`;
+      setAttachments((current) => [
+        ...current,
+        {
+          id,
+          name: file.name,
+          size: file.size,
+          status: "hashing",
+          progress: 0
+        }
+      ]);
+      await uploadAttachment(file, id);
+    }
   }
 
   useEffect(() => {
@@ -97,6 +184,7 @@ export function ReplyForm({
 
       form.reset();
       setContent("");
+      setAttachments([]);
       setSuccess(true);
       setNotice("回复已发布。");
       router.refresh();
@@ -106,6 +194,11 @@ export function ReplyForm({
       setLoading(false);
     }
   }
+
+  const attachmentBusy = attachments.some(
+    (attachment) =>
+      attachment.status !== "done" && attachment.status !== "error"
+  );
 
   return (
     <form
@@ -118,7 +211,6 @@ export function ReplyForm({
       <input type="hidden" name="token" value={token} />
       <div>
         <strong>加入这场讨论</strong>
-        <span>已识别登录状态，回复将直接发布。</span>
       </div>
       <textarea
         ref={textAreaRef}
@@ -132,8 +224,66 @@ export function ReplyForm({
         aria-label="回复内容"
       />
       <div className="reply-editor-tools">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          aria-label="添加附件"
+          title="添加附件"
+        >
+          <Paperclip size={16} />
+          <span>附件</span>
+        </button>
         <FacePicker faces={faces} onSelect={insertFace} />
+        <input
+          ref={fileInputRef}
+          className="attachment-input"
+          type="file"
+          multiple
+          onChange={selectAttachments}
+        />
       </div>
+      {attachments.length > 0 ? (
+        <div className="attachment-list" aria-live="polite">
+          {attachments.map((attachment) => (
+            <div className="attachment-item" key={attachment.id}>
+              <span className="attachment-state-icon">
+                {attachment.status === "done" ? (
+                  <CheckCircle2 size={15} />
+                ) : attachment.status === "error" ? (
+                  <TriangleAlert size={15} />
+                ) : (
+                  <LoaderCircle className="spin" size={15} />
+                )}
+              </span>
+              <span className="attachment-copy">
+                <strong>{attachment.name}</strong>
+                <small>
+                  {formatFileSize(attachment.size)}
+                  {" · "}
+                  {attachment.status === "hashing"
+                    ? `正在校验 ${attachment.progress}%`
+                    : attachment.status === "signing"
+                      ? "正在获取上传凭证"
+                      : attachment.status === "uploading"
+                        ? `正在上传 ${attachment.progress}%`
+                        : attachment.status === "done"
+                          ? "已添加到回复"
+                          : attachment.notice || "上传失败"}
+                </small>
+              </span>
+              {attachment.downloadUrl ? (
+                <a
+                  href={attachment.downloadUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  查看
+                </a>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
       <div className="reply-composer-footer">
         {notice ? (
           <p className={success ? "reply-success" : "form-notice"}>
@@ -142,10 +292,14 @@ export function ReplyForm({
         ) : (
           <span>支持虎绿林 UBB 与 Markdown 标记</span>
         )}
-        <button type="submit" disabled={loading}>
+        <button type="submit" disabled={loading || attachmentBusy}>
           {loading ? (
             <>
               <LoaderCircle className="spin" size={16} /> 正在发布
+            </>
+          ) : attachmentBusy ? (
+            <>
+              <LoaderCircle className="spin" size={16} /> 正在处理附件
             </>
           ) : (
             <>
