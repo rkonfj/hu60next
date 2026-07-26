@@ -215,7 +215,7 @@ export function sanitizeHu60Content(content: string) {
       ],
       code: ["class"],
       div: ["class"],
-      span: ["class"],
+      span: ["class", "style"],
       p: ["class"],
       pre: ["class"],
       table: ["class"],
@@ -232,6 +232,7 @@ export function sanitizeHu60Content(content: string) {
       "*": [
         "markdown-body",
         "hu60_face",
+        "hu60-post-tail",
         "hu60-system-notice",
         "info-box",
         "tp",
@@ -283,6 +284,36 @@ export function sanitizeHu60Content(content: string) {
         "yml",
         /^(?:language|lang)-[a-z0-9_+#.-]+$/i
       ]
+    },
+    allowedStyles: {
+      span: {
+        color: [
+          /^(?:#[\da-f]{3,8}|rgba?\([\d\s,.%]+\)|hsla?\([\d\s,.%]+\))$/i
+        ],
+        background: [
+          /^(?:#[\da-f]{3,8}|rgba?\([\d\s,.%]+\)|hsla?\([\d\s,.%]+\))$/i
+        ],
+        "background-color": [
+          /^(?:#[\da-f]{3,8}|rgba?\([\d\s,.%]+\)|hsla?\([\d\s,.%]+\))$/i
+        ],
+        "font-size": [/^(?:[8-9]|1[0-8])px$/],
+        "font-weight": [/^(?:normal|bold|[4-7]00)$/],
+        "font-style": [/^(?:normal|italic)$/],
+        display: [/^(?:inline|inline-block|block)$/],
+        padding: [
+          /^(?:0|(?:[0-9]|1[0-2])px)(?:\s+(?:0|(?:[0-9]|1[0-2])px)){0,3}$/
+        ],
+        margin: [
+          /^(?:0|(?:[0-9]|1[0-2])px)(?:\s+(?:0|(?:[0-9]|1[0-2])px)){0,3}$/
+        ],
+        "margin-top": [/^(?:0|(?:[0-9]|1[0-2])px)$/],
+        "margin-right": [/^(?:0|(?:[0-9]|1[0-2])px)$/],
+        "margin-bottom": [/^(?:0|(?:[0-9]|1[0-2])px)$/],
+        "margin-left": [/^(?:0|(?:[0-9]|1[0-2])px)$/],
+        "border-radius": [/^(?:0|[0-6](?:\.\d+)?px)$/],
+        float: [/^(?:left|right|none)$/],
+        "text-align": [/^(?:left|right|center)$/]
+      }
     },
     allowedSchemes: ["http", "https", "mailto"],
     transformTags: {
@@ -363,6 +394,20 @@ export function sanitizeHu60Content(content: string) {
               ? { poster: resolveSafeMediaUrl(attribs.poster) || "" }
               : {})
           }
+        };
+      },
+      span: (_tagName, attribs) => {
+        const isPostTail = attribs.class
+          ?.split(/\s+/)
+          .includes("usercss");
+        return {
+          tagName: "span",
+          attribs: isPostTail
+            ? {
+                class: "hu60-post-tail",
+                ...(attribs.style ? { style: attribs.style } : {})
+              }
+            : attribs
         };
       },
       div: (_tagName, attribs) => {

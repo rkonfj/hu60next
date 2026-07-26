@@ -1822,19 +1822,24 @@ select:focus-visible {
   white-space: pre;
 }
 
-.post-signature {
+.rich-content .hu60-post-tail {
   position: relative;
-  margin-top: 13px;
+  display: block;
+  clear: both;
+  width: fit-content;
+  max-width: 100%;
+  margin: 13px 0 0 auto;
   padding-left: 16px;
   color: var(--faint);
   font-size: 10px;
   line-height: 1.55;
   opacity: 0.78;
   overflow-wrap: anywhere;
+  text-align: right;
   white-space: pre-wrap;
 }
 
-.post-signature::before {
+.rich-content .hu60-post-tail::before {
   position: absolute;
   top: 0.78em;
   left: 0;
