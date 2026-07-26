@@ -91,6 +91,27 @@ export async function UserProfileView({
           {profile.contact ? (
             <p className="user-profile-contact">{profile.contact}</p>
           ) : null}
+        </div>
+        <div className="user-profile-footer">
+          <div className="user-profile-stats">
+            <span>
+              <strong>{data.__fallback ? "—" : itemCount}</strong>
+              {activeTab === "replies" ? "回复" : "主题"}
+            </span>
+            <span>
+              <strong>{uid}</strong>
+              UID
+            </span>
+            {profile.regtime ? (
+              <span
+                className="user-registration"
+                title={fullDate(profile.regtime)}
+              >
+                <CalendarDays size={14} />
+                注册于 {fullDate(profile.regtime)}
+              </span>
+            ) : null}
+          </div>
           <UserRelationshipActions
             uid={uid}
             isLoggedIn={status.isLogin === true}
@@ -98,25 +119,6 @@ export async function UserProfileView({
             initialFollow={profile.isFollow === true}
             initialBlock={profile.isBlock === true}
           />
-        </div>
-        <div className="user-profile-stats">
-          <span>
-            <strong>{data.__fallback ? "—" : itemCount}</strong>
-            {activeTab === "replies" ? "回复" : "主题"}
-          </span>
-          <span>
-            <strong>{uid}</strong>
-            UID
-          </span>
-          {profile.regtime ? (
-            <span
-              className="user-registration"
-              title={fullDate(profile.regtime)}
-            >
-              <CalendarDays size={14} />
-              注册于 {fullDate(profile.regtime)}
-            </span>
-          ) : null}
         </div>
       </section>
 

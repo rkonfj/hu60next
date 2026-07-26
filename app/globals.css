@@ -3829,11 +3829,11 @@ body:has(> .auth-page) > .site-header {
   display: grid;
   align-items: center;
   margin-bottom: 18px;
-  padding: 16px;
+  padding: 14px;
   border: 1px solid var(--line);
   background: var(--surface);
   box-shadow: var(--shadow-soft);
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 14px;
 }
 
@@ -3848,20 +3848,22 @@ body:has(> .auth-page) > .site-header {
 }
 
 .user-relationship-wrap {
-  margin-top: 9px;
+  margin-left: auto;
+  text-align: right;
 }
 
 .user-relationship-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
 }
 
 .user-relationship-actions :is(button, a) {
   display: inline-flex;
   align-items: center;
-  min-height: 32px;
-  padding: 0 9px;
+  min-height: 28px;
+  padding: 0 7px;
   color: var(--green);
   border: 1px solid var(--line);
   background: var(--surface-soft);
@@ -3942,9 +3944,23 @@ body:has(> .auth-page) > .site-header {
 .user-profile-stats {
   display: flex;
   align-items: center;
-  padding-left: 14px;
-  border-left: 1px solid var(--line);
   gap: 14px;
+}
+
+.user-profile-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  padding-top: 7px;
+  border-top: 1px solid var(--line);
+  grid-column: 1 / -1;
+  gap: 10px;
+}
+
+.user-profile-footer > .user-relationship-actions {
+  justify-content: flex-end;
+  margin-left: auto;
 }
 
 .user-profile-stats span {
@@ -4942,11 +4958,11 @@ body :is(
 
   .user-profile-stats {
     flex-wrap: wrap;
-    padding-top: 10px;
-    padding-left: 0;
-    border-top: 1px solid var(--line);
-    border-left: 0;
-    grid-column: 1 / -1;
+  }
+
+  .user-profile-footer {
+    padding-top: 6px;
+    gap: 6px;
   }
 
   .user-registration {
