@@ -2938,6 +2938,18 @@ body:has(> .auth-page) > .site-header {
   font-weight: 700;
 }
 
+.reply-composer .attachment-item > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 7px;
+  color: var(--green);
+  border: 1px solid var(--line);
+  background: transparent;
+  font-size: 9px;
+  font-weight: 700;
+}
+
 .editor-shell textarea,
 .composer-preview {
   width: 100%;

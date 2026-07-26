@@ -277,7 +277,7 @@ export function ReplyForm({
                   target="_blank"
                   rel="noreferrer"
                 >
-                  查看
+                  查看附件
                 </a>
               ) : null}
             </div>
