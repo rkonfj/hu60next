@@ -34,7 +34,7 @@ const HONOR_TOPIC_SAMPLE_SIZE = 300;
 const HONOR_ACTIVE_MINIMUM = 8;
 const HONOR_CACHE_SECONDS = 600;
 const HONOR_CACHE_KEY =
-  "https://hulvlin-next.rkonfj.chatgpt.site/__cache/honors-v2";
+  "https://hulvlin-next.rkonfj.chatgpt.site/__cache/honors-v3";
 // 16643 是 2012 年最后一位注册会员。
 const HONOR_LEGEND_UID_MAX = 16643;
 // HU60 的 UID 按注册顺序分配；21696 是 2016 年最后一位注册会员。
@@ -208,11 +208,18 @@ let honorMemoryCache:
     }
   | undefined;
 
-function getHonorEdgeCache() {
+async function getHonorEdgeCache() {
   const cacheStorage = globalThis.caches as
     | (CacheStorage & { default?: Cache })
     | undefined;
-  return cacheStorage?.default;
+  if (!cacheStorage) return undefined;
+  if (cacheStorage.default) return cacheStorage.default;
+
+  try {
+    return await cacheStorage.open("hulvlin-honors");
+  } catch {
+    return undefined;
+  }
 }
 
 async function getEarlyMemberTitle(uid: number) {
@@ -336,10 +343,11 @@ export async function getHonorRoll(): Promise<HonorRoll> {
     return honorMemoryCache.value;
   }
 
-  const edgeCache = getHonorEdgeCache();
+  const edgeCache = await getHonorEdgeCache();
+  const edgeCacheKey = new Request(HONOR_CACHE_KEY);
   if (edgeCache) {
     try {
-      const cachedResponse = await edgeCache.match(HONOR_CACHE_KEY);
+      const cachedResponse = await edgeCache.match(edgeCacheKey);
       if (cachedResponse) {
         const cached = (await cachedResponse.json()) as HonorRoll;
         honorMemoryCache = {
@@ -366,7 +374,7 @@ export async function getHonorRoll(): Promise<HonorRoll> {
     if (edgeCache) {
       try {
         await edgeCache.put(
-          HONOR_CACHE_KEY,
+          edgeCacheKey,
           new Response(JSON.stringify(fresh), {
             headers: {
               "cache-control": `public, max-age=${HONOR_CACHE_SECONDS}`,
