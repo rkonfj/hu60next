@@ -2,8 +2,10 @@
 
 import {
   Bold,
+  Check,
   CheckCircle2,
   Code2,
+  Copy,
   Eye,
   FileText,
   Link2,
@@ -250,8 +252,8 @@ export function ComposerPreview({
 
       const highlighted = highlightCode(codeLines.join("\n"), fence[2]);
       preview.push(
-        <pre
-          className="syntax-highlight"
+        <div
+          className="code-block-shell"
           data-language={highlighted.language}
           key={`code-${index}`}
         >
@@ -261,17 +263,24 @@ export function ComposerPreview({
             data-copy-code
             aria-label="复制代码"
           >
-            复制
+            <Copy className="code-copy-icon" size={15} aria-hidden="true" />
+            <Check
+              className="code-copy-success-icon"
+              size={15}
+              aria-hidden="true"
+            />
           </button>
-          <code
-            className={
-              highlighted.language
-                ? `hljs language-${highlighted.language}`
-                : "hljs"
-            }
-            dangerouslySetInnerHTML={{ __html: highlighted.html }}
-          />
-        </pre>
+          <pre className="syntax-highlight">
+            <code
+              className={
+                highlighted.language
+                  ? `hljs language-${highlighted.language}`
+                  : "hljs"
+              }
+              dangerouslySetInnerHTML={{ __html: highlighted.html }}
+            />
+          </pre>
+        </div>
       );
       continue;
     }

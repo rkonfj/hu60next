@@ -63,7 +63,7 @@ function highlightCodeBlocks(content: string) {
         ? ` data-language="${highlighted.language}"`
         : "";
 
-      return `<pre class="syntax-highlight"${languageLabel}><button class="code-copy-button" type="button" data-copy-code aria-label="复制代码">复制</button><code class="hljs${languageClass}">${highlighted.html}</code></pre>`;
+      return `<div class="code-block-shell"${languageLabel}><button class="code-copy-button" type="button" data-copy-code aria-label="复制代码"><svg class="code-copy-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><svg class="code-copy-success-icon" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg></button><pre class="syntax-highlight"><code class="hljs${languageClass}">${highlighted.html}</code></pre></div>`;
     }
   );
 }

@@ -1759,7 +1759,6 @@ select:focus-visible {
 
 .rich-content pre,
 .composer-preview pre {
-  position: relative;
   overflow-x: auto;
   margin: 18px 0;
   padding: 17px;
@@ -1772,6 +1771,18 @@ select:focus-visible {
   overflow-wrap: normal;
   tab-size: 2;
   word-break: normal;
+}
+
+.code-block-shell {
+  position: relative;
+  min-width: 0;
+  margin: 18px 0;
+}
+
+.rich-content .code-block-shell pre,
+.composer-preview .code-block-shell pre {
+  margin: 0;
+  padding-top: 32px;
 }
 
 .rich-content code,
@@ -1794,12 +1805,9 @@ select:focus-visible {
   white-space: pre;
 }
 
-.syntax-highlight[data-language] {
-  padding-top: 28px;
-}
-
-.syntax-highlight[data-language]::before {
+.code-block-shell[data-language]::before {
   position: absolute;
+  z-index: 1;
   top: 7px;
   left: 12px;
   color: #708177;
@@ -1813,25 +1821,48 @@ select:focus-visible {
 
 .code-copy-button {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   top: 6px;
   right: 7px;
-  min-height: 24px;
-  padding: 0 7px;
+  display: grid;
+  width: 28px;
+  height: 26px;
+  padding: 0;
   color: #9aaba0;
-  border: 1px solid #34453b;
+  border: 0;
   background: #1d2a22;
   cursor: pointer;
-  font-family: inherit;
-  font-size: 10px;
-  font-weight: 700;
+  place-items: center;
 }
 
 .code-copy-button:hover,
 .code-copy-button[data-copied="true"] {
   color: #b8ddc3;
-  border-color: #456454;
   background: #23372b;
+}
+
+.code-copy-button svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.code-copy-success-icon {
+  display: none;
+}
+
+.code-copy-button[data-copied="true"] .code-copy-icon {
+  display: none;
+}
+
+.code-copy-button[data-copied="true"] .code-copy-success-icon {
+  display: block;
+}
+
+.code-copy-button[data-copy-error="true"] {
+  color: #e18a88;
 }
 
 .hljs-comment,

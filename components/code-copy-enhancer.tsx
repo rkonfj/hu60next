@@ -32,13 +32,15 @@ export function CodeCopyEnhancer() {
       const button = target.closest<HTMLButtonElement>("[data-copy-code]");
       if (!button) return;
 
-      const code = button.closest("pre")?.querySelector("code");
+      const code =
+        button.closest(".code-block-shell")?.querySelector("code") ||
+        button.closest("pre")?.querySelector("code");
       if (!code) return;
 
       try {
         await copyText(code.textContent || "");
-        button.textContent = "已复制";
         button.dataset.copied = "true";
+        delete button.dataset.copyError;
         button.setAttribute("aria-label", "代码已复制");
 
         const existingTimer = resetTimers.get(button);
@@ -46,13 +48,14 @@ export function CodeCopyEnhancer() {
         resetTimers.set(
           button,
           window.setTimeout(() => {
-            button.textContent = "复制";
             delete button.dataset.copied;
+            delete button.dataset.copyError;
             button.setAttribute("aria-label", "复制代码");
           }, 1600)
         );
       } catch {
-        button.textContent = "复制失败";
+        button.dataset.copyError = "true";
+        button.setAttribute("aria-label", "复制失败，请重试");
       }
     };
 
@@ -62,4 +65,3 @@ export function CodeCopyEnhancer() {
 
   return null;
 }
-
