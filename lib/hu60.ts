@@ -31,10 +31,11 @@ const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
 const TOPICS_PER_PAGE = 30;
 const HONOR_TOPIC_SAMPLE_SIZE = 300;
+const HONOR_TOPIC_FETCH_SIZE = 360;
 const HONOR_ACTIVE_MINIMUM = 8;
 const HONOR_CACHE_SECONDS = 600;
 const HONOR_CACHE_KEY =
-  "https://hulvlin-next.rkonfj.chatgpt.site/__cache/honors-v3";
+  "https://hulvlin-next.rkonfj.chatgpt.site/__cache/honors-v4";
 // 16643 是 2012 年最后一位注册会员。
 const HONOR_LEGEND_UID_MAX = 16643;
 // HU60 的 UID 按注册顺序分配；21696 是 2016 年最后一位注册会员。
@@ -240,7 +241,7 @@ async function buildHonorRoll(): Promise<HonorRoll> {
   const response = await requestPublicJson<HonorTopicResponse>(
     "bbs.forum.0.1.0.json",
     {
-      pageSize: HONOR_TOPIC_SAMPLE_SIZE,
+      pageSize: HONOR_TOPIC_FETCH_SIZE,
       _topic_summary: 0,
       _uinfo: "name,avatar",
       _time: 1
@@ -260,7 +261,16 @@ async function buildHonorRoll(): Promise<HonorRoll> {
     };
   }
 
-  const topics = response.topicList.slice(0, HONOR_TOPIC_SAMPLE_SIZE);
+  const responseTime =
+    Number(response._time) || Math.floor(Date.now() / 1000);
+  const updatedAt =
+    Math.floor(responseTime / HONOR_CACHE_SECONDS) * HONOR_CACHE_SECONDS;
+  const topics = response.topicList
+    .filter(
+      (topic) =>
+        Number(topic.mtime || topic.ctime || 0) <= updatedAt
+    )
+    .slice(0, HONOR_TOPIC_SAMPLE_SIZE);
   const candidateMap = new Map<number, HonorCandidate>();
 
   for (const topic of topics) {
@@ -328,12 +338,7 @@ async function buildHonorRoll(): Promise<HonorRoll> {
   return {
     legacy,
     active,
-    updatedAt:
-      Number(response._time) ||
-      topics.reduce(
-        (latest, topic) => Math.max(latest, Number(topic.mtime) || 0),
-        0
-      )
+    updatedAt
   };
 }
 
@@ -367,17 +372,26 @@ export async function getHonorRoll(): Promise<HonorRoll> {
   const fresh = await buildHonorRoll();
   if (!fresh.__fallback) {
     honorMemoryCache = {
-      expiresAt: now + HONOR_CACHE_SECONDS * 1000,
+      expiresAt: fresh.updatedAt * 1000 + HONOR_CACHE_SECONDS * 1000,
       value: fresh
     };
 
     if (edgeCache) {
       try {
+        const remainingSeconds = Math.max(
+          1,
+          Math.ceil(
+            (fresh.updatedAt * 1000 +
+              HONOR_CACHE_SECONDS * 1000 -
+              now) /
+              1000
+          )
+        );
         await edgeCache.put(
           edgeCacheKey,
           new Response(JSON.stringify(fresh), {
             headers: {
-              "cache-control": `public, max-age=${HONOR_CACHE_SECONDS}`,
+              "cache-control": `public, max-age=${remainingSeconds}`,
               "content-type": "application/json; charset=utf-8"
             }
           })
