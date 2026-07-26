@@ -97,8 +97,14 @@ export function RegisterForm() {
           <LockKeyhole size={18} />
           <input
             name="pass"
-            type={showPassword ? "text" : "password"}
+            type="text"
+            inputMode="text"
             autoComplete="new-password"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            lang="zh-CN"
+            className={`chinese-password-input${showPassword ? "" : " masked"}`}
             required
             maxLength={200}
             placeholder="支持中文、表情及其它字符"
@@ -111,8 +117,14 @@ export function RegisterForm() {
           <LockKeyhole size={18} />
           <input
             name="pass2"
-            type={showPassword ? "text" : "password"}
+            type="text"
+            inputMode="text"
             autoComplete="new-password"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            lang="zh-CN"
+            className={`chinese-password-input${showPassword ? "" : " masked"}`}
             required
             maxLength={200}
             placeholder="再输入一次密码"

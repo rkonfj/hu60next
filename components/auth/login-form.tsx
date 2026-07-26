@@ -83,8 +83,14 @@ export function LoginForm({
           <LockKeyhole size={18} />
           <input
             name="pass"
-            type={showPassword ? "text" : "password"}
+            type="text"
+            inputMode="text"
             autoComplete="current-password"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            lang="zh-CN"
+            className={`chinese-password-input${showPassword ? "" : " masked"}`}
             required
             maxLength={200}
             placeholder="支持中文、表情及其它字符"

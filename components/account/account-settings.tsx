@@ -237,8 +237,14 @@ export function AccountSettings({
             <span>原密码</span>
             <input
               name="oldPassword"
-              type={showPassword ? "text" : "password"}
+              type="text"
+              inputMode="text"
               autoComplete="current-password"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              lang="zh-CN"
+              className={`chinese-password-input${showPassword ? "" : " masked"}`}
               required
               maxLength={200}
             />
@@ -247,8 +253,14 @@ export function AccountSettings({
             <span>新密码</span>
             <input
               name="newPassword"
-              type={showPassword ? "text" : "password"}
+              type="text"
+              inputMode="text"
               autoComplete="new-password"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              lang="zh-CN"
+              className={`chinese-password-input${showPassword ? "" : " masked"}`}
               required
               maxLength={200}
             />
@@ -257,8 +269,14 @@ export function AccountSettings({
             <span>确认新密码</span>
             <input
               name="confirmPassword"
-              type={showPassword ? "text" : "password"}
+              type="text"
+              inputMode="text"
               autoComplete="new-password"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              lang="zh-CN"
+              className={`chinese-password-input${showPassword ? "" : " masked"}`}
               required
               maxLength={200}
             />

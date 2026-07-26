@@ -2447,6 +2447,10 @@ body:has(> .auth-page) > .site-header {
   accent-color: var(--green);
 }
 
+.chinese-password-input.masked {
+  -webkit-text-security: disc;
+}
+
 .captcha-row {
   display: flex;
   align-items: stretch;

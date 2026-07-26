@@ -169,8 +169,14 @@ export function PasswordResetForm() {
               <LockKeyhole size={18} />
               <input
                 name="newPassword"
-                type={showPassword ? "text" : "password"}
+                type="text"
+                inputMode="text"
                 autoComplete="new-password"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                lang="zh-CN"
+                className={`chinese-password-input${showPassword ? "" : " masked"}`}
                 required
                 maxLength={200}
                 placeholder="输入新密码"
@@ -183,8 +189,14 @@ export function PasswordResetForm() {
               <LockKeyhole size={18} />
               <input
                 name="confirmPassword"
-                type={showPassword ? "text" : "password"}
+                type="text"
+                inputMode="text"
                 autoComplete="new-password"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                lang="zh-CN"
+                className={`chinese-password-input${showPassword ? "" : " masked"}`}
                 required
                 maxLength={200}
                 placeholder="再输入一次新密码"

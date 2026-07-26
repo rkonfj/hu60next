@@ -1,4 +1,4 @@
-import { Leaf, ShieldCheck } from "lucide-react";
+import { Leaf } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -66,9 +66,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <div className="mobile-auth-brand">
             <Brand />
           </div>
-          <span className="secure-label">
-            <ShieldCheck size={15} /> 服务端安全会话
-          </span>
           <h2>登录虎绿林</h2>
           <LoginForm
             redirectTo={redirectTo}
