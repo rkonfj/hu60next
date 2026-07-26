@@ -141,12 +141,19 @@ export default async function TopicPage({
               </div>
             </div>
             {mainFloor ? (
-              <div
-                className="rich-content"
-                dangerouslySetInnerHTML={{
-                  __html: sanitizeHu60Content(mainFloor.content)
-                }}
-              />
+              <>
+                <div
+                  className="rich-content"
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHu60Content(mainFloor.content)
+                  }}
+                />
+                {(mainFloor._u_signature || meta._u_signature)?.trim() ? (
+                  <div className="post-signature" aria-label="用户签名">
+                    {(mainFloor._u_signature || meta._u_signature)?.trim()}
+                  </div>
+                ) : null}
+              </>
             ) : (
               <p className="missing-content">帖子正文暂时无法显示。</p>
             )}
@@ -211,6 +218,11 @@ export default async function TopicPage({
                       __html: sanitizeHu60Content(floor.content)
                     }}
                   />
+                  {floor._u_signature?.trim() ? (
+                    <div className="post-signature" aria-label="用户签名">
+                      {floor._u_signature.trim()}
+                    </div>
+                  ) : null}
                   <div className="reply-actions">
                     {sessionUid > 0 &&
                     sessionUid === Number(floor.uid) &&

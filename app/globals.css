@@ -1822,6 +1822,29 @@ select:focus-visible {
   white-space: pre;
 }
 
+.post-signature {
+  position: relative;
+  margin-top: 13px;
+  padding-left: 16px;
+  color: var(--faint);
+  font-size: 10px;
+  line-height: 1.55;
+  opacity: 0.78;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.post-signature::before {
+  position: absolute;
+  top: 0.78em;
+  left: 0;
+  width: 9px;
+  height: 1px;
+  border-radius: 0 !important;
+  background: var(--line-strong);
+  content: "";
+}
+
 .code-block-shell[data-language]::before {
   position: absolute;
   z-index: 1;
