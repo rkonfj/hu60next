@@ -4970,12 +4970,6 @@ body :is(
     position: sticky;
     top: var(--sidebar-sticky-top);
     align-self: start;
-    height: max-content;
-    max-height: calc(100dvh - var(--sidebar-sticky-top) - 12px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-color: var(--line-strong) transparent;
-    scrollbar-width: thin;
   }
 }
 
