@@ -6,7 +6,8 @@ import {
   PenLine,
   Settings,
   Trophy,
-  UserRound
+  UserRound,
+  Users
 } from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
@@ -80,6 +81,13 @@ export default async function MePage() {
           <span>
             <strong>我的收藏</strong>
             <small>查看收藏的主题</small>
+          </span>
+        </Link>
+        <Link href="/relationships/follow">
+          <Users size={20} />
+          <span>
+            <strong>关注与屏蔽</strong>
+            <small>查看关注和屏蔽关系</small>
           </span>
         </Link>
         <Link href="/settings">

@@ -18,6 +18,8 @@ import type {
   HonorRoll,
   MessagesResponse,
   NewTopicFormResponse,
+  RelationshipResponse,
+  RelationshipType,
   SearchResponse,
   Topic,
   TopicResponse,
@@ -678,6 +680,33 @@ export async function getUserStatus(sid?: string): Promise<UserStatus> {
     anonymous,
     {
       headers: { "x-sid": sid },
+      cache: "no-store"
+    }
+  );
+}
+
+export async function getRelationships(
+  type: RelationshipType,
+  page = 1,
+  sid?: string
+): Promise<RelationshipResponse> {
+  return requestJson(
+    `user.relationship.${type}.json`,
+    {
+      page: Math.max(1, page),
+      pageSize: 30,
+      _time: 1
+    },
+    {
+      type,
+      title: "",
+      currPage: Math.max(1, page),
+      maxPage: Math.max(1, page),
+      userList: [],
+      __fallback: true
+    },
+    {
+      ...(sid ? { headers: { "x-sid": sid } } : {}),
       cache: "no-store"
     }
   );
