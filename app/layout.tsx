@@ -39,6 +39,11 @@ export default function RootLayout({
         <footer className="site-footer">
           <span>虎绿林</span>
           <span>让技术讨论持续生长</span>
+          <nav className="footer-theme-links" aria-label="主题选择">
+            <strong>主题</strong>
+            <a href="https://hu60.cn/q.php/link.tpl.jhin.html">Jhin</a>
+            <a href="https://hu60.cn/q.php/link.tpl.classic.html">经典</a>
+          </nav>
           <a
             href="https://beian.miit.gov.cn/"
             target="_blank"

@@ -1117,6 +1117,21 @@ select:focus-visible {
   font-weight: 800;
 }
 
+.footer-theme-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-theme-links strong {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.footer-theme-links a {
+  color: var(--faint);
+}
+
 .site-footer a:hover {
   color: var(--green);
 }
@@ -3976,8 +3991,12 @@ body:has(> .auth-page) > .site-header {
 
 .weekly-report-metrics article > div,
 .weekly-report-metrics strong,
-.weekly-report-metrics article span,
+.weekly-report-metrics article span:not(.weekly-metric-icon),
 .weekly-report-metrics small {
+  display: block;
+}
+
+.weekly-metric-icon svg {
   display: block;
 }
 
@@ -5943,9 +5962,12 @@ body :is(
 }
 
 .honor-score {
+  display: inline-flex;
+  align-items: center;
   color: var(--orange);
   font-size: 12px;
   font-weight: 850;
+  line-height: 1;
 }
 
 .honor-member-copy small {
@@ -6267,6 +6289,7 @@ body :is(
   }
 
   .honor-board.featured .honor-member-copy {
+    align-items: center;
     flex-direction: row;
     flex-wrap: wrap;
   }
@@ -6437,8 +6460,9 @@ body :is(
   border-radius: 0 !important;
 }
 
-.review-actions-shell.is-pending > .review-actions-row {
-  background: color-mix(in srgb, var(--orange) 14%, var(--surface));
+.review-actions-shell.is-pending {
+  border-top-width: 2px;
+  border-top-color: color-mix(in srgb, var(--orange) 72%, var(--line));
 }
 
 .review-actions-row {
@@ -6491,7 +6515,7 @@ body :is(
   gap: 4px;
 }
 
-.review-log-trigger {
+.review-actions-row > .review-log-trigger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -6500,9 +6524,9 @@ body :is(
   padding: 0 8px;
   color: var(--muted);
   cursor: pointer;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface-soft);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   font-size: 9px;
   font-weight: 750;
   gap: 4px;
