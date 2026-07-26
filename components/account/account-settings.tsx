@@ -270,7 +270,7 @@ export function AccountSettings({
               onChange={(event) => setShowPassword(event.target.checked)}
             />
             {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-            显示密码 / 输入中文密码
+            <span>显示密码 / 输入中文密码</span>
           </label>
           {passwordNotice ? (
             <p className={`settings-notice ${passwordNotice.kind}`}>

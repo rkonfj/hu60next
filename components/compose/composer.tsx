@@ -53,6 +53,52 @@ type UploadFormResult = {
   contentUbb?: string;
 };
 
+type SavedDraft = {
+  title?: string;
+  content?: string;
+  forumId?: number | null;
+  forumPath?: string[];
+};
+
+function restoreForumPicker(
+  rootForums: ForumTree[],
+  forumId?: number | null
+) {
+  if (!forumId) return null;
+
+  function findPath(
+    forums: ForumTree[],
+    path: ForumTree[] = []
+  ): ForumTree[] | null {
+    for (const forum of forums) {
+      const nextPath = [...path, forum];
+      if (forum.id === forumId) return nextPath;
+      const childPath = findPath(forum.child, nextPath);
+      if (childPath) return childPath;
+    }
+    return null;
+  }
+
+  const path = findPath(rootForums);
+  if (!path?.length) return null;
+
+  const levels: PickerLevel[] = [];
+  let options = rootForums;
+  for (const forum of path) {
+    levels.push({ options, selected: String(forum.id) });
+    options = forum.child;
+  }
+  if (options.length) {
+    levels.push({ options, selected: "" });
+  }
+
+  return {
+    levels,
+    targetForum: path.at(-1) ?? null,
+    forumPath: path.map((forum) => forum.name)
+  };
+}
+
 function formatFileSize(size: number) {
   if (size < 1024) return `${size} B`;
   if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
@@ -210,6 +256,8 @@ export function Composer({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [saved, setSaved] = useState(false);
+  const [draftNotice, setDraftNotice] = useState("");
+  const [draftNoticeError, setDraftNoticeError] = useState(false);
   const [levels, setLevels] = useState<PickerLevel[]>([
     { options: rootForums, selected: "" }
   ]);
@@ -225,9 +273,22 @@ export function Composer({
     try {
       const raw = localStorage.getItem("hulvlin-draft");
       if (!raw) return;
-      const draft = JSON.parse(raw) as { title?: string; content?: string };
+      const draft = JSON.parse(raw) as SavedDraft;
       setTitle(draft.title ?? "");
       setContent(draft.content ?? "");
+      const restored = restoreForumPicker(rootForums, draft.forumId);
+      if (restored) {
+        setLevels(restored.levels);
+        setTargetForum(restored.targetForum);
+        setForumPath(restored.forumPath);
+      }
+      setDraftNotice(
+        restored
+          ? "已恢复本地草稿和所选板块。"
+          : "已恢复本地草稿。"
+      );
+      setDraftNoticeError(false);
+      window.setTimeout(() => setDraftNotice(""), 2600);
     } catch {
       try {
         localStorage.removeItem("hulvlin-draft");
@@ -235,7 +296,7 @@ export function Composer({
         // The editor remains usable when browser storage is unavailable.
       }
     }
-  }, []);
+  }, [rootForums]);
 
   function saveDraft() {
     try {
@@ -244,17 +305,25 @@ export function Composer({
         JSON.stringify({
           title,
           content,
-          forumId:
-            targetForum && Number(targetForum.notopic) !== 1
-              ? targetForum.id
-              : null,
+          forumId: targetForum?.id ?? null,
           forumPath
         })
       );
       setSaved(true);
-      window.setTimeout(() => setSaved(false), 1800);
+      setDraftNoticeError(false);
+      setDraftNotice(
+        targetForum
+          ? `草稿已保存，板块：${forumPath.join(" / ")}`
+          : "草稿已保存，尚未选择板块。"
+      );
+      window.setTimeout(() => {
+        setSaved(false);
+        setDraftNotice("");
+      }, 2600);
     } catch {
       setSaved(false);
+      setDraftNoticeError(true);
+      setDraftNotice("草稿保存失败，请检查浏览器存储权限。");
     }
   }
 
@@ -633,6 +702,23 @@ export function Composer({
       <div className="composer-footer">
         {publishNotice ? (
           <span className="form-notice">{publishNotice}</span>
+        ) : draftNotice ? (
+          <span
+            className={
+              draftNoticeError
+                ? "form-notice"
+                : "form-notice draft-save-success"
+            }
+            role="status"
+            aria-live="polite"
+          >
+            {draftNoticeError ? (
+              <TriangleAlert size={14} />
+            ) : (
+              <CheckCircle2 size={14} />
+            )}
+            {draftNotice}
+          </span>
         ) : (
           <span>{content.length} 字</span>
         )}
