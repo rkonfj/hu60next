@@ -76,6 +76,9 @@ export default async function TopicPage({
     : getMemberTitle(authorProfile.regtime);
   const [mainFloor, ...replies] = topic.tContents;
   const meta = topic.tMeta;
+  const publishedAt = Number(mainFloor?.ctime ?? meta.ctime);
+  const editedAt = Number(mainFloor?.mtime ?? publishedAt);
+  const mainFloorEdited = editedAt !== publishedAt;
 
   return (
     <main className="page-shell topic-page">
@@ -108,11 +111,13 @@ export default async function TopicPage({
                 <div className="article-author-subline">
                   <span
                     className="article-author-time"
-                    title={fullDate(meta.ctime)}
+                    title={fullDate(publishedAt)}
                   >
                     <Clock3 size={14} />
-                    {relativeTime(meta.ctime)}
-                    {meta.mtime !== meta.ctime && " · 已编辑"}
+                    {relativeTime(publishedAt)}
+                    {mainFloorEdited
+                      ? ` · ${relativeTime(editedAt)}编辑`
+                      : ""}
                   </span>
                   <Link
                     href={`/forum/${topic.fIndex.at(-1)?.id ?? 0}`}
