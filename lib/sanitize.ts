@@ -64,6 +64,17 @@ function normalizeImageClass(value = "", src = "") {
   return [...new Set(classes)].join(" ");
 }
 
+function normalizeDivClass(value = "") {
+  const classes = value.split(/\s+/).filter(Boolean);
+  if (
+    classes.includes("info-box") ||
+    classes.includes("userblocked")
+  ) {
+    classes.push("hu60-system-notice");
+  }
+  return [...new Set(classes)].join(" ");
+}
+
 export function sanitizeHu60Content(content: string) {
   return sanitizeHtml(content, {
     allowedTags: [
@@ -123,6 +134,10 @@ export function sanitizeHu60Content(content: string) {
       "*": [
         "markdown-body",
         "hu60_face",
+        "hu60-system-notice",
+        "info-box",
+        "tp",
+        "userblocked",
         "userlink",
         "userimg",
         "userinfo",
@@ -157,6 +172,16 @@ export function sanitizeHu60Content(content: string) {
             ...(className ? { class: className } : {}),
             loading: "lazy",
             decoding: "async"
+          }
+        };
+      },
+      div: (_tagName, attribs) => {
+        const className = normalizeDivClass(attribs.class);
+        return {
+          tagName: "div",
+          attribs: {
+            ...attribs,
+            ...(className ? { class: className } : {})
           }
         };
       }

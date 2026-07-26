@@ -41,6 +41,45 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.navigation-progress {
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.navigation-progress.active {
+  opacity: 1;
+}
+
+.navigation-progress::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -38%;
+  width: 38%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--green),
+    #72d7a5
+  );
+  content: "";
+  animation: navigation-progress-slide 900ms ease-in-out infinite;
+}
+
+@keyframes navigation-progress-slide {
+  to {
+    transform: translateX(365%);
+  }
+}
+
 :where(main, section, article, aside, nav, header, footer, div, form, label) {
   min-width: 0;
 }
@@ -1706,6 +1745,35 @@ select:focus-visible {
   margin: 28px 0;
   border: 0;
   border-top: 1px solid var(--line);
+}
+
+.rich-content .hu60-system-notice {
+  margin: 12px 0;
+  padding: 10px 12px;
+  color: var(--muted);
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--green);
+  background: var(--surface-soft);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.rich-content .hu60-system-notice::before {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--green);
+  content: "系统提示";
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.rich-content .hu60-system-notice > :first-child {
+  margin-top: 0;
+}
+
+.rich-content .hu60-system-notice > :last-child {
+  margin-bottom: 0;
 }
 
 .article-actions {
@@ -4988,5 +5056,12 @@ body :is(
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .navigation-progress::before {
+    right: 0;
+    left: 0;
+    width: auto;
+    transform: none;
   }
 }
