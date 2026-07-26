@@ -10,6 +10,7 @@ import { Avatar } from "@/components/avatar";
 import { fullDate } from "@/lib/format";
 import { getHonorRoll } from "@/lib/hu60";
 import type { HonorMember } from "@/lib/types";
+import { getWeeklyMvpRanking } from "@/lib/weekly-report";
 
 export const metadata: Metadata = {
   title: "社区荣誉",
@@ -24,6 +25,7 @@ function HonorBoard({
   honorLabel,
   members,
   showMemberTitle = false,
+  featured = false,
   icon: Icon
 }: {
   title: string;
@@ -31,10 +33,11 @@ function HonorBoard({
   honorLabel?: string;
   members: HonorMember[];
   showMemberTitle?: boolean;
+  featured?: boolean;
   icon: typeof Award;
 }) {
   return (
-    <section className="honor-board">
+    <section className={`honor-board${featured ? " featured" : ""}`}>
       <header className="honor-board-heading">
         <span className="honor-board-icon" aria-hidden="true">
           <Icon size={19} />
@@ -64,6 +67,14 @@ function HonorBoard({
                       {member.memberTitle}
                     </span>
                   ) : null}
+                  {member.weeklyScore !== undefined ? (
+                    <span className="honor-score">
+                      {member.weeklyScore} 分
+                    </span>
+                  ) : null}
+                  {member.weeklySummary ? (
+                    <small>{member.weeklySummary}</small>
+                  ) : null}
                 </span>
                 <ChevronRight size={16} aria-hidden="true" />
               </Link>
@@ -78,7 +89,11 @@ function HonorBoard({
 }
 
 export default async function HonorsPage() {
-  const honors = await getHonorRoll();
+  const [honors, mvp] = await Promise.all([
+    getHonorRoll(),
+    getWeeklyMvpRanking()
+  ]);
+  const updatedAt = Math.max(honors.updatedAt, mvp.updatedAt);
 
   return (
     <main className="page-shell content-page honors-page">
@@ -91,20 +106,28 @@ export default async function HonorsPage() {
           <h1>熟悉的名字，持续生长的讨论</h1>
           <p>记录近期为社区带来持续讨论的成员，荣誉名单动态更新。</p>
         </div>
-        {honors.updatedAt ? (
-          <time dateTime={new Date(honors.updatedAt * 1000).toISOString()}>
-            更新于 {fullDate(honors.updatedAt)}
+        {updatedAt ? (
+          <time dateTime={new Date(updatedAt * 1000).toISOString()}>
+            更新于 {fullDate(updatedAt)}
           </time>
         ) : null}
       </header>
 
-      {honors.__fallback ? (
+      {honors.__fallback || mvp.__fallback ? (
         <div className="data-notice">
-          暂时无法读取本期荣誉，请稍后刷新重试。
+          部分荣誉数据暂时不可用，请稍后刷新重试。
         </div>
       ) : null}
 
       <div className="honors-grid">
+        <HonorBoard
+          title="本周交流 MVP"
+          description="按交流人数、破冰回复和带动讨论延续综合计算"
+          honorLabel="本周 MVP"
+          members={mvp.members}
+          featured
+          icon={Trophy}
+        />
         <HonorBoard
           title="活跃荣誉"
           description="感谢让讨论持续发生的熟悉身影"
@@ -120,6 +143,11 @@ export default async function HonorsPage() {
           icon={Award}
         />
       </div>
+      {mvp.partial ? (
+        <p className="honor-partial">
+          本期 MVP 根据最近一部分公开交流记录计算。
+        </p>
+      ) : null}
     </main>
   );
 }

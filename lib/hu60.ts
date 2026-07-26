@@ -36,8 +36,6 @@ const HONOR_TOPIC_SAMPLE_SIZE = 300;
 const HONOR_TOPIC_FETCH_SIZE = 360;
 const HONOR_ACTIVE_MINIMUM = 8;
 const HONOR_CACHE_SECONDS = 600;
-const HONOR_CACHE_KEY =
-  "https://hulvlin-next.rkonfj.chatgpt.site/__cache/honors-v4";
 // 16643 是 2012 年最后一位注册会员。
 const HONOR_LEGEND_UID_MAX = 16643;
 // HU60 的 UID 按注册顺序分配；21696 是 2016 年最后一位注册会员。
@@ -193,6 +191,31 @@ export async function getGlobalTopics(
   );
 }
 
+export async function getWeeklyGlobalTopicsPage(
+  page = 1,
+  pageSize = 100
+): Promise<ForumsResponse> {
+  const safePageSize = Math.min(100, Math.max(1, Math.trunc(pageSize) || 100));
+
+  return requestPublicJson(
+    `bbs.forum.0.${Math.max(1, Math.trunc(page) || 1)}.0.json`,
+    {
+      pageSize: safePageSize,
+      _topic_summary: 0,
+      _uinfo: "name,avatar",
+      _time: 1,
+      _json: "compact"
+    },
+    {
+      ...fallbackForums,
+      currPage: Math.max(1, Math.trunc(page) || 1),
+      maxPage: 1,
+      topicList: [],
+      __fallback: true
+    }
+  );
+}
+
 type HonorTopicResponse = {
   topicList: Topic[] | null;
   _time?: number;
@@ -210,20 +233,7 @@ let honorMemoryCache:
       value: HonorRoll;
     }
   | undefined;
-
-async function getHonorEdgeCache() {
-  const cacheStorage = globalThis.caches as
-    | (CacheStorage & { default?: Cache })
-    | undefined;
-  if (!cacheStorage) return undefined;
-  if (cacheStorage.default) return cacheStorage.default;
-
-  try {
-    return await cacheStorage.open("hulvlin-honors");
-  } catch {
-    return undefined;
-  }
-}
+let honorBuildPromise: Promise<HonorRoll> | undefined;
 
 async function getEarlyMemberTitle(uid: number) {
   const profile = await requestPublicJson<UserProfile>(
@@ -350,61 +360,22 @@ export async function getHonorRoll(): Promise<HonorRoll> {
     return honorMemoryCache.value;
   }
 
-  const edgeCache = await getHonorEdgeCache();
-  const edgeCacheKey = new Request(HONOR_CACHE_KEY);
-  if (edgeCache) {
-    try {
-      const cachedResponse = await edgeCache.match(edgeCacheKey);
-      if (cachedResponse) {
-        const cached = (await cachedResponse.json()) as HonorRoll;
-        honorMemoryCache = {
-          expiresAt: Math.max(
-            now + 1000,
-            cached.updatedAt * 1000 + HONOR_CACHE_SECONDS * 1000
-          ),
-          value: cached
-        };
-        return cached;
-      }
-    } catch {
-      // Local Next.js and non-Cloudflare runtimes may not expose Cache API.
-    }
+  if (!honorBuildPromise) {
+    honorBuildPromise = buildHonorRoll();
   }
 
-  const fresh = await buildHonorRoll();
-  if (!fresh.__fallback) {
-    honorMemoryCache = {
-      expiresAt: fresh.updatedAt * 1000 + HONOR_CACHE_SECONDS * 1000,
-      value: fresh
-    };
-
-    if (edgeCache) {
-      try {
-        const remainingSeconds = Math.max(
-          1,
-          Math.ceil(
-            (fresh.updatedAt * 1000 +
-              HONOR_CACHE_SECONDS * 1000 -
-              now) /
-              1000
-          )
-        );
-        await edgeCache.put(
-          edgeCacheKey,
-          new Response(JSON.stringify(fresh), {
-            headers: {
-              "cache-control": `public, max-age=${remainingSeconds}`,
-              "content-type": "application/json; charset=utf-8"
-            }
-          })
-        );
-      } catch {
-        // The in-memory cache remains available when edge storage is absent.
-      }
+  try {
+    const fresh = await honorBuildPromise;
+    if (!fresh.__fallback) {
+      honorMemoryCache = {
+        expiresAt: Date.now() + HONOR_CACHE_SECONDS * 1000,
+        value: fresh
+      };
     }
+    return fresh;
+  } finally {
+    honorBuildPromise = undefined;
   }
-
-  return fresh;
 }
 
 export async function getForums(): Promise<ForumsResponse> {
@@ -657,6 +628,68 @@ export async function getUserReplies(
       currPage: 1,
       maxPage: 1,
       replyList: [],
+      __fallback: true
+    }
+  );
+}
+
+export async function getWeeklyReplyFeedPage(
+  page = 1,
+  pageSize = 100
+): Promise<UserRepliesResponse> {
+  const safePageSize = Math.min(100, Math.max(1, Math.trunc(pageSize) || 100));
+
+  return requestPublicJson(
+    "bbs.search.json",
+    {
+      keywords: "",
+      searchType: "reply",
+      p: Math.max(1, Math.trunc(page) || 1),
+      pageSize: safePageSize,
+      showBot: 0,
+      _content: "text",
+      _uinfo: "name,avatar",
+      _time: 1,
+      _json: "compact"
+    },
+    {
+      success: false,
+      uid: null,
+      replyCount: 0,
+      currPage: Math.max(1, Math.trunc(page) || 1),
+      maxPage: 1,
+      replyList: [],
+      __fallback: true
+    }
+  );
+}
+
+export async function getWeeklyUserTopicsPage(
+  username: string,
+  page = 1,
+  pageSize = 100
+): Promise<SearchResponse> {
+  const safePageSize = Math.min(100, Math.max(1, Math.trunc(pageSize) || 100));
+
+  return requestPublicJson(
+    "bbs.search.json",
+    {
+      keywords: "",
+      username,
+      order: "ctime",
+      p: Math.max(1, Math.trunc(page) || 1),
+      pageSize: safePageSize,
+      _uinfo: "name,avatar",
+      _time: 1,
+      _json: "compact"
+    },
+    {
+      success: false,
+      uid: null,
+      topicCount: 0,
+      currPage: Math.max(1, Math.trunc(page) || 1),
+      maxPage: 1,
+      topicList: [],
       __fallback: true
     }
   );

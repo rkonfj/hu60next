@@ -74,6 +74,8 @@ export type HonorMember = {
   name: string;
   avatar?: string | null;
   memberTitle?: string | null;
+  weeklyScore?: number;
+  weeklySummary?: string;
 };
 
 export type HonorRoll = {
@@ -185,18 +187,29 @@ export type UserReply = {
   id: number;
   topic_id: number;
   uid: number;
+  reply_id: number;
   floor: number;
   ctime: number;
   mtime: number;
   content: string;
+  flags?: number;
+  locked?: number;
+  review?: number;
   _u_name?: string | null;
   _u_avatar?: string | null;
   _u_signature?: string | null;
+  uinfo?: { name?: string | null };
   topic: {
     id: number;
+    content_id?: number;
     title: string;
+    uid: number;
+    ctime: number;
+    mtime: number;
     forum_id: number;
     read_count?: number;
+    _u_name?: string | null;
+    _u_avatar?: string | null;
     _topic_summary?: string | null;
   };
 };
@@ -209,6 +222,46 @@ export type UserRepliesResponse = {
   maxPage: number;
   replyList: UserReply[];
   _time?: number;
+  __fallback?: boolean;
+};
+
+export type WeeklyReportStats = {
+  topicsCreated: number;
+  repliesMade: number;
+  repliesReceived: number;
+  discussionsJoined: number;
+  peopleInteracted: number;
+  firstReplies: number;
+  continuedDiscussions: number;
+  activeDays: number;
+  forumsVisited: number;
+};
+
+export type WeeklyReportHighlight = {
+  topicId: number;
+  title: string;
+  forumId: number;
+  participants: number;
+  activityCount: number;
+  latestAt: number;
+};
+
+export type PersonalWeeklyReport = {
+  uid: number;
+  periodStart: number;
+  periodEnd: number;
+  updatedAt: number;
+  current: WeeklyReportStats;
+  previous: WeeklyReportStats;
+  highlights: WeeklyReportHighlight[];
+  partial?: boolean;
+  __fallback?: boolean;
+};
+
+export type WeeklyMvpRanking = {
+  members: HonorMember[];
+  updatedAt: number;
+  partial?: boolean;
   __fallback?: boolean;
 };
 
