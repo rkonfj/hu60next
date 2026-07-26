@@ -44,6 +44,11 @@ export type ForumTree = {
   child: ForumTree[];
 };
 
+export type ForumFace = {
+  name: string;
+  url: string;
+};
+
 export type NewTopicFormResponse = {
   isLogin?: boolean | null;
   token?: string;

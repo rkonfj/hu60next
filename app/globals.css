@@ -1904,6 +1904,20 @@ select:focus-visible {
   box-shadow: 0 0 0 4px rgba(22, 122, 82, 0.08);
 }
 
+.reply-editor-tools {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  border-bottom: 1px solid var(--line);
+}
+
+.reply-editor-tools .face-picker > summary {
+  min-height: 32px;
+  padding: 0 7px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
 .reply-composer-footer {
   display: flex;
   align-items: center;
@@ -2634,6 +2648,85 @@ body:has(> .auth-page) > .site-header {
   background: var(--green-soft);
 }
 
+.face-picker {
+  position: relative;
+}
+
+.face-picker > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 8px;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+  gap: 5px;
+}
+
+.face-picker > summary::-webkit-details-marker {
+  display: none;
+}
+
+.editor-toolbar .face-picker > summary {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+}
+
+.editor-toolbar .face-picker > summary span {
+  display: none;
+}
+
+.face-picker[open] > summary,
+.face-picker > summary:hover {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.face-picker-popover {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  width: min(322px, calc(100vw - 40px));
+  padding: 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.face-picker-grid {
+  display: grid;
+  max-height: 230px;
+  overflow-y: auto;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.face-picker-grid button,
+.editor-toolbar .face-picker-grid button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  padding: 1px;
+  border: 1px solid transparent;
+  background: transparent;
+  place-items: center;
+}
+
+.face-picker-grid button:hover,
+.editor-toolbar .face-picker-grid button:hover {
+  border-color: var(--line);
+  background: var(--surface-soft);
+}
+
+.face-picker-grid img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
 .attachment-input {
   display: none;
 }
@@ -2745,6 +2838,19 @@ body:has(> .auth-page) > .site-header {
   max-height: 520px;
   margin: 8px 0;
   object-fit: contain;
+}
+
+.composer-preview img.hu60_face {
+  display: inline-block;
+  width: auto;
+  max-width: 32px;
+  height: auto;
+  max-height: 32px;
+  margin: 0 0.12em;
+  border: 0;
+  border-radius: 0 !important;
+  background: transparent;
+  vertical-align: middle;
 }
 
 .composer-attachment-preview {

@@ -9,6 +9,7 @@ import type {
   ChatResponse,
   AccountProfile,
   FavoriteTopicsResponse,
+  ForumFace,
   ForumTree,
   ForumsResponse,
   HomeResponse,
@@ -82,6 +83,22 @@ export function avatarUrl(value?: string | null) {
   if (value.startsWith("//")) return `https:${value}`;
   if (value.startsWith("/")) return `https://hu60.cn${value}`;
   return value.replace("http://", "https://");
+}
+
+export async function getFaces(): Promise<ForumFace[]> {
+  const response = await requestJson(
+    "api.face.json",
+    {},
+    {
+      success: false,
+      faceList: {} as Record<string, string>
+    }
+  );
+
+  return Object.entries(response.faceList ?? {}).map(([name, url]) => ({
+    name,
+    url: url.startsWith("/") ? `https://hu60.cn${url}` : url
+  }));
 }
 
 export async function getActiveTopics(

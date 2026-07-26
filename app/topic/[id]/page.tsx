@@ -14,7 +14,12 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { Pagination } from "@/components/pagination";
 import { ReplyForm } from "@/components/reply-form";
 import { compactNumber, fullDate, relativeTime } from "@/lib/format";
-import { getTopic, getUserProfile, isTopicFavorite } from "@/lib/hu60";
+import {
+  getFaces,
+  getTopic,
+  getUserProfile,
+  isTopicFavorite
+} from "@/lib/hu60";
 import { getMemberTitle } from "@/lib/member";
 import { sanitizeHu60Content } from "@/lib/sanitize";
 
@@ -43,9 +48,10 @@ export default async function TopicPage({
   const page = Math.max(1, Number(query.page) || 1);
   const cookieStore = await cookies();
   const sid = cookieStore.get("hulvlin_sid")?.value;
-  const [topic, isFavorite] = await Promise.all([
+  const [topic, isFavorite, faces] = await Promise.all([
     getTopic(topicId, page, sid),
-    isTopicFavorite(topicId, sid)
+    isTopicFavorite(topicId, sid),
+    getFaces()
   ]);
 
   if (topic.__fallback) {
@@ -206,6 +212,7 @@ export default async function TopicPage({
             <ReplyForm
               topicId={topicId}
               token={topic.token}
+              faces={faces}
               initialNotice={
                 query.replyError ? "回复失败，请检查内容后重试。" : ""
               }

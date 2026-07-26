@@ -11,7 +11,6 @@ import {
   Paperclip,
   Save,
   Send,
-  Smile,
   TriangleAlert
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -24,7 +23,8 @@ import {
   useState
 } from "react";
 import SparkMD5 from "spark-md5";
-import type { ForumTree } from "@/lib/types";
+import { FacePicker } from "@/components/face-picker";
+import type { ForumFace, ForumTree } from "@/lib/types";
 
 type PickerLevel = {
   options: ForumTree[];
@@ -164,9 +164,12 @@ function uploadToObjectStorage(
   });
 }
 
-function renderInline(text: string): ReactNode[] {
+function renderInline(
+  text: string,
+  faceMap: Map<string, string>
+): ReactNode[] {
   const parts = text.split(
-    /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\((?:https?:\/\/|\/)[^)]+\))/g
+    /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\((?:https?:\/\/|\/)[^)]+\)|\{[^{}]{1,16}\})/g
   );
 
   return parts.map((part, index) => {
@@ -186,14 +189,37 @@ function renderInline(text: string): ReactNode[] {
       );
     }
 
+    const faceName = part.match(/^\{([^{}]{1,16})\}$/)?.[1];
+    const faceUrl = faceName ? faceMap.get(faceName) : undefined;
+    if (faceName && faceUrl) {
+      return (
+        <img
+          className="hu60_face"
+          src={faceUrl}
+          alt={faceName}
+          title={faceName}
+          loading="lazy"
+          key={index}
+        />
+      );
+    }
+
     return part;
   });
 }
 
-function ComposerPreview({ content }: { content: string }) {
+function ComposerPreview({
+  content,
+  faces
+}: {
+  content: string;
+  faces: ForumFace[];
+}) {
   if (!content) {
     return <span>还没有可以预览的内容。</span>;
   }
+
+  const faceMap = new Map(faces.map((face) => [face.name, face.url]));
 
   return content.split("\n").map((line, index) => {
     const attachment = line
@@ -228,28 +254,36 @@ function ComposerPreview({ content }: { content: string }) {
       return <img alt={image[1]} key={index} loading="lazy" src={image[2]} />;
     }
     if (line.startsWith("### ")) {
-      return <h4 key={index}>{renderInline(line.slice(4))}</h4>;
+      return <h4 key={index}>{renderInline(line.slice(4), faceMap)}</h4>;
     }
     if (line.startsWith("## ")) {
-      return <h3 key={index}>{renderInline(line.slice(3))}</h3>;
+      return <h3 key={index}>{renderInline(line.slice(3), faceMap)}</h3>;
     }
     if (line.startsWith("# ")) {
-      return <h2 key={index}>{renderInline(line.slice(2))}</h2>;
+      return <h2 key={index}>{renderInline(line.slice(2), faceMap)}</h2>;
     }
     if (line.startsWith("> ")) {
-      return <blockquote key={index}>{renderInline(line.slice(2))}</blockquote>;
+      return (
+        <blockquote key={index}>
+          {renderInline(line.slice(2), faceMap)}
+        </blockquote>
+      );
     }
 
-    return <p key={index}>{line ? renderInline(line) : <br />}</p>;
+    return (
+      <p key={index}>{line ? renderInline(line, faceMap) : <br />}</p>
+    );
   });
 }
 
 export function Composer({
   rootForums,
-  isLogin
+  isLogin,
+  faces
 }: {
   rootForums: ForumTree[];
   isLogin: boolean;
+  faces: ForumFace[];
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<"write" | "preview">("write");
@@ -339,6 +373,24 @@ export function Composer({
       const spacer = prefix && !prefix.endsWith("\n") ? "\n" : "";
       cursor = start + spacer.length + text.length;
       return `${prefix}${spacer}${text}${suffix}`;
+    });
+    setMode("write");
+
+    window.requestAnimationFrame(() => {
+      textAreaRef.current?.focus();
+      textAreaRef.current?.setSelectionRange(cursor, cursor);
+    });
+  }
+
+  function insertInlineText(text: string) {
+    const textarea = textAreaRef.current;
+    let cursor = 0;
+
+    setContent((value) => {
+      const start = textarea?.selectionStart ?? value.length;
+      const end = textarea?.selectionEnd ?? start;
+      cursor = start + text.length;
+      return `${value.slice(0, start)}${text}${value.slice(end)}`;
     });
     setMode("write");
 
@@ -627,14 +679,10 @@ export function Composer({
             >
               <Paperclip size={16} />
             </button>
-            <button
-              type="button"
-              onClick={() => insertText("🙂")}
-              aria-label="插入表情"
-              title="插入表情"
-            >
-              <Smile size={16} />
-            </button>
+            <FacePicker
+              faces={faces}
+              onSelect={(face) => insertInlineText(`{${face.name}}`)}
+            />
             <input
               ref={fileInputRef}
               className="attachment-input"
@@ -695,7 +743,7 @@ export function Composer({
           />
         ) : (
           <div className="composer-preview">
-            <ComposerPreview content={content} />
+            <ComposerPreview content={content} faces={faces} />
           </div>
         )}
       </div>

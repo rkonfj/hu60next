@@ -1,12 +1,15 @@
 import { PenLine, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import { Composer } from "@/components/compose/composer";
-import { getNewTopicForm } from "@/lib/hu60";
+import { getFaces, getNewTopicForm } from "@/lib/hu60";
 
 export const metadata: Metadata = { title: "发起讨论" };
 
 export default async function ComposePage() {
-  const form = await getNewTopicForm();
+  const [form, faces] = await Promise.all([
+    getNewTopicForm(),
+    getFaces()
+  ]);
 
   return (
     <main className="page-shell narrow-page compose-page">
@@ -32,6 +35,7 @@ export default async function ComposePage() {
       <Composer
         rootForums={form.forums}
         isLogin={form.isLogin === true}
+        faces={faces}
       />
     </main>
   );

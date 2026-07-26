@@ -2,23 +2,47 @@
 
 import { LoaderCircle, Reply } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
+import { FacePicker } from "@/components/face-picker";
+import type { ForumFace } from "@/lib/types";
 
 type ReplyFormProps = {
   topicId: number;
   token: string;
+  faces: ForumFace[];
   initialNotice?: string;
 };
 
 export function ReplyForm({
   topicId,
   token,
+  faces,
   initialNotice = ""
 }: ReplyFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState(initialNotice);
   const [success, setSuccess] = useState(false);
+  const [content, setContent] = useState("");
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+
+  function insertFace(face: ForumFace) {
+    const textarea = textAreaRef.current;
+    const text = `{${face.name}}`;
+    let cursor = 0;
+
+    setContent((value) => {
+      const start = textarea?.selectionStart ?? value.length;
+      const end = textarea?.selectionEnd ?? start;
+      cursor = start + text.length;
+      return `${value.slice(0, start)}${text}${value.slice(end)}`;
+    });
+
+    window.requestAnimationFrame(() => {
+      textAreaRef.current?.focus();
+      textAreaRef.current?.setSelectionRange(cursor, cursor);
+    });
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -43,6 +67,7 @@ export function ReplyForm({
       }
 
       form.reset();
+      setContent("");
       setSuccess(true);
       setNotice("回复已发布。");
       router.refresh();
@@ -67,13 +92,19 @@ export function ReplyForm({
         <span>已识别登录状态，回复将直接发布。</span>
       </div>
       <textarea
+        ref={textAreaRef}
         name="content"
+        value={content}
+        onChange={(event) => setContent(event.target.value)}
         required
         minLength={1}
         maxLength={20000}
         placeholder="写下你的回复…"
         aria-label="回复内容"
       />
+      <div className="reply-editor-tools">
+        <FacePicker faces={faces} onSelect={insertFace} />
+      </div>
       <div className="reply-composer-footer">
         {notice ? (
           <p className={success ? "reply-success" : "form-notice"}>
