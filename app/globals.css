@@ -3956,7 +3956,7 @@ body:has(> .auth-page) > .site-header {
 /* Loading */
 .loading-page {
   max-width: 900px;
-  padding: 45px 0;
+  padding: 14px 0 30px;
 }
 
 .skeleton {
@@ -3979,6 +3979,12 @@ body:has(> .auth-page) > .site-header {
 .skeleton-card {
   height: 160px;
   margin-bottom: 10px;
+}
+
+@media (max-width: 640px) {
+  .loading-page {
+    padding-top: 8px;
+  }
 }
 
 @keyframes shimmer {
