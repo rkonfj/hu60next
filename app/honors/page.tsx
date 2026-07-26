@@ -23,12 +23,14 @@ function HonorBoard({
   description,
   honor,
   members,
+  showMemberTitle = false,
   icon: Icon
 }: {
   title: string;
   description: string;
   honor: string;
   members: HonorMember[];
+  showMemberTitle?: boolean;
   icon: typeof Award;
 }) {
   return (
@@ -56,7 +58,7 @@ function HonorBoard({
                   <strong>{member.name}</strong>
                   <span className="honor-label">{honor}</span>
                 </span>
-                {member.memberTitle ? (
+                {showMemberTitle && member.memberTitle ? (
                   <span className="member-badge honor-member-badge">
                     {member.memberTitle}
                   </span>
@@ -113,6 +115,7 @@ export default async function HonorsPage() {
           description="致敬近期仍在社区留下作品的老朋友"
           honor="资历荣誉"
           members={honors.legacy}
+          showMemberTitle
           icon={Award}
         />
       </div>
