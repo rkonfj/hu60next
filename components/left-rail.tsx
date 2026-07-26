@@ -13,9 +13,9 @@ import type { Forum } from "@/lib/types";
 
 const icons = [Laptop, PanelsTopLeft, Bot, Smartphone, Blocks, Megaphone];
 
-export function LeftRail({ forums }: { forums: Forum[] }) {
+export function CommunityRail({ forums }: { forums: Forum[] }) {
   return (
-    <aside className="left-rail">
+    <aside className="community-rail">
       <div className="rail-title">
         <span>社区版块</span>
         <Link href="/forums">全部</Link>

@@ -5,7 +5,7 @@ import {
   Sparkles
 } from "lucide-react";
 import Link from "next/link";
-import { LeftRail } from "@/components/left-rail";
+import { CommunityRail } from "@/components/left-rail";
 import { Pagination } from "@/components/pagination";
 import { TopicCard } from "@/components/topic-card";
 import {
@@ -59,7 +59,6 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
 
   return (
     <main className="page-shell home-grid">
-        <LeftRail forums={forums.childForum} />
       <section className="feed-column">
         {feed.__fallback && (
           <div className="data-notice">
@@ -112,6 +111,7 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
           path={`/explore/${activeTab}`}
         />
       </section>
+      <CommunityRail forums={forums.childForum} />
     </main>
   );
 }

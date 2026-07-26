@@ -390,13 +390,14 @@ select:focus-visible {
 
 .home-grid {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 300px;
   padding: 14px 0 70px;
   gap: 28px;
 }
 
 .left-rail,
-.right-rail {
+.right-rail,
+.community-rail {
   position: sticky;
   top: 96px;
   align-self: start;
@@ -4366,7 +4367,7 @@ body:has(> .auth-page) > .site-header {
 
 @media (max-width: 1180px) {
   .home-grid {
-    grid-template-columns: 260px minmax(500px, 1fr);
+    grid-template-columns: minmax(500px, 1fr) 260px;
   }
 
   .right-rail {
@@ -4434,6 +4435,10 @@ body:has(> .auth-page) > .site-header {
   }
 
   .left-rail {
+    display: none;
+  }
+
+  .community-rail {
     display: none;
   }
 
@@ -4965,13 +4970,36 @@ body :is(
 }
 
 .left-rail,
-.right-rail {
+.right-rail,
+.community-rail {
   top: 70px;
 }
 
 @media (min-width: 901px) {
+  .header-inner {
+    display: grid;
+    width: min(1240px, calc(100% - 44px));
+    grid-template-columns: auto auto minmax(0, 1fr) 300px;
+    gap: 18px;
+  }
+
+  .header-search {
+    width: min(520px, 100%);
+    margin: 0;
+    justify-self: end;
+  }
+
+  .header-actions {
+    justify-self: end;
+  }
+
+  .session-user {
+    max-width: 140px;
+  }
+
   .left-rail,
-  .right-rail {
+  .right-rail,
+  .community-rail {
     --sidebar-sticky-top: 66px;
   }
 
@@ -4983,7 +5011,7 @@ body :is(
     --sidebar-sticky-top: 72px;
   }
 
-  :is(.left-rail, .right-rail, .forum-sidebar, .topic-aside) {
+  :is(.left-rail, .right-rail, .community-rail, .forum-sidebar, .topic-aside) {
     position: fixed;
     z-index: 5;
     top: var(--sidebar-sticky-top);
@@ -4994,19 +5022,23 @@ body :is(
     width: 300px;
   }
 
-  :is(.right-rail, .forum-sidebar, .topic-aside) {
+  :is(.right-rail, .community-rail, .forum-sidebar, .topic-aside) {
     right: max(22px, calc((100% - 1240px) / 2));
     width: 300px;
   }
 
   .feed-column {
-    grid-column: 2;
+    grid-column: 1;
   }
 }
 
 @media (min-width: 901px) and (max-width: 1180px) {
+  .header-inner {
+    grid-template-columns: auto auto minmax(0, 1fr) 260px;
+  }
+
   .left-rail,
-  :is(.right-rail, .forum-sidebar, .topic-aside) {
+  :is(.right-rail, .community-rail, .forum-sidebar, .topic-aside) {
     width: 260px;
   }
 }
@@ -5099,7 +5131,11 @@ body :is(
 }
 
 .topic-layout {
-  gap: 12px;
+  gap: 18px;
+}
+
+.forum-layout {
+  gap: 18px;
 }
 
 .topic-article {
