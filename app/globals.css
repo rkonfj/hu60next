@@ -5191,7 +5191,7 @@ body :is(
   display: grid;
   align-items: start;
   margin-top: 14px;
-  grid-template-columns: minmax(0, 1.65fr) minmax(310px, 0.9fr);
+  grid-template-columns: minmax(310px, 0.9fr) minmax(0, 1.65fr);
   gap: 14px;
 }
 
@@ -5308,6 +5308,11 @@ body :is(
 .honor-member > svg {
   flex: 0 0 auto;
   color: var(--faint);
+}
+
+.honor-member-badge {
+  flex: 0 0 auto;
+  margin: 0;
 }
 
 .honor-member:hover strong,

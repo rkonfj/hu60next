@@ -25,12 +25,15 @@ import type {
   UserRepliesResponse,
   UserStatus
 } from "@/lib/types";
+import { getMemberTitle } from "@/lib/member";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
 const TOPICS_PER_PAGE = 30;
-const HONOR_TOPIC_SAMPLE_SIZE = 200;
+const HONOR_TOPIC_SAMPLE_SIZE = 300;
 const HONOR_ACTIVE_THRESHOLD = 10;
+// 16643 是 2012 年最后一位注册会员。
+const HONOR_LEGEND_UID_MAX = 16643;
 // HU60 的 UID 按注册顺序分配；21696 是 2016 年最后一位注册会员。
 const HONOR_LEGACY_UID_MAX = 21696;
 
@@ -196,6 +199,20 @@ type HonorCandidate = HonorMember & {
   latestTopicTime: number;
 };
 
+async function getEarlyMemberTitle(uid: number) {
+  const profile = await requestPublicJson<UserProfile>(
+    `user.info.${uid}.json`,
+    { _time: 1 },
+    {
+      uid,
+      name: "",
+      __fallback: true
+    }
+  );
+
+  return profile.__fallback ? null : getMemberTitle(profile.regtime);
+}
+
 export async function getHonorRoll(): Promise<HonorRoll> {
   const response = await requestPublicJson<HonorTopicResponse>(
     "bbs.forum.0.1.0.json",
@@ -243,17 +260,37 @@ export async function getHonorRoll(): Promise<HonorRoll> {
   }
 
   const candidates = Array.from(candidateMap.values());
+  const earlyCandidates = candidates.filter(
+    (candidate) => candidate.uid <= HONOR_LEGEND_UID_MAX
+  );
+  const earlyTitles = new Map(
+    await Promise.all(
+      earlyCandidates.map(async (candidate) => [
+        candidate.uid,
+        await getEarlyMemberTitle(candidate.uid)
+      ] as const)
+    )
+  );
+
+  const toHonorMember = (candidate: HonorCandidate): HonorMember => ({
+    uid: candidate.uid,
+    name: candidate.name,
+    avatar: candidate.avatar,
+    memberTitle:
+      candidate.uid <= HONOR_LEGEND_UID_MAX
+        ? earlyTitles.get(candidate.uid)
+        : candidate.uid <= HONOR_LEGACY_UID_MAX
+          ? "骨灰"
+          : null
+  });
+
   const legacy = candidates
     .filter((candidate) => candidate.uid <= HONOR_LEGACY_UID_MAX)
     .sort(
       (left, right) =>
         right.recentCount - left.recentCount || left.uid - right.uid
     )
-    .map((candidate) => ({
-      uid: candidate.uid,
-      name: candidate.name,
-      avatar: candidate.avatar
-    }));
+    .map(toHonorMember);
 
   const active = candidates
     .filter((candidate) => candidate.recentCount > HONOR_ACTIVE_THRESHOLD)
@@ -263,7 +300,7 @@ export async function getHonorRoll(): Promise<HonorRoll> {
         right.latestTopicTime - left.latestTopicTime ||
         left.uid - right.uid
     )
-    .map(({ uid, name, avatar }) => ({ uid, name, avatar }));
+    .map(toHonorMember);
 
   return {
     legacy,

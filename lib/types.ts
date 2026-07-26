@@ -73,6 +73,7 @@ export type HonorMember = {
   uid: number;
   name: string;
   avatar?: string | null;
+  memberTitle?: string | null;
 };
 
 export type HonorRoll = {
