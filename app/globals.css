@@ -1828,14 +1828,13 @@ select:focus-visible {
   clear: both;
   width: fit-content;
   max-width: 100%;
-  margin: 13px 0 0 auto;
+  margin: 13px 0 0;
   padding-left: 16px;
   color: var(--faint);
   font-size: 10px;
   line-height: 1.55;
   opacity: 0.78;
   overflow-wrap: anywhere;
-  text-align: right;
   white-space: pre-wrap;
 }
 
