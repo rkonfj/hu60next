@@ -1,4 +1,4 @@
-import { Bot, ShieldCheck } from "lucide-react";
+import { Clock3, ShieldCheck, XCircle } from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -22,7 +22,6 @@ type ReviewPageProps = {
   searchParams: Promise<{
     page?: string;
     tab?: string;
-    bots?: string;
   }>;
 };
 
@@ -37,7 +36,6 @@ export default async function ReviewsPage({
   const params = await searchParams;
   const page = Math.max(1, Number(params.page) || 1);
   const filter = reviewFilter(params.tab);
-  const showBot = params.bots === "1";
   const cookieStore = await cookies();
   const sid = cookieStore.get("hulvlin_sid")?.value;
 
@@ -51,7 +49,7 @@ export default async function ReviewsPage({
     notFound();
   }
 
-  const queue = await getReviewQueue(page, sid, filter, showBot);
+  const queue = await getReviewQueue(page, sid, filter);
   const items: ReviewQueueDisplayItem[] = queue.replyList.map((item) => ({
     ...item,
     safeContent: sanitizeHu60ReviewContent(
@@ -59,10 +57,10 @@ export default async function ReviewsPage({
       Number(item.review || 0) !== 0
     )
   }));
-  const tabs: Array<{ key: ReviewQueueFilter; label: string }> = [
-    { key: "pending", label: "待审核" },
-    { key: "mine", label: "我审核的" },
-    { key: "rejected", label: "未通过" }
+  const tabs = [
+    { key: "pending", label: "待审核", icon: Clock3 },
+    { key: "mine", label: "我审核的", icon: ShieldCheck },
+    { key: "rejected", label: "未通过", icon: XCircle }
   ];
 
   return (
@@ -79,24 +77,21 @@ export default async function ReviewsPage({
         <strong>{queue.replyCount || 0} 条</strong>
       </header>
 
-      <nav className="review-tabs" aria-label="审核筛选">
-        {tabs.map((tab) => (
-          <Link
-            href={`/reviews?tab=${tab.key}${showBot ? "&bots=1" : ""}`}
-            className={filter === tab.key ? "active" : undefined}
-            aria-current={filter === tab.key ? "page" : undefined}
-            key={tab.key}
-          >
-            {tab.label}
-          </Link>
-        ))}
-        <Link
-          className={`review-bot-toggle${showBot ? " active" : ""}`}
-          href={`/reviews?tab=${filter}${showBot ? "" : "&bots=1"}`}
-        >
-          <Bot size={14} />
-          {showBot ? "隐藏机器人" : "显示机器人"}
-        </Link>
+      <nav className="message-tabs" aria-label="审核筛选">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <Link
+              href={`/reviews?tab=${tab.key}`}
+              className={filter === tab.key ? "active" : undefined}
+              aria-current={filter === tab.key ? "page" : undefined}
+              key={tab.key}
+            >
+              <Icon size={16} />
+              {tab.label}
+            </Link>
+          );
+        })}
       </nav>
 
       {queue.__fallback ? (
@@ -105,11 +100,10 @@ export default async function ReviewsPage({
         </div>
       ) : (
         <ReviewQueue
-          key={`${filter}:${page}:${showBot ? 1 : 0}`}
+          key={`${filter}:${page}`}
           initialItems={items}
           page={page}
           filter={filter}
-          showBot={showBot}
         />
       )}
 
@@ -118,10 +112,7 @@ export default async function ReviewsPage({
           current={queue.currPage}
           max={queue.maxPage}
           path="/reviews"
-          query={{
-            tab: filter,
-            ...(showBot ? { bots: "1" } : {})
-          }}
+          query={{ tab: filter }}
         />
       ) : null}
     </main>

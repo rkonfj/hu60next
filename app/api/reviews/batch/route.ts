@@ -27,7 +27,6 @@ type ReviewContext =
       type: "queue";
       page: number;
       filter: ReviewQueueFilter;
-      showBot: boolean;
     }
   | {
       type: "topic";
@@ -112,8 +111,7 @@ function parseRequest(value: unknown): ReviewRequest | null {
     if (
       !Number.isInteger(Number(body.context.page)) ||
       Number(body.context.page) < 1 ||
-      !isReviewFilter(body.context.filter) ||
-      typeof body.context.showBot !== "boolean"
+      !isReviewFilter(body.context.filter)
     ) {
       return null;
     }
@@ -148,8 +146,7 @@ async function getAuthoritativeTargets(
     const queue = await getReviewQueue(
       context.page,
       sid,
-      context.filter,
-      context.showBot
+      context.filter
     );
     return queue.__fallback ? null : queue.replyList;
   }

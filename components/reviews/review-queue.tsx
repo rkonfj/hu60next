@@ -29,13 +29,11 @@ type BatchDecision = "pass" | "reject";
 export function ReviewQueue({
   initialItems,
   page,
-  filter,
-  showBot
+  filter
 }: {
   initialItems: ReviewQueueDisplayItem[];
   page: number;
   filter: ReviewQueueFilter;
-  showBot: boolean;
 }) {
   const [items, setItems] = useState(initialItems);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -57,8 +55,7 @@ export function ReviewQueue({
   const context: ReviewActionContext = {
     type: "queue",
     page,
-    filter,
-    showBot
+    filter
   };
 
   function toggleItem(contentId: number) {

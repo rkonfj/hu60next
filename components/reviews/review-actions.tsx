@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ShieldCheck, X, XCircle } from "lucide-react";
+import { Check, History, ShieldCheck, X, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { ReviewLogTimeline } from "@/components/reviews/review-log-timeline";
@@ -12,7 +12,6 @@ export type ReviewActionContext =
       type: "queue";
       page: number;
       filter: ReviewQueueFilter;
-      showBot: boolean;
     }
   | {
       type: "topic";
@@ -126,10 +125,12 @@ export function ReviewActions({
             已处理
           </span>
         )}
-        <ReviewLogTimeline
-          logs={logs}
-          open={showLogs}
-          onOpenChange={(open) => {
+        <button
+          type="button"
+          className="review-log-trigger"
+          aria-expanded={showLogs}
+          onClick={() => {
+            const open = !showLogs;
             setShowLogs(open);
             if (open) {
               setDecision(null);
@@ -137,8 +138,16 @@ export function ReviewActions({
               setNotice("");
             }
           }}
-        />
+        >
+          <History size={14} />
+          审核记录
+          <span>{Array.isArray(logs) ? logs.length : 0}</span>
+        </button>
       </div>
+
+      {showLogs ? (
+        <ReviewLogTimeline logs={logs} onClose={() => setShowLogs(false)} />
+      ) : null}
 
       {decision ? (
         <form className="review-reason-form" onSubmit={submit}>
