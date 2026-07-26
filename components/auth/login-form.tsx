@@ -65,10 +65,15 @@ export function LoginForm({
           <UserRound size={18} />
           <input
             name="name"
-            autoComplete="username"
+            type="text"
+            inputMode="text"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            lang="zh-CN"
             required
             maxLength={60}
-            placeholder="输入虎绿林用户名"
+            placeholder="支持中文用户名"
           />
         </span>
       </label>

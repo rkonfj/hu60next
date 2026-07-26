@@ -65,7 +65,12 @@ export function RegisterForm() {
           <UserRound size={18} />
           <input
             name="name"
-            autoComplete="username"
+            type="text"
+            inputMode="text"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            lang="zh-CN"
             required
             maxLength={16}
             placeholder="汉字、字母、数字、_ 或 -"
