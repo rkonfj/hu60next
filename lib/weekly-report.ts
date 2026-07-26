@@ -87,7 +87,7 @@ function emptyStats(): WeeklyReportStats {
 function fallbackReport(uid: number, now: number): PersonalWeeklyReport {
   return {
     uid,
-    periodStart: now - REPORT_SECONDS,
+    periodStart: shanghaiWeekStart(now),
     periodEnd: now,
     updatedAt: now,
     current: emptyStats(),
@@ -107,6 +107,20 @@ function shanghaiDateKey(timestamp: number) {
   )
     .toISOString()
     .slice(0, 10);
+}
+
+function shanghaiWeekStart(timestamp: number) {
+  const shiftedTimestamp = timestamp + SHANGHAI_OFFSET_SECONDS;
+  const dayStart =
+    Math.floor(shiftedTimestamp / DAY_SECONDS) * DAY_SECONDS;
+  const weekday = new Date(shiftedTimestamp * 1000).getUTCDay();
+  const daysSinceMonday = (weekday + 6) % 7;
+
+  return (
+    dayStart -
+    daysSinceMonday * DAY_SECONDS -
+    SHANGHAI_OFFSET_SECONDS
+  );
 }
 
 async function buildReplySource(): Promise<ReplySource> {
@@ -330,7 +344,7 @@ async function buildWeeklyMvpRanking(): Promise<WeeklyMvpRanking> {
     };
   }
 
-  const periodEnd = replySource.now;
+  const periodEnd = shanghaiWeekStart(replySource.now);
   const periodStart = periodEnd - REPORT_SECONDS;
   const topicSource = await getGlobalTopicSource(periodStart);
   if (topicSource.fallback) {
@@ -650,8 +664,10 @@ async function buildPersonalWeeklyReport(
   }
 
   const periodEnd = replySource.now;
-  const periodStart = periodEnd - REPORT_SECONDS;
+  const periodStart = shanghaiWeekStart(periodEnd);
   const previousStart = periodStart - REPORT_SECONDS;
+  const previousEnd =
+    previousStart + (periodEnd - periodStart);
   const topicSource = await buildUserTopicSource(username, previousStart);
   if (topicSource.fallback) return fallbackReport(uid, periodEnd);
 
@@ -678,7 +694,7 @@ async function buildPersonalWeeklyReport(
       replySource.replies,
       replyById,
       previousStart,
-      periodStart
+      previousEnd
     ),
     highlights: buildHighlights(
       uid,

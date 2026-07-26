@@ -121,8 +121,8 @@ export default async function HonorsPage() {
 
       <div className="honors-grid">
         <HonorBoard
-          title="本周 MVP"
-          description="按交流人数、破冰回复和带动讨论延续综合计算"
+          title="上周 MVP"
+          description="按上个自然周的交流人数、破冰回复和讨论延续综合计算"
           members={mvp.members}
           showWeeklyScore
           featured
@@ -145,7 +145,7 @@ export default async function HonorsPage() {
       </div>
       {mvp.partial ? (
         <p className="honor-partial">
-          本期 MVP 根据最近一部分公开交流记录计算。
+          上周 MVP 根据最近一部分公开交流记录计算。
         </p>
       ) : null}
     </main>

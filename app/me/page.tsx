@@ -34,8 +34,8 @@ function shortDate(timestamp: number) {
 
 function changeLabel(current: number, previous: number) {
   const difference = current - previous;
-  if (difference === 0) return "与上周持平";
-  return `比上周 ${difference > 0 ? "+" : "−"}${Math.abs(difference)}`;
+  if (difference === 0) return "与上周同期持平";
+  return `比上周同期 ${difference > 0 ? "+" : "−"}${Math.abs(difference)}`;
 }
 
 export default async function MePage() {
@@ -121,7 +121,7 @@ export default async function MePage() {
               <Activity size={14} />
               交流周报
             </span>
-            <h2>最近七天，你与社区的连接</h2>
+            <h2>本周，你与社区的连接</h2>
             {report ? (
               <p>
                 {shortDate(report.periodStart)}—{shortDate(report.periodEnd)}
@@ -157,7 +157,7 @@ export default async function MePage() {
                     : "。"}
                 </>
               ) : (
-                "这七天还没有公开交流记录。去看看正在发生的讨论，也许一句回复就是一段新交流的开始。"
+                "本周还没有公开交流记录。去看看正在发生的讨论，也许一句回复就是一段新交流的开始。"
               )}
             </p>
 
