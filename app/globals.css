@@ -5296,16 +5296,6 @@ body :is(
   white-space: nowrap;
 }
 
-.honor-label {
-  flex: 0 0 auto;
-  padding: 2px 6px;
-  color: var(--green);
-  border: 1px solid var(--line);
-  background: var(--green-soft);
-  font-size: 9px;
-  font-weight: 750;
-}
-
 .honor-member > svg {
   flex: 0 0 auto;
   color: var(--faint);

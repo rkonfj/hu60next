@@ -21,14 +21,12 @@ export const dynamic = "force-dynamic";
 function HonorBoard({
   title,
   description,
-  honor,
   members,
   showMemberTitle = false,
   icon: Icon
 }: {
   title: string;
   description: string;
-  honor: string;
   members: HonorMember[];
   showMemberTitle?: boolean;
   icon: typeof Award;
@@ -56,13 +54,12 @@ function HonorBoard({
                 <Avatar src={member.avatar} name={member.name} />
                 <span className="honor-member-copy">
                   <strong>{member.name}</strong>
-                  <span className="honor-label">{honor}</span>
+                  {showMemberTitle && member.memberTitle ? (
+                    <span className="member-badge honor-member-badge">
+                      {member.memberTitle}
+                    </span>
+                  ) : null}
                 </span>
-                {showMemberTitle && member.memberTitle ? (
-                  <span className="member-badge honor-member-badge">
-                    {member.memberTitle}
-                  </span>
-                ) : null}
                 <ChevronRight size={16} aria-hidden="true" />
               </Link>
             </li>
@@ -106,14 +103,12 @@ export default async function HonorsPage() {
         <HonorBoard
           title="活跃荣誉"
           description="感谢让讨论持续发生的熟悉身影"
-          honor="活跃荣誉"
           members={honors.active}
           icon={Sparkles}
         />
         <HonorBoard
           title="资历荣誉"
           description="致敬近期仍在社区留下作品的老朋友"
-          honor="资历荣誉"
           members={honors.legacy}
           showMemberTitle
           icon={Award}
