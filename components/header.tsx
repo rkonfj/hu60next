@@ -1,6 +1,7 @@
-import { Compass, Grid2X2, PenLine, Search } from "lucide-react";
+import { Compass, Grid2X2, Search } from "lucide-react";
 import Link from "next/link";
 import { Brand } from "@/components/brand";
+import { ContextualComposeLink } from "@/components/contextual-compose-link";
 import { MobileNav } from "@/components/mobile-nav";
 import { SessionMenu } from "@/components/session-menu";
 
@@ -30,10 +31,7 @@ export function Header() {
           <kbd>Enter</kbd>
         </form>
         <div className="header-actions">
-          <Link href="/compose" className="compose-button">
-            <PenLine size={17} />
-            <span>发布</span>
-          </Link>
+          <ContextualComposeLink />
           <SessionMenu />
           <MobileNav />
         </div>

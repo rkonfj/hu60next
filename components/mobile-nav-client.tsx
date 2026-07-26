@@ -22,10 +22,12 @@ type MobileNavClientProps = {
 export function MobileNavClient({ isLoggedIn }: MobileNavClientProps) {
   const pathname = usePathname();
   const menuRef = useRef<HTMLDetailsElement>(null);
+  const forumId = pathname.match(/^\/forum\/(\d+)(?:\/|$)/)?.[1];
+  const composeHref = forumId ? `/compose?forum=${forumId}` : "/compose";
   const links = [
     { href: "/explore/active", label: "发现", icon: Compass },
     { href: "/forums", label: "版块", icon: Grid2X2 },
-    { href: "/compose", label: "发布", icon: PenLine },
+    { href: composeHref, label: "发布", icon: PenLine },
     {
       href: isLoggedIn ? "/me" : "/login?next=/me",
       label: "我的",
@@ -50,6 +52,8 @@ export function MobileNavClient({ isLoggedIn }: MobileNavClientProps) {
               ? pathname.startsWith("/explore/")
               : href === "/forums"
                 ? pathname === "/forums" || pathname.startsWith("/forum/")
+                : href.startsWith("/compose")
+                  ? pathname === "/compose"
                 : href.startsWith("/login")
                   ? pathname === "/login"
                   : pathname === href;
