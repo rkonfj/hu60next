@@ -1700,6 +1700,54 @@ select:focus-visible {
   vertical-align: middle;
 }
 
+.rich-content .video_box {
+  margin: 18px 0;
+}
+
+.rich-content :is(.video_box, .audio_box) > a {
+  display: inline-block;
+  margin-bottom: 7px;
+  color: var(--faint);
+  font-size: 10px;
+}
+
+.hu60-video-frame,
+.hu60-video-native {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  background: #0d100e;
+}
+
+.hu60-video-frame {
+  height: auto;
+}
+
+.hu60-video-native {
+  object-fit: contain;
+}
+
+.rich-content .audio_box {
+  margin: 14px 0;
+}
+
+.hu60-audio-frame {
+  display: block;
+  width: 100%;
+  max-width: 500px;
+  height: 86px;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+}
+
+.hu60-audio-native {
+  display: block;
+  width: min(100%, 500px);
+  height: 44px;
+}
+
 .rich-content blockquote {
   margin: 18px 0;
   padding: 10px 16px;
@@ -3130,6 +3178,16 @@ body:has(> .auth-page) > .site-header {
 
 .composer-attachment-preview {
   margin: 8px 0 14px;
+}
+
+.composer-media-preview {
+  margin: 10px 0 14px;
+}
+
+.composer-media-preview figcaption {
+  margin-top: 5px;
+  color: var(--faint);
+  font-size: 9px;
 }
 
 .composer-attachment-preview img {
