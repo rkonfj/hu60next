@@ -1637,6 +1637,20 @@ select:focus-visible {
   background: var(--surface-soft);
 }
 
+.rich-content img.hu60_face,
+.message-content img.hu60_face {
+  display: inline-block;
+  width: auto;
+  max-width: 48px;
+  height: auto;
+  max-height: 48px;
+  margin: 0 0.12em;
+  border: 0;
+  border-radius: 0 !important;
+  background: transparent;
+  vertical-align: middle;
+}
+
 .rich-content blockquote {
   margin: 18px 0;
   padding: 10px 16px;

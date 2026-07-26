@@ -53,6 +53,17 @@ function resolveSource(value = "") {
   return value.replace(/^http:\/\//, "https://");
 }
 
+function normalizeImageClass(value = "", src = "") {
+  const classes = value.split(/\s+/).filter(Boolean);
+  if (
+    classes.includes("hu60_face") ||
+    /(?:^|\/)img\/face\//i.test(src)
+  ) {
+    classes.push("hu60_face");
+  }
+  return [...new Set(classes)].join(" ");
+}
+
 export function sanitizeHu60Content(content: string) {
   return sanitizeHtml(content, {
     allowedTags: [
@@ -111,6 +122,7 @@ export function sanitizeHu60Content(content: string) {
     allowedClasses: {
       "*": [
         "markdown-body",
+        "hu60_face",
         "userlink",
         "userimg",
         "userinfo",
@@ -134,15 +146,20 @@ export function sanitizeHu60Content(content: string) {
           }
         };
       },
-      img: (_tagName, attribs) => ({
-        tagName: "img",
-        attribs: {
-          ...attribs,
-          src: resolveSource(attribs.src),
-          loading: "lazy",
-          decoding: "async"
-        }
-      })
+      img: (_tagName, attribs) => {
+        const src = resolveSource(attribs.src);
+        const className = normalizeImageClass(attribs.class, src);
+        return {
+          tagName: "img",
+          attribs: {
+            ...attribs,
+            src,
+            ...(className ? { class: className } : {}),
+            loading: "lazy",
+            decoding: "async"
+          }
+        };
+      }
     }
   });
 }
