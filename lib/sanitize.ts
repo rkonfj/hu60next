@@ -221,7 +221,7 @@ export function sanitizeHu60Content(content: string) {
       "video"
     ],
     allowedAttributes: {
-      a: ["href", "title", "class"],
+      a: ["href", "title", "class", "data-member-uid"],
       audio: [
         "src",
         "class",
@@ -348,11 +348,13 @@ export function sanitizeHu60Content(content: string) {
       a: (_tagName, attribs) => {
         const href = resolveHref(attribs.href);
         const internal = href.startsWith("/");
+        const userId = href.match(/^\/user\/(\d+)$/)?.[1];
         return {
           tagName: "a",
           attribs: {
             ...attribs,
             href,
+            ...(userId ? { "data-member-uid": userId } : {}),
             ...(internal
               ? {}
               : { target: "_blank", rel: "noopener noreferrer" })

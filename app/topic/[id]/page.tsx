@@ -117,7 +117,9 @@ export default async function TopicPage({
               </Link>
               <div>
                 <Link href={`/user/${meta.uid}`}>
-                  <strong>{meta._u_name || `用户 ${meta.uid}`}</strong>
+                  <strong data-member-uid={meta.uid}>
+                    {meta._u_name || `用户 ${meta.uid}`}
+                  </strong>
                 </Link>
                 <div className="article-author-subline">
                   <span
@@ -216,7 +218,9 @@ export default async function TopicPage({
                     </Link>
                     <div>
                       <Link href={`/user/${floor.uid}`}>
-                        <strong>{floor._u_name || `用户 ${floor.uid}`}</strong>
+                        <strong data-member-uid={floor.uid}>
+                          {floor._u_name || `用户 ${floor.uid}`}
+                        </strong>
                       </Link>
                       <span title={fullDate(floor.ctime)}>
                         {relativeTime(floor.ctime)}
@@ -319,7 +323,9 @@ export default async function TopicPage({
             <span className="aside-label">关于作者</span>
             <Link href={`/user/${meta.uid}`} className="author-card-identity">
               <Avatar src={meta._u_avatar} name={meta._u_name} size="xl" />
-              <strong>{meta._u_name || `用户 ${meta.uid}`}</strong>
+              <strong data-member-uid={meta.uid}>
+                {meta._u_name || `用户 ${meta.uid}`}
+              </strong>
               {authorMemberTitle ? (
                 <span className="member-badge author-member-badge">
                   {authorMemberTitle}

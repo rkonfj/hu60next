@@ -60,7 +60,7 @@ function HonorBoard({
               <Link href={`/user/${member.uid}`} className="honor-member">
                 <Avatar src={member.avatar} name={member.name} />
                 <span className="honor-member-copy">
-                  <strong>{member.name}</strong>
+                  <strong data-member-uid={member.uid}>{member.name}</strong>
                   {honorLabel ? (
                     <span className="honor-label">{honorLabel}</span>
                   ) : null}

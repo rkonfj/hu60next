@@ -41,7 +41,8 @@ export default async function FavoritesPage({
       <header className="list-page-heading">
         <div>
           <span className="eyebrow">
-            <Bookmark size={14} /> {status.name}
+            <Bookmark size={14} />
+            <span data-member-uid={status.uid}>{status.name}</span>
           </span>
           <h1>我的收藏</h1>
         </div>

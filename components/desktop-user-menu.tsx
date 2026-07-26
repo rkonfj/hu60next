@@ -62,7 +62,7 @@ export function DesktopUserMenu({
     <details className="desktop-user-menu" ref={menuRef}>
       <summary className="session-user">
         <UserRound size={17} />
-        <span>{userName}</span>
+        <span data-member-uid={userId}>{userName}</span>
         <ChevronDown size={13} />
       </summary>
       <nav className="desktop-user-popover" aria-label="用户菜单">

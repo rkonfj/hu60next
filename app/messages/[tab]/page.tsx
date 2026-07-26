@@ -67,7 +67,7 @@ function UserIdentity({
   const content = (
     <>
       <Avatar src={avatar} name={name} size="md" />
-      <strong>{name || `用户 ${uid}`}</strong>
+      <strong data-member-uid={uid}>{name || `用户 ${uid}`}</strong>
     </>
   );
 
@@ -143,7 +143,9 @@ function ChatCard({ item, now }: { item: ChatItem; now?: number }) {
       />
       <div className="chat-message-main">
         <header>
-          <strong>{item._u_name || `用户 ${item.uid}`}</strong>
+          <strong data-member-uid={item.uid}>
+            {item._u_name || `用户 ${item.uid}`}
+          </strong>
           <a href={`#chat-${item.lid}`}>#{item.lid}</a>
           <time title={fullDate(item.time)}>
             {relativeTime(item.time, now)}
@@ -198,7 +200,11 @@ export default async function MessageTabPage({
         <div>
           <span className="eyebrow">
             <CurrentIcon size={14} />
-            {status.name || "消息中心"}
+            {status.name ? (
+              <span data-member-uid={status.uid}>{status.name}</span>
+            ) : (
+              "消息中心"
+            )}
           </span>
           <h1>{current.title}</h1>
         </div>

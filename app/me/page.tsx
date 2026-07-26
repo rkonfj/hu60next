@@ -102,7 +102,9 @@ export default async function MePage() {
         </span>
         <div>
           <span className="eyebrow">我的账号</span>
-          <h1>{status.name || "hu60 用户"}</h1>
+          <h1 data-member-uid={status.uid}>
+            {status.name || "hu60 用户"}
+          </h1>
           <p>UID {status.uid ?? "—"}</p>
         </div>
         <form action="/api/logout" method="post">

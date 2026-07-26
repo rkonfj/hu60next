@@ -198,7 +198,7 @@ export function ReviewQueue({
                     name={author}
                     size="sm"
                   />
-                  <strong>{author}</strong>
+                  <strong data-member-uid={item.uid}>{author}</strong>
                 </Link>
                 <time>{relativeTime(item.mtime || item.ctime)}</time>
               </div>

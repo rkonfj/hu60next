@@ -84,7 +84,7 @@ export async function UserProfileView({
             用户主页
           </span>
           <div className="user-profile-title">
-            <h1>{displayName}</h1>
+            <h1 data-member-uid={uid}>{displayName}</h1>
             {memberTitle ? (
               <span className="member-badge">{memberTitle}</span>
             ) : null}
