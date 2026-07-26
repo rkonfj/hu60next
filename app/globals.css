@@ -98,6 +98,11 @@ svg {
   max-width: 100%;
 }
 
+.lucide :is(path, line, polyline, polygon, rect, circle) {
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
 pre,
 table {
   max-width: 100%;
@@ -185,6 +190,11 @@ select:focus-visible {
   border: 2px solid var(--bg);
   border-radius: 50%;
   background: var(--surface);
+}
+
+.brand-mark .lucide :is(path, line, polyline, polygon, rect, circle) {
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .brand-copy {
