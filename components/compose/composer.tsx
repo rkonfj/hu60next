@@ -465,11 +465,13 @@ export function ComposerPreview({
 export function Composer({
   rootForums,
   isLogin,
-  faces
+  faces,
+  initialForumId
 }: {
   rootForums: ForumTree[];
   isLogin: boolean;
   faces: ForumFace[];
+  initialForumId?: number | null;
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<"write" | "preview">("write");
@@ -490,25 +492,31 @@ export function Composer({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    let draft: SavedDraft = {};
     try {
       const raw = localStorage.getItem("hulvlin-draft");
-      if (!raw) return;
-      const draft = JSON.parse(raw) as SavedDraft;
-      setTitle(draft.title ?? "");
-      setContent(draft.content ?? "");
-      const restored = restoreForumPicker(rootForums, draft.forumId);
+      if (raw) {
+        draft = JSON.parse(raw) as SavedDraft;
+        setTitle(draft.title ?? "");
+        setContent(draft.content ?? "");
+      }
+      const restored =
+        restoreForumPicker(rootForums, initialForumId) ??
+        restoreForumPicker(rootForums, draft.forumId);
       if (restored) {
         setLevels(restored.levels);
         setTargetForum(restored.targetForum);
         setForumPath(restored.forumPath);
       }
-      setDraftNotice(
-        restored
-          ? "已恢复本地草稿和所选板块。"
-          : "已恢复本地草稿。"
-      );
-      setDraftNoticeError(false);
-      window.setTimeout(() => setDraftNotice(""), 2600);
+      if (raw) {
+        setDraftNotice(
+          restored
+            ? "已恢复本地草稿和所选板块。"
+            : "已恢复本地草稿。"
+        );
+        setDraftNoticeError(false);
+        window.setTimeout(() => setDraftNotice(""), 2600);
+      }
     } catch {
       try {
         localStorage.removeItem("hulvlin-draft");
@@ -516,7 +524,7 @@ export function Composer({
         // The editor remains usable when browser storage is unavailable.
       }
     }
-  }, [rootForums]);
+  }, [initialForumId, rootForums]);
 
   function saveDraft() {
     try {

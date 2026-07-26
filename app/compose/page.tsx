@@ -5,11 +5,19 @@ import { getFaces, getNewTopicForm } from "@/lib/hu60";
 
 export const metadata: Metadata = { title: "发起讨论" };
 
-export default async function ComposePage() {
-  const [form, faces] = await Promise.all([
+export default async function ComposePage({
+  searchParams
+}: {
+  searchParams: Promise<{ forum?: string }>;
+}) {
+  const [form, faces, query] = await Promise.all([
     getNewTopicForm(),
-    getFaces()
+    getFaces(),
+    searchParams
   ]);
+  const initialForumId = /^\d+$/.test(query.forum ?? "")
+    ? Number(query.forum)
+    : null;
 
   return (
     <main className="page-shell narrow-page compose-page">
@@ -36,6 +44,7 @@ export default async function ComposePage() {
         rootForums={form.forums}
         isLogin={form.isLogin === true}
         faces={faces}
+        initialForumId={initialForumId}
       />
     </main>
   );
