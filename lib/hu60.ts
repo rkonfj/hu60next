@@ -32,6 +32,9 @@ const API_BASE =
 const TOPICS_PER_PAGE = 30;
 const HONOR_TOPIC_SAMPLE_SIZE = 300;
 const HONOR_ACTIVE_MINIMUM = 8;
+const HONOR_CACHE_SECONDS = 600;
+const HONOR_CACHE_KEY =
+  "https://hulvlin-next.rkonfj.chatgpt.site/__cache/honors-v2";
 // 16643 是 2012 年最后一位注册会员。
 const HONOR_LEGEND_UID_MAX = 16643;
 // HU60 的 UID 按注册顺序分配；21696 是 2016 年最后一位注册会员。
@@ -91,8 +94,7 @@ async function requestJson<T>(
 async function requestPublicJson<T>(
   route: string,
   query: Record<string, QueryValue>,
-  fallback: T,
-  revalidate = 600
+  fallback: T
 ): Promise<T> {
   try {
     const url = new URL(`${API_BASE}/${route}`);
@@ -105,7 +107,7 @@ async function requestPublicJson<T>(
         accept: "application/json",
         "user-agent": "Hulvlin-Next/0.1"
       },
-      next: { revalidate }
+      cache: "no-store"
     });
     if (!response.ok) return fallback;
 
@@ -199,6 +201,20 @@ type HonorCandidate = HonorMember & {
   latestTopicTime: number;
 };
 
+let honorMemoryCache:
+  | {
+      expiresAt: number;
+      value: HonorRoll;
+    }
+  | undefined;
+
+function getHonorEdgeCache() {
+  const cacheStorage = globalThis.caches as
+    | (CacheStorage & { default?: Cache })
+    | undefined;
+  return cacheStorage?.default;
+}
+
 async function getEarlyMemberTitle(uid: number) {
   const profile = await requestPublicJson<UserProfile>(
     `user.info.${uid}.json`,
@@ -213,7 +229,7 @@ async function getEarlyMemberTitle(uid: number) {
   return profile.__fallback ? null : getMemberTitle(profile.regtime);
 }
 
-export async function getHonorRoll(): Promise<HonorRoll> {
+async function buildHonorRoll(): Promise<HonorRoll> {
   const response = await requestPublicJson<HonorTopicResponse>(
     "bbs.forum.0.1.0.json",
     {
@@ -312,6 +328,59 @@ export async function getHonorRoll(): Promise<HonorRoll> {
         0
       )
   };
+}
+
+export async function getHonorRoll(): Promise<HonorRoll> {
+  const now = Date.now();
+  if (honorMemoryCache && honorMemoryCache.expiresAt > now) {
+    return honorMemoryCache.value;
+  }
+
+  const edgeCache = getHonorEdgeCache();
+  if (edgeCache) {
+    try {
+      const cachedResponse = await edgeCache.match(HONOR_CACHE_KEY);
+      if (cachedResponse) {
+        const cached = (await cachedResponse.json()) as HonorRoll;
+        honorMemoryCache = {
+          expiresAt: Math.max(
+            now + 1000,
+            cached.updatedAt * 1000 + HONOR_CACHE_SECONDS * 1000
+          ),
+          value: cached
+        };
+        return cached;
+      }
+    } catch {
+      // Local Next.js and non-Cloudflare runtimes may not expose Cache API.
+    }
+  }
+
+  const fresh = await buildHonorRoll();
+  if (!fresh.__fallback) {
+    honorMemoryCache = {
+      expiresAt: now + HONOR_CACHE_SECONDS * 1000,
+      value: fresh
+    };
+
+    if (edgeCache) {
+      try {
+        await edgeCache.put(
+          HONOR_CACHE_KEY,
+          new Response(JSON.stringify(fresh), {
+            headers: {
+              "cache-control": `public, max-age=${HONOR_CACHE_SECONDS}`,
+              "content-type": "application/json; charset=utf-8"
+            }
+          })
+        );
+      } catch {
+        // The in-memory cache remains available when edge storage is absent.
+      }
+    }
+  }
+
+  return fresh;
 }
 
 export async function getForums(): Promise<ForumsResponse> {

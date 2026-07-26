@@ -5246,6 +5246,7 @@ body :is(
   min-width: 0;
   grid-template-columns: 32px minmax(0, 1fr);
   align-items: center;
+  border-radius: 0 !important;
 }
 
 .honor-list li + li {

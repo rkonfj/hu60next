@@ -29,7 +29,8 @@ export function fullDate(timestamp: number) {
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
-    minute: "2-digit"
+    minute: "2-digit",
+    timeZone: "Asia/Shanghai"
   }).format(new Date(timestamp * 1000));
 }
 
