@@ -237,7 +237,9 @@ export function PasswordResetForm() {
       </button>
       <div className="auth-inline-link">
         收不到验证码？联系
-        <Link href="/user/1">@老虎会游泳</Link>
+        <Link href="/user/1" data-member-uid="1">
+          @老虎会游泳
+        </Link>
       </div>
       <div className="auth-inline-link">
         想起密码了？<Link href="/login">返回登录</Link>

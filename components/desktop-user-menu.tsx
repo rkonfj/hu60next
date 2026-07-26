@@ -1,6 +1,11 @@
 "use client";
 
-import { ChevronDown, Trophy, UserRound } from "lucide-react";
+import {
+  ChevronDown,
+  ShieldCheck,
+  Trophy,
+  UserRound
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -8,11 +13,13 @@ import { useEffect, useRef } from "react";
 type DesktopUserMenuProps = {
   userId: number | string;
   userName: string;
+  canReview?: boolean;
 };
 
 export function DesktopUserMenu({
   userId,
-  userName
+  userName,
+  canReview = false
 }: DesktopUserMenuProps) {
   const pathname = usePathname();
   const menuRef = useRef<HTMLDetailsElement>(null);
@@ -55,7 +62,7 @@ export function DesktopUserMenu({
     <details className="desktop-user-menu" ref={menuRef}>
       <summary className="session-user">
         <UserRound size={17} />
-        <span>{userName}</span>
+        <span data-member-uid={userId}>{userName}</span>
         <ChevronDown size={13} />
       </summary>
       <nav className="desktop-user-popover" aria-label="用户菜单">
@@ -67,6 +74,12 @@ export function DesktopUserMenu({
           <Trophy size={16} />
           社区荣誉
         </Link>
+        {canReview ? (
+          <Link href="/reviews" onClick={closeMenu}>
+            <ShieldCheck size={16} />
+            审核中心
+          </Link>
+        ) : null}
       </nav>
     </details>
   );

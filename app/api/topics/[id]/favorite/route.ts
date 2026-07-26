@@ -1,10 +1,12 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
 
 async function updateFavorite(
+  request: Request,
   context: { params: Promise<{ id: string }> },
   action: "set" | "unset"
 ) {
@@ -29,15 +31,16 @@ async function updateFavorite(
   }
 
   try {
+    const { headers } = createHu60UpstreamHeaders(request.headers, {
+      accept: "application/json",
+      "user-agent": "Hulvlin-Next/0.1",
+      "x-origin": "*",
+      "x-sid": sid
+    });
     const upstream = await fetch(
       `${API_BASE}/bbs.${action}favoritetopic.${topicId}.json`,
       {
-        headers: {
-          accept: "application/json",
-          "user-agent": "Hulvlin-Next/0.1",
-          "x-origin": "*",
-          "x-sid": sid
-        },
+        headers,
         cache: "no-store",
         redirect: "manual"
       }
@@ -85,17 +88,17 @@ async function updateFavorite(
 }
 
 export async function POST(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  return updateFavorite(context, "set");
+  return updateFavorite(request, context, "set");
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  return updateFavorite(context, "unset");
+  return updateFavorite(request, context, "unset");
 }
 
 export async function GET(
@@ -112,7 +115,7 @@ export async function GET(
     );
   }
 
-  const response = await updateFavorite(context, action);
+  const response = await updateFavorite(request, context, action);
 
   if (!request.headers.get("accept")?.includes("text/html")) {
     return response;

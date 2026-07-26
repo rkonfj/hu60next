@@ -31,7 +31,10 @@ export default async function SettingsPage() {
           <Settings size={14} /> 我的账号
         </span>
         <h1>账号设置</h1>
-        <p>{status.name}，在这里管理头像、资料和密码。</p>
+        <p>
+          <span data-member-uid={status.uid}>{status.name}</span>
+          ，在这里管理头像、资料和密码。
+        </p>
       </header>
       <AccountSettings
         name={status.name || account.name || "虎绿林用户"}

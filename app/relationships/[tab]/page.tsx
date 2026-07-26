@@ -166,7 +166,9 @@ export default async function RelationshipTabPage({
             <Link className="relationship-user" href={`/user/${user.uid}`}>
               <Avatar src={user.avatar} name={user.name} size="md" />
               <span>
-                <strong>{user.name || `用户 ${user.uid}`}</strong>
+                <strong data-member-uid={user.uid}>
+                  {user.name || `用户 ${user.uid}`}
+                </strong>
                 <small>UID {user.uid}</small>
               </span>
             </Link>

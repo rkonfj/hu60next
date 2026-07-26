@@ -7,6 +7,7 @@ import {
   LogOut,
   Menu,
   PenLine,
+  ShieldCheck,
   Trophy,
   UserRound,
   X
@@ -17,9 +18,13 @@ import { useRef } from "react";
 
 type MobileNavClientProps = {
   isLoggedIn: boolean;
+  canReview?: boolean;
 };
 
-export function MobileNavClient({ isLoggedIn }: MobileNavClientProps) {
+export function MobileNavClient({
+  isLoggedIn,
+  canReview = false
+}: MobileNavClientProps) {
   const pathname = usePathname();
   const menuRef = useRef<HTMLDetailsElement>(null);
   const forumId = pathname.match(/^\/forum\/(\d+)(?:\/|$)/)?.[1];
@@ -33,7 +38,10 @@ export function MobileNavClient({ isLoggedIn }: MobileNavClientProps) {
       label: "我的",
       icon: UserRound
     },
-    { href: "/honors", label: "社区荣誉", icon: Trophy }
+    { href: "/honors", label: "社区荣誉", icon: Trophy },
+    ...(canReview
+      ? [{ href: "/reviews", label: "审核中心", icon: ShieldCheck }]
+      : [])
   ];
 
   return (

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
@@ -13,9 +14,10 @@ type ResetResponse = {
 
 async function resetRequest(
   body: URLSearchParams,
+  incomingHeaders: Headers,
   captchaToken?: string
 ) {
-  const headers = new Headers({
+  const { headers } = createHu60UpstreamHeaders(incomingHeaders, {
     accept: "application/json",
     "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
     "user-agent": "Hulvlin-Next/0.1"
@@ -70,6 +72,7 @@ export async function POST(request: Request) {
           captcha,
           go: "1"
         }),
+        request.headers,
         captchaToken
       );
 
@@ -130,7 +133,8 @@ export async function POST(request: Request) {
           new_pwd: newPassword,
           new_pwd_again: confirmPassword,
           go: "1"
-        })
+        }),
+        request.headers
       );
 
       if (

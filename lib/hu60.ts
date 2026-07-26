@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers as requestHeaders } from "next/headers";
 import {
   fallbackForums,
   fallbackHome,
@@ -20,6 +20,7 @@ import type {
   NewTopicFormResponse,
   RelationshipResponse,
   RelationshipType,
+  ReviewQueueResponse,
   SearchResponse,
   Topic,
   TopicResponse,
@@ -28,6 +29,10 @@ import type {
   UserStatus
 } from "@/lib/types";
 import { getMemberTitle } from "@/lib/member";
+import {
+  createHu60UpstreamHeaders,
+  hasForwardableHu60Headers
+} from "@/lib/hu60-headers";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
@@ -36,8 +41,6 @@ const HONOR_TOPIC_SAMPLE_SIZE = 300;
 const HONOR_TOPIC_FETCH_SIZE = 360;
 const HONOR_ACTIVE_MINIMUM = 8;
 const HONOR_CACHE_SECONDS = 600;
-const HONOR_CACHE_KEY =
-  "https://hulvlin-next.rkonfj.chatgpt.site/__cache/honors-v4";
 // 16643 是 2012 年最后一位注册会员。
 const HONOR_LEGEND_UID_MAX = 16643;
 // HU60 的 UID 按注册顺序分配；21696 是 2016 年最后一位注册会员。
@@ -57,7 +60,11 @@ async function requestJson<T>(
       if (value !== undefined) url.searchParams.set(key, String(value));
     });
 
-    const headers = new Headers(init?.headers);
+    const incomingHeaders = await requestHeaders();
+    const {
+      headers,
+      forwardedCustomHeaders
+    } = createHu60UpstreamHeaders(incomingHeaders, init?.headers);
     if (!headers.has("accept")) headers.set("accept", "application/json");
     if (!headers.has("user-agent")) {
       headers.set("user-agent", "Hulvlin-Next/0.1");
@@ -71,11 +78,14 @@ async function requestJson<T>(
     }
 
     const shouldRevalidate =
-      !sid && !init?.method && init?.cache !== "no-store";
+      !sid &&
+      !forwardedCustomHeaders &&
+      !init?.method &&
+      init?.cache !== "no-store";
     const response = await fetch(url, {
       ...init,
       headers,
-      ...(sid
+      ...(sid || forwardedCustomHeaders
         ? { cache: "no-store" }
         : shouldRevalidate
           ? { next: { revalidate: 90 } }
@@ -105,11 +115,13 @@ async function requestPublicJson<T>(
       if (value !== undefined) url.searchParams.set(key, String(value));
     });
 
+    const incomingHeaders = await requestHeaders();
+    const { headers } = createHu60UpstreamHeaders(incomingHeaders, {
+      accept: "application/json",
+      "user-agent": "Hulvlin-Next/0.1"
+    });
     const response = await fetch(url, {
-      headers: {
-        accept: "application/json",
-        "user-agent": "Hulvlin-Next/0.1"
-      },
+      headers,
       cache: "no-store"
     });
     if (!response.ok) return fallback;
@@ -123,11 +135,8 @@ async function requestPublicJson<T>(
   }
 }
 
-export function avatarUrl(value?: string | null) {
-  if (!value || value === "/upload/default.jpg") return null;
-  if (value.startsWith("//")) return `https:${value}`;
-  if (value.startsWith("/")) return `https://hu60.cn${value}`;
-  return value.replace("http://", "https://");
+export async function hasCustomHu60RequestHeaders() {
+  return hasForwardableHu60Headers(await requestHeaders());
 }
 
 export async function getFaces(): Promise<ForumFace[]> {
@@ -193,6 +202,31 @@ export async function getGlobalTopics(
   );
 }
 
+export async function getWeeklyGlobalTopicsPage(
+  page = 1,
+  pageSize = 100
+): Promise<ForumsResponse> {
+  const safePageSize = Math.min(100, Math.max(1, Math.trunc(pageSize) || 100));
+
+  return requestPublicJson(
+    `bbs.forum.0.${Math.max(1, Math.trunc(page) || 1)}.0.json`,
+    {
+      pageSize: safePageSize,
+      _topic_summary: 0,
+      _uinfo: "name,avatar",
+      _time: 1,
+      _json: "compact"
+    },
+    {
+      ...fallbackForums,
+      currPage: Math.max(1, Math.trunc(page) || 1),
+      maxPage: 1,
+      topicList: [],
+      __fallback: true
+    }
+  );
+}
+
 type HonorTopicResponse = {
   topicList: Topic[] | null;
   _time?: number;
@@ -210,20 +244,7 @@ let honorMemoryCache:
       value: HonorRoll;
     }
   | undefined;
-
-async function getHonorEdgeCache() {
-  const cacheStorage = globalThis.caches as
-    | (CacheStorage & { default?: Cache })
-    | undefined;
-  if (!cacheStorage) return undefined;
-  if (cacheStorage.default) return cacheStorage.default;
-
-  try {
-    return await cacheStorage.open("hulvlin-honors");
-  } catch {
-    return undefined;
-  }
-}
+let honorBuildPromise: Promise<HonorRoll> | undefined;
 
 async function getEarlyMemberTitle(uid: number) {
   const profile = await requestPublicJson<UserProfile>(
@@ -345,66 +366,31 @@ async function buildHonorRoll(): Promise<HonorRoll> {
 }
 
 export async function getHonorRoll(): Promise<HonorRoll> {
+  if (await hasCustomHu60RequestHeaders()) {
+    return buildHonorRoll();
+  }
+
   const now = Date.now();
   if (honorMemoryCache && honorMemoryCache.expiresAt > now) {
     return honorMemoryCache.value;
   }
 
-  const edgeCache = await getHonorEdgeCache();
-  const edgeCacheKey = new Request(HONOR_CACHE_KEY);
-  if (edgeCache) {
-    try {
-      const cachedResponse = await edgeCache.match(edgeCacheKey);
-      if (cachedResponse) {
-        const cached = (await cachedResponse.json()) as HonorRoll;
-        honorMemoryCache = {
-          expiresAt: Math.max(
-            now + 1000,
-            cached.updatedAt * 1000 + HONOR_CACHE_SECONDS * 1000
-          ),
-          value: cached
-        };
-        return cached;
-      }
-    } catch {
-      // Local Next.js and non-Cloudflare runtimes may not expose Cache API.
-    }
+  if (!honorBuildPromise) {
+    honorBuildPromise = buildHonorRoll();
   }
 
-  const fresh = await buildHonorRoll();
-  if (!fresh.__fallback) {
-    honorMemoryCache = {
-      expiresAt: fresh.updatedAt * 1000 + HONOR_CACHE_SECONDS * 1000,
-      value: fresh
-    };
-
-    if (edgeCache) {
-      try {
-        const remainingSeconds = Math.max(
-          1,
-          Math.ceil(
-            (fresh.updatedAt * 1000 +
-              HONOR_CACHE_SECONDS * 1000 -
-              now) /
-              1000
-          )
-        );
-        await edgeCache.put(
-          edgeCacheKey,
-          new Response(JSON.stringify(fresh), {
-            headers: {
-              "cache-control": `public, max-age=${remainingSeconds}`,
-              "content-type": "application/json; charset=utf-8"
-            }
-          })
-        );
-      } catch {
-        // The in-memory cache remains available when edge storage is absent.
-      }
+  try {
+    const fresh = await honorBuildPromise;
+    if (!fresh.__fallback) {
+      honorMemoryCache = {
+        expiresAt: Date.now() + HONOR_CACHE_SECONDS * 1000,
+        value: fresh
+      };
     }
+    return fresh;
+  } finally {
+    honorBuildPromise = undefined;
   }
-
-  return fresh;
 }
 
 export async function getForums(): Promise<ForumsResponse> {
@@ -657,6 +643,112 @@ export async function getUserReplies(
       currPage: 1,
       maxPage: 1,
       replyList: [],
+      __fallback: true
+    }
+  );
+}
+
+export async function getWeeklyReplyFeedPage(
+  page = 1,
+  pageSize = 100
+): Promise<UserRepliesResponse> {
+  const safePageSize = Math.min(100, Math.max(1, Math.trunc(pageSize) || 100));
+
+  return requestPublicJson(
+    "bbs.search.json",
+    {
+      keywords: "",
+      searchType: "reply",
+      p: Math.max(1, Math.trunc(page) || 1),
+      pageSize: safePageSize,
+      showBot: 0,
+      _content: "text",
+      _uinfo: "name,avatar",
+      _time: 1,
+      _json: "compact"
+    },
+    {
+      success: false,
+      uid: null,
+      replyCount: 0,
+      currPage: Math.max(1, Math.trunc(page) || 1),
+      maxPage: 1,
+      replyList: [],
+      __fallback: true
+    }
+  );
+}
+
+export type ReviewQueueFilter = "pending" | "mine" | "rejected";
+
+function reviewFilterValue(filter: ReviewQueueFilter) {
+  if (filter === "mine") return -1;
+  if (filter === "rejected") return 3;
+  return 1;
+}
+
+export async function getReviewQueue(
+  page = 1,
+  sid?: string,
+  filter: ReviewQueueFilter = "pending",
+  showBot = false
+): Promise<ReviewQueueResponse> {
+  const safePage = Math.max(1, Math.trunc(page) || 1);
+
+  return requestJson(
+    "bbs.search.json",
+    {
+      keywords: "",
+      searchType: "reply",
+      onlyReview: reviewFilterValue(filter),
+      showBot: showBot ? 1 : 0,
+      p: safePage,
+      pageSize: 20,
+      _uinfo: "name,avatar,sign",
+      _time: 1
+    },
+    {
+      success: false,
+      uid: null,
+      replyCount: 0,
+      currPage: safePage,
+      maxPage: 1,
+      replyList: [],
+      __fallback: true
+    },
+    {
+      ...(sid ? { headers: { "x-sid": sid } } : {}),
+      cache: "no-store"
+    }
+  );
+}
+
+export async function getWeeklyUserTopicsPage(
+  username: string,
+  page = 1,
+  pageSize = 100
+): Promise<SearchResponse> {
+  const safePageSize = Math.min(100, Math.max(1, Math.trunc(pageSize) || 100));
+
+  return requestPublicJson(
+    "bbs.search.json",
+    {
+      keywords: "",
+      username,
+      order: "ctime",
+      p: Math.max(1, Math.trunc(page) || 1),
+      pageSize: safePageSize,
+      _uinfo: "name,avatar",
+      _time: 1,
+      _json: "compact"
+    },
+    {
+      success: false,
+      uid: null,
+      topicCount: 0,
+      currPage: Math.max(1, Math.trunc(page) || 1),
+      maxPage: 1,
+      topicList: [],
       __fallback: true
     }
   );

@@ -1,4 +1,4 @@
-import { avatarUrl } from "@/lib/hu60";
+import { avatarUrl } from "@/lib/avatar";
 
 export function Avatar({
   src,

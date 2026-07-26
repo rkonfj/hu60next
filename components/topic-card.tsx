@@ -1,9 +1,9 @@
 import {
   ArrowUpRight,
   Eye,
-  Flame,
   LockKeyhole,
-  MessageCircle
+  MessageCircle,
+  Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
@@ -45,7 +45,7 @@ export function TopicCard({
           <Link href={`/topic/${topic.topic_id || topic.id}`}>
             {topic.essence ? (
               <span className="topic-state essence">
-                <Flame size={13} /> 精华
+                <Sparkles size={13} /> 精华
               </span>
             ) : null}
             {topic.locked ? (
@@ -71,7 +71,7 @@ export function TopicCard({
         <Link href={`/user/${topic.uid}`} className="topic-card-author-link">
           <Avatar src={topic._u_avatar} name={author} size="sm" />
           <div className="topic-card-author-copy">
-            <strong>{author}</strong>
+            <strong data-member-uid={topic.uid}>{author}</strong>
             <span>{relativeTime(topic.mtime || topic.ctime, now)}</span>
           </div>
         </Link>

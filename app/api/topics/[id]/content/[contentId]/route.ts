@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
 import type { EditPostFormResponse } from "@/lib/types";
 
 const API_BASE =
@@ -53,13 +54,17 @@ export async function POST(request: Request, { params }: RouteContext) {
     `bbs.edittopic.${topicId}.${postContentId}.${requestedPage}.json`;
 
   try {
-    const tokenResponse = await fetch(`${API_BASE}/${upstreamPath}`, {
-      headers: {
+    const { headers: tokenHeaders } = createHu60UpstreamHeaders(
+      request.headers,
+      {
         accept: "application/json",
         "user-agent": "Hulvlin-Next/0.1",
         "x-origin": "*",
         "x-sid": sid
-      },
+      }
+    );
+    const tokenResponse = await fetch(`${API_BASE}/${upstreamPath}`, {
+      headers: tokenHeaders,
       cache: "no-store"
     });
     const tokenData =
@@ -99,16 +104,16 @@ export async function POST(request: Request, { params }: RouteContext) {
     if (tokenData.editTitle) body.set("title", title);
     if (tokenData.needReason) body.set("editReason", editReason);
 
+    const { headers } = createHu60UpstreamHeaders(request.headers, {
+      accept: "application/json",
+      "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
+      "user-agent": "Hulvlin-Next/0.1",
+      "x-origin": "*",
+      "x-sid": sid
+    });
     const upstream = await fetch(`${API_BASE}/${upstreamPath}`, {
       method: "POST",
-      headers: {
-        accept: "application/json",
-        "content-type":
-          "application/x-www-form-urlencoded;charset=UTF-8",
-        "user-agent": "Hulvlin-Next/0.1",
-        "x-origin": "*",
-        "x-sid": sid
-      },
+      headers,
       body,
       cache: "no-store"
     });
