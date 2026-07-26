@@ -8,6 +8,7 @@ import {
 import type {
   ChatResponse,
   AccountProfile,
+  EditPostFormResponse,
   FavoriteTopicsResponse,
   ForumFace,
   ForumTree,
@@ -234,6 +235,28 @@ export async function getTopic(
           cache: "no-store"
         }
       : undefined
+  );
+}
+
+export async function getEditPostForm(
+  topicId: number,
+  contentId: number,
+  page = 1,
+  sid?: string
+): Promise<EditPostFormResponse> {
+  return requestJson(
+    `bbs.edittopic.${topicId}.${contentId}.${Math.max(1, page)}.json`,
+    {},
+    {
+      success: false,
+      notice: "暂时无法读取帖子内容。",
+      isLogin: null,
+      __fallback: true
+    },
+    {
+      ...(sid ? { headers: { "x-sid": sid } } : {}),
+      cache: "no-store"
+    }
   );
 }
 

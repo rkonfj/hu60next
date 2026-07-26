@@ -129,6 +129,33 @@ export type TopicResponse = {
   __fallback?: boolean;
 };
 
+export type EditPostFormResponse = {
+  success?: boolean;
+  notice?: string;
+  tMeta?: {
+    title: string;
+    uid: number;
+    content_id: number;
+    locked?: number;
+    access?: number;
+    review?: number;
+  };
+  floorMeta?: {
+    uid: number;
+    topic_id: number;
+    floor: number;
+    locked?: number;
+  };
+  isLogin?: boolean | null;
+  token?: string;
+  needReason?: boolean;
+  editTitle?: boolean;
+  title?: string;
+  content?: string;
+  preview?: string;
+  __fallback?: boolean;
+};
+
 export type SearchResponse = {
   success?: boolean;
   uid?: number | null;

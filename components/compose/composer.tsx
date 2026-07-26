@@ -31,7 +31,7 @@ type PickerLevel = {
   selected: string;
 };
 
-type AttachmentState = {
+export type AttachmentState = {
   id: string;
   name: string;
   size: number;
@@ -41,7 +41,7 @@ type AttachmentState = {
   downloadUrl?: string;
 };
 
-type UploadFormResult = {
+export type UploadFormResult = {
   success?: boolean;
   notice?: string;
   requestUrl?: string;
@@ -99,7 +99,7 @@ function restoreForumPicker(
   };
 }
 
-function formatFileSize(size: number) {
+export function formatFileSize(size: number) {
   if (size < 1024) return `${size} B`;
   if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
   if (size < 1024 * 1024 * 1024) {
@@ -108,7 +108,7 @@ function formatFileSize(size: number) {
   return `${(size / 1024 / 1024 / 1024).toFixed(1)} GB`;
 }
 
-async function checksumFile(
+export async function checksumFile(
   file: File,
   onProgress: (progress: number) => void
 ) {
@@ -126,7 +126,7 @@ async function checksumFile(
   return spark.end();
 }
 
-function uploadToObjectStorage(
+export function uploadToObjectStorage(
   file: File,
   form: UploadFormResult,
   onProgress: (progress: number) => void
@@ -208,7 +208,7 @@ function renderInline(
   });
 }
 
-function ComposerPreview({
+export function ComposerPreview({
   content,
   faces
 }: {
@@ -220,8 +220,12 @@ function ComposerPreview({
   }
 
   const faceMap = new Map(faces.map((face) => [face.name, face.url]));
+  const previewContent = content.replace(
+    /^<!--\s*markdown\s*-->\s*\n?/i,
+    ""
+  );
 
-  return content.split("\n").map((line, index) => {
+  return previewContent.split("\n").map((line, index) => {
     const attachment = line
       .trim()
       .match(/^《(图片|视频流|音频流|链接)：(.+?)，(.+?)（(.+?)）》$/);

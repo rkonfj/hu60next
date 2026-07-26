@@ -4,6 +4,7 @@ import {
   Flame,
   LockKeyhole,
   MessageCircle,
+  PencilLine,
   Reply
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -18,6 +19,7 @@ import {
   getFaces,
   getTopic,
   getUserProfile,
+  getUserStatus,
   isTopicFavorite
 } from "@/lib/hu60";
 import { getMemberTitle } from "@/lib/member";
@@ -48,10 +50,11 @@ export default async function TopicPage({
   const page = Math.max(1, Number(query.page) || 1);
   const cookieStore = await cookies();
   const sid = cookieStore.get("hulvlin_sid")?.value;
-  const [topic, isFavorite, faces] = await Promise.all([
+  const [topic, isFavorite, faces, session] = await Promise.all([
     getTopic(topicId, page, sid),
     isTopicFavorite(topicId, sid),
-    getFaces()
+    getFaces(),
+    getUserStatus(sid)
   ]);
 
   if (topic.__fallback) {
@@ -76,6 +79,7 @@ export default async function TopicPage({
     : getMemberTitle(authorProfile.regtime);
   const [mainFloor, ...replies] = topic.tContents;
   const meta = topic.tMeta;
+  const sessionUid = Number(session.uid);
   const publishedAt = Number(mainFloor?.ctime ?? meta.ctime);
   const editedAt = Number(mainFloor?.mtime ?? publishedAt);
   const mainFloorEdited = editedAt !== publishedAt;
@@ -152,6 +156,18 @@ export default async function TopicPage({
                 isLoggedIn={topic.isLogin === true}
                 initialFavorite={isFavorite}
               />
+              {mainFloor &&
+              sessionUid > 0 &&
+              sessionUid === Number(mainFloor.uid) &&
+              !mainFloor.locked ? (
+                <Link
+                  href={`/topic/${topicId}/edit/${mainFloor.id}${
+                    page > 1 ? `?page=${page}` : ""
+                  }`}
+                >
+                  <PencilLine size={14} /> 修改
+                </Link>
+              ) : null}
             </div>
           </article>
 
@@ -196,6 +212,17 @@ export default async function TopicPage({
                     }}
                   />
                   <div className="reply-actions">
+                    {sessionUid > 0 &&
+                    sessionUid === Number(floor.uid) &&
+                    !floor.locked ? (
+                      <Link
+                        href={`/topic/${topicId}/edit/${floor.id}${
+                          page > 1 ? `?page=${page}` : ""
+                        }`}
+                      >
+                        <PencilLine size={14} /> 修改
+                      </Link>
+                    ) : null}
                     {topic.canReply ? (
                       <a
                         href="#quick-reply"
