@@ -222,6 +222,30 @@ export type UserStatus = {
   newChats: unknown;
 };
 
+export type RelationshipType =
+  | "follow"
+  | "follow_me"
+  | "block"
+  | "block_me";
+
+export type RelationshipUser = {
+  uid: number;
+  name: string;
+  avatar?: string | null;
+};
+
+export type RelationshipResponse = {
+  type: RelationshipType;
+  title: string;
+  actions?: Record<string, string>;
+  inverseActions?: Record<string, string>;
+  inverseRelationship?: Record<string, boolean | number>;
+  currPage: number;
+  maxPage: number;
+  userList: RelationshipUser[];
+  __fallback?: boolean;
+};
+
 export type MessageItem = {
   id: number;
   touid: number;

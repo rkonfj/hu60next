@@ -3981,7 +3981,7 @@ body:has(> .auth-page) > .site-header {
   gap: 5px;
 }
 
-.settings-form :is(input:not([type="checkbox"]):not([type="color"]), textarea, select) {
+.settings-form :is(input:not([type="checkbox"]), textarea) {
   width: 100%;
   padding: 8px 9px;
   color: var(--ink);
@@ -3995,7 +3995,7 @@ body:has(> .auth-page) > .site-header {
   resize: vertical;
 }
 
-.settings-form :is(input:not([type="checkbox"]):not([type="color"]), textarea, select):focus {
+.settings-form :is(input:not([type="checkbox"]), textarea):focus {
   border-color: var(--green);
   background: var(--surface);
 }
@@ -4014,111 +4014,6 @@ body:has(> .auth-page) > .site-header {
   height: 15px;
   padding: 0;
   flex: 0 0 15px;
-}
-
-.tail-editor {
-  display: grid;
-  padding: 9px;
-  border: 1px solid var(--line);
-  background: var(--surface-soft);
-  gap: 9px;
-}
-
-.tail-editor-title {
-  display: flex;
-  align-items: center;
-  color: var(--green-strong);
-  gap: 7px;
-}
-
-.tail-editor-title > div {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.tail-editor-title strong {
-  font-size: 12px;
-}
-
-.tail-editor-title small,
-.tail-editor-notice,
-.settings-field-help {
-  color: var(--faint);
-  font-size: 9px;
-  font-weight: 500;
-}
-
-.tail-editor-text {
-  display: flex;
-  flex-direction: column;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 700;
-  gap: 5px;
-}
-
-.tail-editor-text small {
-  color: var(--faint);
-  font-size: 9px;
-  font-weight: 500;
-  line-height: 1.5;
-}
-
-.tail-editor-options {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.tail-editor-options > label {
-  display: inline-flex;
-  align-items: center;
-  color: var(--muted);
-  font-size: 9px;
-  font-weight: 700;
-  gap: 5px;
-}
-
-.tail-editor-options input[type="color"] {
-  width: 28px;
-  height: 28px;
-  padding: 2px;
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
-  cursor: pointer;
-}
-
-.tail-editor-options select {
-  width: auto;
-  min-width: 68px;
-  height: 30px;
-  padding: 2px 7px;
-  font-size: 10px;
-}
-
-.tail-editor-preview {
-  display: inline-block;
-  max-width: min(100%, 260px);
-  overflow: hidden;
-  padding: 2px 5px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tail-editor-options > button {
-  min-height: 30px;
-  padding: 0 10px;
-  color: #fff;
-  border: 0;
-  background: var(--green);
-  font-size: 10px;
-  font-weight: 750;
-}
-
-.settings-field-help {
-  line-height: 1.5;
 }
 
 .settings-form > button,
@@ -4272,6 +4167,149 @@ body:has(> .auth-page) > .site-header {
   margin-top: 5px;
   color: var(--faint);
   font-size: 9px;
+}
+
+.relationship-page {
+  display: grid;
+  gap: 12px;
+}
+
+.relationship-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.relationship-tabs a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 42px;
+  padding: 6px 8px;
+  color: var(--muted);
+  border-right: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 750;
+  gap: 6px;
+}
+
+.relationship-tabs a:last-child {
+  border-right: 0;
+}
+
+.relationship-tabs a.active {
+  color: var(--green-strong);
+  background: var(--green-soft);
+}
+
+.relationship-tabs a.active::after {
+  position: absolute;
+  right: 10px;
+  bottom: 0;
+  left: 10px;
+  height: 2px;
+  border-radius: 0 !important;
+  background: var(--green);
+  content: "";
+}
+
+.relationship-list {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.relationship-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  gap: 12px;
+}
+
+.relationship-row:last-child {
+  border-bottom: 0;
+}
+
+.relationship-user {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  color: var(--ink);
+  gap: 9px;
+}
+
+.relationship-user > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.relationship-user strong {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.relationship-user small,
+.relationship-row-action small {
+  color: var(--faint);
+  font-size: 9px;
+}
+
+.relationship-row-action {
+  display: flex;
+  align-items: flex-end;
+  min-width: 0;
+  flex-direction: column;
+  margin-left: auto;
+  gap: 3px;
+}
+
+.relationship-row-action button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 10px;
+  color: var(--green-strong);
+  border: 1px solid var(--line-strong);
+  background: var(--surface-soft);
+  font-size: 10px;
+  font-weight: 750;
+  gap: 5px;
+}
+
+.relationship-row-action button.danger {
+  color: var(--danger);
+}
+
+.relationship-row-action button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (max-width: 620px) {
+  .relationship-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .relationship-tabs a:nth-child(2) {
+    border-right: 0;
+  }
+
+  .relationship-tabs a:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .relationship-row {
+    padding: 9px;
+  }
 }
 
 .user-profile-title {
