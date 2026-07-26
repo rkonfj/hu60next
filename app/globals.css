@@ -5011,7 +5011,18 @@ body :is(
     --sidebar-sticky-top: 72px;
   }
 
-  :is(.left-rail, .right-rail, .community-rail, .forum-sidebar, .topic-aside) {
+  .user-profile-card {
+    --sidebar-sticky-top: 80px;
+  }
+
+  :is(
+    .left-rail,
+    .right-rail,
+    .community-rail,
+    .forum-sidebar,
+    .topic-aside,
+    .user-profile-card
+  ) {
     position: fixed;
     z-index: 5;
     top: var(--sidebar-sticky-top);
@@ -5022,13 +5033,40 @@ body :is(
     width: 300px;
   }
 
-  :is(.right-rail, .community-rail, .forum-sidebar, .topic-aside) {
+  :is(
+    .right-rail,
+    .community-rail,
+    .forum-sidebar,
+    .topic-aside,
+    .user-profile-card
+  ) {
     right: max(22px, calc((100% - 1240px) / 2));
     width: 300px;
   }
 
   .feed-column {
     grid-column: 1;
+  }
+
+  .user-page {
+    display: grid;
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 0 18px;
+  }
+
+  .user-page > .user-profile-card {
+    margin-bottom: 0;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .user-page > :is(.profile-tabs, .user-topic-section) {
+    grid-column: 1;
+  }
+
+  .user-page .user-profile-copy h1 {
+    font-size: 24px;
   }
 }
 
@@ -5038,8 +5076,18 @@ body :is(
   }
 
   .left-rail,
-  :is(.right-rail, .community-rail, .forum-sidebar, .topic-aside) {
+  :is(
+    .right-rail,
+    .community-rail,
+    .forum-sidebar,
+    .topic-aside,
+    .user-profile-card
+  ) {
     width: 260px;
+  }
+
+  .user-page {
+    grid-template-columns: minmax(0, 1fr) 260px;
   }
 }
 
