@@ -28,6 +28,7 @@ import type { ForumFace } from "@/lib/types";
 
 type ReplyFormProps = {
   topicId: number;
+  userId: number;
   token: string;
   faces: ForumFace[];
   initialNotice?: string;
@@ -35,15 +36,18 @@ type ReplyFormProps = {
 
 export function ReplyForm({
   topicId,
+  userId,
   token,
   faces,
   initialNotice = ""
 }: ReplyFormProps) {
   const router = useRouter();
+  const draftKey = `hulvlin-reply-draft:${userId}:${topicId}`;
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState(initialNotice);
   const [success, setSuccess] = useState(false);
   const [content, setContent] = useState("");
+  const [loadedDraftKey, setLoadedDraftKey] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<AttachmentState[]>([]);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -145,6 +149,29 @@ export function ReplyForm({
   }
 
   useEffect(() => {
+    try {
+      setContent(localStorage.getItem(draftKey) ?? "");
+    } catch {
+      setContent("");
+    }
+    setLoadedDraftKey(draftKey);
+  }, [draftKey]);
+
+  useEffect(() => {
+    if (loadedDraftKey !== draftKey) return;
+
+    try {
+      if (content) {
+        localStorage.setItem(draftKey, content);
+      } else {
+        localStorage.removeItem(draftKey);
+      }
+    } catch {
+      // 浏览器禁用或限制本地存储时仍允许正常回复。
+    }
+  }, [content, draftKey, loadedDraftKey]);
+
+  useEffect(() => {
     function handleFloorReply(event: MouseEvent) {
       if (!(event.target instanceof Element)) return;
       const trigger = event.target.closest<HTMLElement>("[data-reply-author]");
@@ -183,6 +210,11 @@ export function ReplyForm({
       }
 
       form.reset();
+      try {
+        localStorage.removeItem(draftKey);
+      } catch {
+        // 浏览器禁用或限制本地存储时无需额外处理。
+      }
       setContent("");
       setAttachments([]);
       setSuccess(true);

@@ -82,6 +82,7 @@ export type HonorRoll = {
   legacy: HonorMember[];
   active: HonorMember[];
   updatedAt: number;
+  partial?: boolean;
   __fallback?: boolean;
 };
 

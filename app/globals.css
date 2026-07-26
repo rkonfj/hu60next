@@ -2375,6 +2375,14 @@ select:focus-visible {
   font-size: 16px;
 }
 
+.author-card-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .author-card > p {
   margin: 7px 0 14px;
   color: var(--muted);
@@ -4575,7 +4583,7 @@ body:has(> .auth-page) > .site-header {
 }
 
 .author-member-badge {
-  margin: 6px auto 0;
+  margin: 0;
 }
 
 .user-profile-copy p {
