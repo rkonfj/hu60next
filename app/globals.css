@@ -424,6 +424,101 @@ select:focus-visible {
   font-weight: 700;
 }
 
+.home-weekly-report {
+  display: block;
+  margin-bottom: 14px;
+  padding: 14px;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(135deg, var(--green-soft), transparent 58%),
+    var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.home-weekly-report > header,
+.home-weekly-report > header > span,
+.home-weekly-score,
+.home-weekly-score > span {
+  display: flex;
+  align-items: center;
+}
+
+.home-weekly-report > header {
+  justify-content: space-between;
+  color: var(--green);
+}
+
+.home-weekly-report > header > span {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  gap: 6px;
+}
+
+.home-weekly-report > header > svg {
+  color: var(--faint);
+}
+
+.home-weekly-report > p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.home-weekly-score {
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.home-weekly-score > span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 750;
+  gap: 5px;
+}
+
+.home-weekly-score > span > svg {
+  color: var(--orange);
+}
+
+.home-weekly-score > strong {
+  color: var(--orange);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.home-weekly-score small {
+  margin-left: 3px;
+  font-size: 9px;
+}
+
+.home-weekly-metrics {
+  display: grid;
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid var(--line);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.home-weekly-metrics > span {
+  color: var(--faint);
+  font-size: 8px;
+  text-align: center;
+}
+
+.home-weekly-metrics > span + span {
+  border-left: 1px solid var(--line);
+}
+
+.home-weekly-metrics strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
 .forum-nav {
   display: flex;
   flex-direction: column;
@@ -6129,16 +6224,6 @@ body :is(
   font-size: 15px;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.honor-label {
-  flex: 0 0 auto;
-  padding: 2px 6px;
-  color: var(--green);
-  border: 1px solid var(--line);
-  background: var(--green-soft);
-  font-size: 10px;
-  font-weight: 750;
 }
 
 .honor-member > svg {

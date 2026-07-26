@@ -1,4 +1,6 @@
 import {
+  Activity,
+  ArrowUpRight,
   Blocks,
   Bot,
   ChevronRight,
@@ -6,16 +8,78 @@ import {
   Megaphone,
   MonitorSmartphone,
   PanelsTopLeft,
-  Smartphone
+  Smartphone,
+  Trophy
 } from "lucide-react";
+import { cookies } from "next/headers";
 import Link from "next/link";
+import { getUserStatus } from "@/lib/hu60";
 import type { Forum } from "@/lib/types";
+import {
+  getPersonalWeeklyReport,
+  weeklyMvpScore
+} from "@/lib/weekly-report";
 
 const icons = [Laptop, PanelsTopLeft, Bot, Smartphone, Blocks, Megaphone];
+
+async function HomeWeeklyReport() {
+  const cookieStore = await cookies();
+  const status = await getUserStatus(
+    cookieStore.get("hulvlin_sid")?.value
+  );
+
+  if (!status.uid || !status.name) return null;
+
+  const report = await getPersonalWeeklyReport(status.uid, status.name);
+
+  return (
+    <Link href="/me" className="home-weekly-report">
+      <header>
+        <span>
+          <Activity size={15} />
+          交流周报
+        </span>
+        <ArrowUpRight size={14} aria-hidden="true" />
+      </header>
+
+      {report.__fallback ? (
+        <p>周报暂时不可用，点击进入“我的”页面稍后重试。</p>
+      ) : (
+        <>
+          <div className="home-weekly-score">
+            <span>
+              <Trophy size={14} aria-hidden="true" />
+              本周 MVP
+            </span>
+            <strong>
+              {weeklyMvpScore(report.current)}
+              <small>分</small>
+            </strong>
+          </div>
+          <div className="home-weekly-metrics">
+            <span>
+              <strong>{report.current.discussionsJoined}</strong>
+              场讨论
+            </span>
+            <span>
+              <strong>{report.current.peopleInteracted}</strong>
+              位会员
+            </span>
+            <span>
+              <strong>{report.current.repliesReceived}</strong>
+              条交流
+            </span>
+          </div>
+        </>
+      )}
+    </Link>
+  );
+}
 
 export function CommunityRail({ forums }: { forums: Forum[] }) {
   return (
     <aside className="community-rail">
+      <HomeWeeklyReport />
       <div className="rail-title">
         <span>社区版块</span>
         <Link href="/forums">全部</Link>
