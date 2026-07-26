@@ -3,38 +3,39 @@ import { notFound } from "next/navigation";
 import { UserProfileView } from "@/components/user-profile-view";
 import { getUserProfile } from "@/lib/hu60";
 
-type UserPageProps = {
-  params: Promise<{ id: string }>;
+type UserTabPageProps = {
+  params: Promise<{ id: string; tab: string }>;
   searchParams: Promise<{ page?: string }>;
 };
 
 export async function generateMetadata({
   params
-}: UserPageProps): Promise<Metadata> {
-  const { id } = await params;
+}: UserTabPageProps): Promise<Metadata> {
+  const { id, tab } = await params;
   const uid = Number(id);
 
-  if (!Number.isInteger(uid) || uid <= 0) {
+  if (tab !== "replies" || !Number.isInteger(uid) || uid <= 0) {
     return { title: "用户主页" };
   }
 
   const profile = await getUserProfile(uid);
-  if (profile.__fallback) return { title: "用户主页" };
+  if (profile.__fallback) return { title: "用户回复" };
 
-  return {
-    title: profile.name || `用户 ${uid}`,
-    description: profile.signature || `虎绿林用户 ${uid} 的个人主页`
-  };
+  return { title: `${profile.name || `用户 ${uid}`}的回复` };
 }
 
-export default async function UserPage({
+export default async function UserTabPage({
   params,
   searchParams
-}: UserPageProps) {
-  const [{ id }, query] = await Promise.all([params, searchParams]);
+}: UserTabPageProps) {
+  const [{ id, tab }, query] = await Promise.all([params, searchParams]);
   const uid = Number(id);
 
-  if (!Number.isInteger(uid) || uid <= 0) {
+  if (
+    tab !== "replies" ||
+    !Number.isInteger(uid) ||
+    uid <= 0
+  ) {
     notFound();
   }
 
@@ -42,7 +43,7 @@ export default async function UserPage({
     <UserProfileView
       uid={uid}
       page={Math.max(1, Number(query.page) || 1)}
-      activeTab="topics"
+      activeTab="replies"
     />
   );
 }

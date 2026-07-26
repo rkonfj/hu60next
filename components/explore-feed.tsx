@@ -63,7 +63,7 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
       <section className="feed-column">
         {feed.__fallback && (
           <div className="data-notice">
-            暂时无法获取最新内容，正在展示离线示例；服务恢复后会自动刷新。
+            暂时无法获取社区内容，请稍后刷新重试。
           </div>
         )}
 
@@ -96,6 +96,14 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
             <TopicCard key={topic.id} topic={topic} now={feed._time} />
           ))}
         </div>
+
+        {feed.__fallback && !topics.length ? (
+          <div className="empty-state">
+            <Activity size={28} />
+            <h2>内容暂时不可用</h2>
+            <p>没有使用离线帖子或示例数据代替真实内容。</p>
+          </div>
+        ) : null}
 
         <Pagination
           current={currentPage}

@@ -14,7 +14,8 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { Pagination } from "@/components/pagination";
 import { ReplyForm } from "@/components/reply-form";
 import { compactNumber, fullDate, relativeTime } from "@/lib/format";
-import { getTopic, isTopicFavorite } from "@/lib/hu60";
+import { getTopic, getUserProfile, isTopicFavorite } from "@/lib/hu60";
+import { getMemberTitle } from "@/lib/member";
 import { sanitizeHu60Content } from "@/lib/sanitize";
 
 type TopicPageProps = {
@@ -46,17 +47,32 @@ export default async function TopicPage({
     getTopic(topicId, page, sid),
     isTopicFavorite(topicId, sid)
   ]);
+
+  if (topic.__fallback) {
+    return (
+      <main className="page-shell topic-page">
+        <div className="data-notice">
+          暂时无法读取这个帖子，请稍后刷新重试。
+        </div>
+        <div className="empty-state">
+          <MessageCircle size={30} />
+          <h1>帖子暂时不可用</h1>
+          <p>没有使用离线正文或模拟回复代替真实内容。</p>
+          <Link href="/explore/active">返回发现页</Link>
+        </div>
+      </main>
+    );
+  }
+
+  const authorProfile = await getUserProfile(topic.tMeta.uid);
+  const authorMemberTitle = authorProfile.__fallback
+    ? null
+    : getMemberTitle(authorProfile.regtime);
   const [mainFloor, ...replies] = topic.tContents;
   const meta = topic.tMeta;
 
   return (
     <main className="page-shell topic-page">
-      {topic.__fallback && (
-        <div className="data-notice">
-          暂时无法读取这个帖子，正在展示安全的离线示例。
-        </div>
-      )}
-
       <div className="topic-layout">
         <div className="topic-content-column">
           <article className="topic-article">
@@ -226,6 +242,11 @@ export default async function TopicPage({
             <Link href={`/user/${meta.uid}`} className="author-card-identity">
               <Avatar src={meta._u_avatar} name={meta._u_name} size="xl" />
               <strong>{meta._u_name || `用户 ${meta.uid}`}</strong>
+              {authorMemberTitle ? (
+                <span className="member-badge author-member-badge">
+                  {authorMemberTitle}
+                </span>
+              ) : null}
             </Link>
             <p>{meta._u_signature || "这位用户还没有留下个人签名。"}</p>
             <Link href={`/user/${meta.uid}`} className="author-card-link">

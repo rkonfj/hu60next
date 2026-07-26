@@ -3637,7 +3637,7 @@ body:has(> .auth-page) > .site-header {
   letter-spacing: -0.04em;
 }
 
-.user-profile-title > span {
+.member-badge {
   display: inline-flex;
   align-items: center;
   margin-top: 5px;
@@ -3648,6 +3648,10 @@ body:has(> .auth-page) > .site-header {
   font-size: 10px;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.author-member-badge {
+  margin: 6px auto 0;
 }
 
 .user-profile-copy p {
@@ -3681,6 +3685,39 @@ body:has(> .auth-page) > .site-header {
   font-size: 15px;
 }
 
+.profile-tabs {
+  display: flex;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+  gap: 4px;
+}
+
+.profile-tabs a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+  gap: 5px;
+}
+
+.profile-tabs a.active {
+  color: var(--green-strong);
+}
+
+.profile-tabs a.active::after {
+  position: absolute;
+  right: 8px;
+  bottom: -1px;
+  left: 8px;
+  height: 2px;
+  border-radius: 0 !important;
+  background: var(--green);
+  content: "";
+}
+
 .user-topic-heading {
   display: flex;
   align-items: flex-end;
@@ -3696,6 +3733,80 @@ body:has(> .auth-page) > .site-header {
 .user-topic-heading > span {
   color: var(--faint);
   font-size: 10px;
+}
+
+.user-reply-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user-reply-card {
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.user-reply-card > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.user-reply-card > header > div {
+  min-width: 0;
+}
+
+.user-reply-card > header span {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--faint);
+  font-size: 9px;
+}
+
+.user-reply-card > header a {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.user-reply-card > header > a {
+  flex: 0 0 auto;
+  color: var(--green);
+  font-size: 10px;
+}
+
+.user-reply-content {
+  max-height: 240px;
+  margin-top: 10px;
+  padding: 10px 0;
+  overflow: hidden;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.user-reply-content img {
+  max-height: 180px;
+  object-fit: contain;
+}
+
+.user-reply-card > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  color: var(--faint);
+  font-size: 9px;
+}
+
+.user-reply-card > footer a {
+  color: var(--green);
+  font-weight: 750;
 }
 
 /* Loading */

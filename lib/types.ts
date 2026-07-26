@@ -135,6 +135,37 @@ export type SearchResponse = {
   __fallback?: boolean;
 };
 
+export type UserReply = {
+  id: number;
+  topic_id: number;
+  uid: number;
+  floor: number;
+  ctime: number;
+  mtime: number;
+  content: string;
+  _u_name?: string | null;
+  _u_avatar?: string | null;
+  _u_signature?: string | null;
+  topic: {
+    id: number;
+    title: string;
+    forum_id: number;
+    read_count?: number;
+    _topic_summary?: string | null;
+  };
+};
+
+export type UserRepliesResponse = {
+  success?: boolean;
+  uid?: number | null;
+  replyCount: number;
+  currPage: number;
+  maxPage: number;
+  replyList: UserReply[];
+  _time?: number;
+  __fallback?: boolean;
+};
+
 export type UserStatus = {
   uid: number | null;
   name: string | null;

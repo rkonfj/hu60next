@@ -26,6 +26,23 @@ export default async function ForumPage({
   const forumId = Number(id);
   const page = Math.max(1, Number(query.page) || 1);
   const forum = await getForum(forumId, page);
+
+  if (forum.__fallback) {
+    return (
+      <main className="page-shell content-page forum-page">
+        <div className="data-notice">
+          暂时无法读取这个版块，请稍后刷新重试。
+        </div>
+        <div className="empty-state">
+          <FolderOpen size={28} />
+          <h1>版块内容暂时不可用</h1>
+          <p>没有使用离线帖子或示例内容代替真实数据。</p>
+          <Link href="/forums">查看全部版块</Link>
+        </div>
+      </main>
+    );
+  }
+
   const topics =
     forum.topicList ??
     forum.childForum.flatMap((child) => child.newTopic ?? []);

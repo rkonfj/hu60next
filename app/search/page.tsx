@@ -37,7 +37,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </form>
       </header>
 
-      {result && (
+      {result?.__fallback ? (
+        <div className="data-notice">
+          暂时无法完成搜索，请稍后刷新重试。
+        </div>
+      ) : null}
+
+      {result && !result.__fallback && (
         <div className="search-summary">
           <span>
             “{query}” 找到 <strong>{result.topicCount}</strong> 条讨论
@@ -52,7 +58,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         ))}
       </div>
 
-      {result && !result.topicList.length && (
+      {result && !result.__fallback && !result.topicList.length && (
         <div className="empty-state">
           <SearchX size={30} />
           <h2>没有找到相关讨论</h2>
@@ -60,7 +66,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </div>
       )}
 
-      {result && (
+      {result && !result.__fallback && (
         <Pagination
           current={result.currPage}
           max={result.maxPage}

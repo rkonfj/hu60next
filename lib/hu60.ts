@@ -18,6 +18,7 @@ import type {
   Topic,
   TopicResponse,
   UserProfile,
+  UserRepliesResponse,
   UserStatus
 } from "@/lib/types";
 
@@ -121,9 +122,7 @@ export async function getGlobalTopics(
       ...fallbackForums,
       currPage: 1,
       maxPage: 1,
-      topicList: essence
-        ? [{ ...fallbackHome.newTopicList[0], essence: 1 }]
-        : fallbackHome.newTopicList
+      topicList: []
     },
     {
       ...(sid ? { headers: { "x-sid": sid } } : {}),
@@ -149,13 +148,7 @@ export async function getNewTopicForm(): Promise<NewTopicFormResponse> {
     {},
     {
       isLogin: null,
-      forums: fallbackForums.childForum.map((forum) => ({
-        id: forum.id,
-        name: forum.name,
-        notopic: 0,
-        access: 0,
-        child: []
-      })),
+      forums: [],
       __fallback: true
     },
     { cache: "no-store" }
@@ -196,11 +189,9 @@ export async function getForum(
     },
     {
       ...fallbackForums,
-      fName:
-        fallbackForums.childForum.find((forum) => forum.id === id)?.name ??
-        "社区版块",
+      fName: "版块暂时不可用",
       childForum: [],
-      topicList: fallbackHome.newTopicList
+      topicList: []
     }
   );
 }
@@ -322,10 +313,6 @@ export async function getUserTopics(
   username: string,
   page = 1
 ): Promise<SearchResponse> {
-  const fallbackTopics = fallbackHome.newTopicList.filter(
-    (topic) => topic._u_name === username
-  );
-
   return requestJson(
     "bbs.search.json",
     {
@@ -338,11 +325,40 @@ export async function getUserTopics(
       _time: 1
     },
     {
-      success: true,
-      topicCount: fallbackTopics.length,
+      success: false,
+      topicCount: 0,
       currPage: 1,
       maxPage: 1,
-      topicList: fallbackTopics,
+      topicList: [],
+      __fallback: true
+    }
+  );
+}
+
+export async function getUserReplies(
+  username: string,
+  page = 1
+): Promise<UserRepliesResponse> {
+  return requestJson(
+    "bbs.search.json",
+    {
+      keywords: "",
+      username,
+      searchType: "reply",
+      p: Math.max(1, page),
+      pageSize: TOPICS_PER_PAGE,
+      _topic_summary: 180,
+      _uinfo: "name,avatar,sign",
+      _content: "html",
+      _time: 1
+    },
+    {
+      success: false,
+      uid: null,
+      replyCount: 0,
+      currPage: 1,
+      maxPage: 1,
+      replyList: [],
       __fallback: true
     }
   );

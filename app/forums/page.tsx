@@ -26,7 +26,9 @@ export default async function ForumsPage() {
       </header>
 
       {forums.__fallback && (
-        <div className="data-notice">暂时使用离线版块数据。</div>
+        <div className="data-notice">
+          暂时无法读取社区版块，请稍后刷新重试。
+        </div>
       )}
 
       <div className="forum-grid">
@@ -55,6 +57,14 @@ export default async function ForumsPage() {
           </section>
         ))}
       </div>
+
+      {forums.__fallback && !forums.childForum.length ? (
+        <div className="empty-state">
+          <FolderOpen size={28} />
+          <h2>版块暂时不可用</h2>
+          <p>没有使用离线板块或示例内容代替真实数据。</p>
+        </div>
+      ) : null}
     </main>
   );
 }
