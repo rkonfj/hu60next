@@ -3474,7 +3474,7 @@ body:has(> .auth-page) > .site-header {
 .chat-message {
   display: grid;
   padding: 10px 11px;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 9px;
 }
 
@@ -3944,21 +3944,12 @@ body:has(> .auth-page) > .site-header {
 .user-profile-stats {
   display: flex;
   align-items: center;
+  padding-left: 12px;
+  border-left: 1px solid var(--line);
   gap: 14px;
 }
 
-.user-profile-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-width: 0;
-  padding-top: 7px;
-  border-top: 1px solid var(--line);
-  grid-column: 1 / -1;
-  gap: 10px;
-}
-
-.user-profile-footer > .user-relationship-actions {
+.user-profile-stats > :is(.user-relationship-wrap, .user-relationship-actions) {
   justify-content: flex-end;
   margin-left: auto;
 }
@@ -4958,11 +4949,12 @@ body :is(
 
   .user-profile-stats {
     flex-wrap: wrap;
-  }
-
-  .user-profile-footer {
     padding-top: 6px;
-    gap: 6px;
+    padding-left: 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+    grid-column: 1 / -1;
+    gap: 8px;
   }
 
   .user-registration {
