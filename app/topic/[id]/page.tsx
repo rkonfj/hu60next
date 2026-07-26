@@ -77,11 +77,21 @@ export default async function TopicPage({
     );
   }
 
-  const authorProfile = await getUserProfile(topic.tMeta.uid);
+  const [authorProfile, firstPageTopic] = await Promise.all([
+    getUserProfile(topic.tMeta.uid),
+    page === 1
+      ? Promise.resolve(topic)
+      : getTopic(topicId, 1, sid)
+  ]);
   const authorMemberTitle = authorProfile.__fallback
     ? null
     : getMemberTitle(authorProfile.regtime);
-  const [mainFloor, ...replies] = topic.tContents;
+  const mainFloor = firstPageTopic.tContents.find(
+    (floor) => Number(floor.floor) === 0
+  );
+  const replies = topic.tContents.filter(
+    (floor) => Number(floor.floor) > 0
+  );
   const meta = topic.tMeta;
   const sessionUid = Number(session.uid);
   const canReview =
@@ -283,6 +293,12 @@ export default async function TopicPage({
             )}
           </section>
 
+          <Pagination
+            current={topic.currPage}
+            max={topic.maxPage}
+            path={`/topic/${topicId}`}
+          />
+
           {topic.canReply && topic.token ? (
             <ReplyForm
               topicId={topicId}
@@ -310,12 +326,6 @@ export default async function TopicPage({
               </Link>
             </div>
           )}
-
-          <Pagination
-            current={topic.currPage}
-            max={topic.maxPage}
-            path={`/topic/${topicId}`}
-          />
         </div>
 
         <aside className="topic-aside">
