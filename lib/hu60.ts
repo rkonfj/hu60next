@@ -20,6 +20,7 @@ import type {
   NewTopicFormResponse,
   RelationshipResponse,
   RelationshipType,
+  ReviewQueueResponse,
   SearchResponse,
   Topic,
   TopicResponse,
@@ -119,13 +120,6 @@ async function requestPublicJson<T>(
   } catch {
     return fallback;
   }
-}
-
-export function avatarUrl(value?: string | null) {
-  if (!value || value === "/upload/default.jpg") return null;
-  if (value.startsWith("//")) return `https:${value}`;
-  if (value.startsWith("/")) return `https://hu60.cn${value}`;
-  return value.replace("http://", "https://");
 }
 
 export async function getFaces(): Promise<ForumFace[]> {
@@ -660,6 +654,50 @@ export async function getWeeklyReplyFeedPage(
       maxPage: 1,
       replyList: [],
       __fallback: true
+    }
+  );
+}
+
+export type ReviewQueueFilter = "pending" | "mine" | "rejected";
+
+function reviewFilterValue(filter: ReviewQueueFilter) {
+  if (filter === "mine") return -1;
+  if (filter === "rejected") return 3;
+  return 1;
+}
+
+export async function getReviewQueue(
+  page = 1,
+  sid?: string,
+  filter: ReviewQueueFilter = "pending",
+  showBot = false
+): Promise<ReviewQueueResponse> {
+  const safePage = Math.max(1, Math.trunc(page) || 1);
+
+  return requestJson(
+    "bbs.search.json",
+    {
+      keywords: "",
+      searchType: "reply",
+      onlyReview: reviewFilterValue(filter),
+      showBot: showBot ? 1 : 0,
+      p: safePage,
+      pageSize: 20,
+      _uinfo: "name,avatar,sign",
+      _time: 1
+    },
+    {
+      success: false,
+      uid: null,
+      replyCount: 0,
+      currPage: safePage,
+      maxPage: 1,
+      replyList: [],
+      __fallback: true
+    },
+    {
+      ...(sid ? { headers: { "x-sid": sid } } : {}),
+      cache: "no-store"
     }
   );
 }

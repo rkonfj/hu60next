@@ -8,6 +8,7 @@ import {
   MessageSquareText,
   PenLine,
   Settings,
+  ShieldCheck,
   Sparkles,
   Trophy,
   UserRound,
@@ -212,6 +213,15 @@ export default async function MePage() {
       </section>
 
       <div className="account-links">
+        {status.permissions?.includes("PERMISSION_REVIEW_POST") ? (
+          <Link href="/reviews">
+            <ShieldCheck size={20} />
+            <span>
+              <strong>审核中心</strong>
+              <small>审核帖子、回复并查看完整记录</small>
+            </span>
+          </Link>
+        ) : null}
         <Link href="/messages">
           <Bell size={20} />
           <span>

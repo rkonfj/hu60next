@@ -96,6 +96,13 @@ export type ForumsResponse = {
   __fallback?: boolean;
 };
 
+export type ReviewLogEntry = {
+  time: number;
+  uid: number;
+  stat: number;
+  comment?: string | null;
+};
+
 export type Floor = {
   uid: number;
   ctime: number;
@@ -106,6 +113,8 @@ export type Floor = {
   topic_id: number;
   locked?: number;
   flags?: number;
+  review?: number;
+  review_log?: ReviewLogEntry[];
   canEdit?: boolean;
   canDel?: boolean;
   _u_name?: string | null;
@@ -195,6 +204,7 @@ export type UserReply = {
   flags?: number;
   locked?: number;
   review?: number;
+  review_log?: ReviewLogEntry[];
   _u_name?: string | null;
   _u_avatar?: string | null;
   _u_signature?: string | null;
@@ -223,6 +233,10 @@ export type UserRepliesResponse = {
   replyList: UserReply[];
   _time?: number;
   __fallback?: boolean;
+};
+
+export type ReviewQueueResponse = Omit<UserRepliesResponse, "replyList"> & {
+  replyList: UserReply[];
 };
 
 export type WeeklyReportStats = {

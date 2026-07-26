@@ -1,11 +1,11 @@
 import {
   Clock3,
   Eye,
-  Flame,
   LockKeyhole,
   MessageCircle,
   PencilLine,
-  Reply
+  Reply,
+  Sparkles
 } from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
@@ -14,6 +14,7 @@ import { Avatar } from "@/components/avatar";
 import { FavoriteButton } from "@/components/favorite-button";
 import { Pagination } from "@/components/pagination";
 import { ReplyForm } from "@/components/reply-form";
+import { ReviewActions } from "@/components/reviews/review-actions";
 import { compactNumber, fullDate, relativeTime } from "@/lib/format";
 import {
   getFaces,
@@ -23,7 +24,10 @@ import {
   isTopicFavorite
 } from "@/lib/hu60";
 import { getMemberTitle } from "@/lib/member";
-import { sanitizeHu60Content } from "@/lib/sanitize";
+import {
+  sanitizeHu60Content,
+  sanitizeHu60ReviewContent
+} from "@/lib/sanitize";
 
 type TopicPageProps = {
   params: Promise<{ id: string }>;
@@ -80,6 +84,9 @@ export default async function TopicPage({
   const [mainFloor, ...replies] = topic.tContents;
   const meta = topic.tMeta;
   const sessionUid = Number(session.uid);
+  const canReview =
+    session.isLogin === true &&
+    session.permissions?.includes("PERMISSION_REVIEW_POST");
   const publishedAt = Number(mainFloor?.ctime ?? meta.ctime);
   const editedAt = Number(mainFloor?.mtime ?? publishedAt);
   const mainFloorEdited = editedAt !== publishedAt;
@@ -93,7 +100,7 @@ export default async function TopicPage({
               <div className="topic-labels">
                 {meta.essence ? (
                   <span className="topic-state essence">
-                    <Flame size={13} /> 精华
+                    <Sparkles size={13} /> 精华
                   </span>
                 ) : null}
                 {meta.locked ? (
@@ -144,7 +151,10 @@ export default async function TopicPage({
               <div
                 className="rich-content"
                 dangerouslySetInnerHTML={{
-                  __html: sanitizeHu60Content(mainFloor.content)
+                  __html:
+                    canReview && Number(mainFloor.review || 0) !== 0
+                      ? sanitizeHu60ReviewContent(mainFloor.content)
+                      : sanitizeHu60Content(mainFloor.content)
                 }}
               />
             ) : (
@@ -169,6 +179,17 @@ export default async function TopicPage({
                 </Link>
               ) : null}
             </div>
+            {canReview &&
+            (Number(mainFloor?.review || 0) !== 0 ||
+              Boolean(mainFloor?.review_log?.length)) &&
+            mainFloor ? (
+              <ReviewActions
+                contentId={mainFloor.id}
+                reviewState={mainFloor.review}
+                logs={mainFloor.review_log}
+                context={{ type: "topic", topicId, page }}
+              />
+            ) : null}
           </article>
 
           <section className="reply-section" id="replies">
@@ -208,7 +229,10 @@ export default async function TopicPage({
                   <div
                     className="rich-content reply-content"
                     dangerouslySetInnerHTML={{
-                      __html: sanitizeHu60Content(floor.content)
+                      __html:
+                        canReview && Number(floor.review || 0) !== 0
+                          ? sanitizeHu60ReviewContent(floor.content)
+                          : sanitizeHu60Content(floor.content)
                     }}
                   />
                   <div className="reply-actions">
@@ -234,6 +258,16 @@ export default async function TopicPage({
                       </a>
                     ) : null}
                   </div>
+                  {canReview &&
+                  (Number(floor.review || 0) !== 0 ||
+                    Boolean(floor.review_log?.length)) ? (
+                    <ReviewActions
+                      contentId={floor.id}
+                      reviewState={floor.review}
+                      logs={floor.review_log}
+                      context={{ type: "topic", topicId, page }}
+                    />
+                  ) : null}
                 </article>
               ))}
             </div>

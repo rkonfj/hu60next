@@ -7,6 +7,11 @@ export async function MobileNav() {
   const sid = cookieStore.get("hulvlin_sid")?.value;
   const session = await getUserStatus(sid);
   const isLoggedIn = Boolean(sid || session.uid || session.isLogin === true);
+  const canReview =
+    session.isLogin === true &&
+    session.permissions?.includes("PERMISSION_REVIEW_POST") === true;
 
-  return <MobileNavClient isLoggedIn={isLoggedIn} />;
+  return (
+    <MobileNavClient isLoggedIn={isLoggedIn} canReview={canReview} />
+  );
 }

@@ -143,6 +143,35 @@ function normalizeDivClass(value = "") {
   return [...new Set(classes)].join(" ");
 }
 
+function stripLeadingReviewNotice(content: string) {
+  const opening = content.match(
+    /<div\b[^>]*class=(?:"[^"]*\binfo-box\b[^"]*"|'[^']*\binfo-box\b[^']*')[^>]*>/i
+  );
+  if (!opening || opening.index === undefined || opening.index > 240) {
+    return content;
+  }
+
+  const tagPattern = /<\/?div\b[^>]*>/gi;
+  tagPattern.lastIndex = opening.index;
+  let depth = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = tagPattern.exec(content))) {
+    if (/^<div\b/i.test(match[0])) {
+      depth += 1;
+      continue;
+    }
+
+    depth -= 1;
+    if (depth === 0) {
+      return `${content.slice(0, opening.index)}${content.slice(tagPattern.lastIndex)}`
+        .replace(/^\s+/, "");
+    }
+  }
+
+  return content;
+}
+
 export function sanitizeHu60Content(content: string) {
   const sanitized = sanitizeHtml(content, {
     allowedTags: [
@@ -428,4 +457,15 @@ export function sanitizeHu60Content(content: string) {
   });
 
   return highlightCodeBlocks(sanitized);
+}
+
+export function sanitizeHu60ReviewContent(
+  content: string,
+  hasEmbeddedReviewNotice = true
+) {
+  return sanitizeHu60Content(
+    hasEmbeddedReviewNotice
+      ? stripLeadingReviewNotice(content)
+      : content
+  );
 }
