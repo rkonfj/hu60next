@@ -1,4 +1,65 @@
 import sanitizeHtml from "sanitize-html";
+import { highlightCode } from "@/lib/highlight";
+
+function decodeCodeEntities(value: string) {
+  return value.replace(
+    /&(?:#(\d+)|#x([\da-f]+)|amp|lt|gt|quot|apos);/gi,
+    (entity, decimal, hexadecimal) => {
+      if (decimal || hexadecimal) {
+        const codePoint = decimal
+          ? Number(decimal)
+          : Number.parseInt(hexadecimal, 16);
+        return Number.isInteger(codePoint) && codePoint <= 0x10ffff
+          ? String.fromCodePoint(codePoint)
+          : entity;
+      }
+
+      const named: Record<string, string> = {
+        "&amp;": "&",
+        "&lt;": "<",
+        "&gt;": ">",
+        "&quot;": '"',
+        "&apos;": "'"
+      };
+      return named[entity.toLowerCase()] || entity;
+    }
+  );
+}
+
+function attributeValue(attributes: string, name: string) {
+  return attributes.match(
+    new RegExp(`\\s${name}=(?:"([^"]*)"|'([^']*)')`, "i")
+  )?.slice(1).find(Boolean);
+}
+
+function highlightCodeBlocks(content: string) {
+  return content.replace(
+    /<pre([^>]*)>\s*<code([^>]*)>([\s\S]*?)<\/code>\s*<\/pre>/gi,
+    (_match, preAttributes, codeAttributes, innerContent) => {
+      const classes = [
+        attributeValue(preAttributes, "class"),
+        attributeValue(codeAttributes, "class")
+      ]
+        .filter(Boolean)
+        .join(" ");
+      const requestedLanguage = classes.match(
+        /(?:language|lang)-([a-z0-9_+#.-]+)/i
+      )?.[1];
+      const code = decodeCodeEntities(
+        innerContent.replace(/<[^>]*>/g, "")
+      );
+      const highlighted = highlightCode(code, requestedLanguage);
+      const languageClass = highlighted.language
+        ? ` language-${highlighted.language}`
+        : "";
+      const languageLabel = highlighted.language
+        ? ` data-language="${highlighted.language}"`
+        : "";
+
+      return `<pre class="syntax-highlight"${languageLabel}><button class="code-copy-button" type="button" data-copy-code aria-label="复制代码">复制</button><code class="hljs${languageClass}">${highlighted.html}</code></pre>`;
+    }
+  );
+}
 
 function resolveHref(value = "") {
   const topicMatch = value.match(/(?:^|\/)bbs\.topic\.(\d+)\.(?:json|html)/);
@@ -76,7 +137,7 @@ function normalizeDivClass(value = "") {
 }
 
 export function sanitizeHu60Content(content: string) {
-  return sanitizeHtml(content, {
+  const sanitized = sanitizeHtml(content, {
     allowedTags: [
       "a",
       "abbr",
@@ -142,7 +203,8 @@ export function sanitizeHu60Content(content: string) {
         "userimg",
         "userinfo",
         "userat",
-        "hu60_code"
+        "hu60_code",
+        /^(?:language|lang)-[a-z0-9_+#.-]+$/i
       ]
     },
     allowedSchemes: ["http", "https", "mailto"],
@@ -187,4 +249,6 @@ export function sanitizeHu60Content(content: string) {
       }
     }
   });
+
+  return highlightCodeBlocks(sanitized);
 }

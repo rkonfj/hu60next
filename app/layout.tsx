@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
+import { CodeCopyEnhancer } from "@/components/code-copy-enhancer";
 import { Header } from "@/components/header";
 import { NavigationProgress } from "@/components/navigation-progress";
 import "./globals.css";
@@ -29,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body>
+        <CodeCopyEnhancer />
         <Suspense fallback={null}>
           <NavigationProgress />
         </Suspense>
