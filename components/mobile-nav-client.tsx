@@ -7,6 +7,7 @@ import {
   LogOut,
   Menu,
   PenLine,
+  Trophy,
   UserRound,
   X
 } from "lucide-react";
@@ -29,7 +30,8 @@ export function MobileNavClient({ isLoggedIn }: MobileNavClientProps) {
       href: isLoggedIn ? "/me" : "/login?next=/me",
       label: "我的",
       icon: UserRound
-    }
+    },
+    { href: "/honors", label: "社区荣誉", icon: Trophy }
   ];
 
   return (

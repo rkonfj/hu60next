@@ -1,4 +1,11 @@
-import { Bell, LogIn, LogOut, UserRound } from "lucide-react";
+import {
+  Bell,
+  ChevronDown,
+  LogIn,
+  LogOut,
+  Trophy,
+  UserRound
+} from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { getUserStatus } from "@/lib/hu60";
@@ -25,10 +32,23 @@ export async function SessionMenu() {
         <Bell size={18} />
         {unread > 0 && <span className="notification-dot">{unread}</span>}
       </Link>
-      <Link href={`/user/${session.uid}`} className="session-user">
-        <UserRound size={17} />
-        {session.name || "已登录"}
-      </Link>
+      <details className="desktop-user-menu">
+        <summary className="session-user">
+          <UserRound size={17} />
+          <span>{session.name || "已登录"}</span>
+          <ChevronDown size={13} />
+        </summary>
+        <nav className="desktop-user-popover" aria-label="用户菜单">
+          <Link href={`/user/${session.uid}`}>
+            <UserRound size={16} />
+            我的主页
+          </Link>
+          <Link href="/honors">
+            <Trophy size={16} />
+            社区荣誉
+          </Link>
+        </nav>
+      </details>
       <form action="/api/logout" method="post">
         <button className="icon-button" type="submit" aria-label="退出登录">
           <LogOut size={17} />

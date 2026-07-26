@@ -14,6 +14,8 @@ import type {
   ForumTree,
   ForumsResponse,
   HomeResponse,
+  HonorMember,
+  HonorRoll,
   MessagesResponse,
   NewTopicFormResponse,
   SearchResponse,
@@ -27,6 +29,10 @@ import type {
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
 const TOPICS_PER_PAGE = 30;
+const HONOR_TOPIC_SAMPLE_SIZE = 200;
+const HONOR_ACTIVE_THRESHOLD = 10;
+// HU60 的 UID 按注册顺序分配；21696 是 2016 年最后一位注册会员。
+const HONOR_LEGACY_UID_MAX = 21696;
 
 type QueryValue = string | number | boolean | undefined;
 
@@ -74,6 +80,36 @@ async function requestJson<T>(
     };
     if (data?.error) return fallback;
     return data;
+  } catch {
+    return fallback;
+  }
+}
+
+async function requestPublicJson<T>(
+  route: string,
+  query: Record<string, QueryValue>,
+  fallback: T,
+  revalidate = 600
+): Promise<T> {
+  try {
+    const url = new URL(`${API_BASE}/${route}`);
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined) url.searchParams.set(key, String(value));
+    });
+
+    const response = await fetch(url, {
+      headers: {
+        accept: "application/json",
+        "user-agent": "Hulvlin-Next/0.1"
+      },
+      next: { revalidate }
+    });
+    if (!response.ok) return fallback;
+
+    const data = (await response.json()) as T & {
+      error?: string | boolean;
+    };
+    return data?.error ? fallback : data;
   } catch {
     return fallback;
   }
@@ -147,6 +183,98 @@ export async function getGlobalTopics(
       cache: "no-store"
     }
   );
+}
+
+type HonorTopicResponse = {
+  topicList: Topic[] | null;
+  _time?: number;
+  __fallback?: boolean;
+};
+
+type HonorCandidate = HonorMember & {
+  recentCount: number;
+  latestTopicTime: number;
+};
+
+export async function getHonorRoll(): Promise<HonorRoll> {
+  const response = await requestPublicJson<HonorTopicResponse>(
+    "bbs.forum.0.1.0.json",
+    {
+      pageSize: HONOR_TOPIC_SAMPLE_SIZE,
+      _topic_summary: 0,
+      _uinfo: "name,avatar",
+      _time: 1
+    },
+    {
+      topicList: [],
+      __fallback: true
+    }
+  );
+
+  if (response.__fallback || !Array.isArray(response.topicList)) {
+    return {
+      legacy: [],
+      active: [],
+      updatedAt: 0,
+      __fallback: true
+    };
+  }
+
+  const topics = response.topicList.slice(0, HONOR_TOPIC_SAMPLE_SIZE);
+  const candidateMap = new Map<number, HonorCandidate>();
+
+  for (const topic of topics) {
+    const uid = Number(topic.uid);
+    if (!Number.isFinite(uid) || uid <= 0) continue;
+
+    const current = candidateMap.get(uid);
+    const name =
+      topic._u_name || topic.uinfo?.name || current?.name || `用户 ${uid}`;
+    candidateMap.set(uid, {
+      uid,
+      name,
+      avatar: topic._u_avatar || current?.avatar || null,
+      recentCount: (current?.recentCount ?? 0) + 1,
+      latestTopicTime: Math.max(
+        current?.latestTopicTime ?? 0,
+        Number(topic.ctime) || 0
+      )
+    });
+  }
+
+  const candidates = Array.from(candidateMap.values());
+  const legacy = candidates
+    .filter((candidate) => candidate.uid <= HONOR_LEGACY_UID_MAX)
+    .sort(
+      (left, right) =>
+        right.recentCount - left.recentCount || left.uid - right.uid
+    )
+    .map((candidate) => ({
+      uid: candidate.uid,
+      name: candidate.name,
+      avatar: candidate.avatar
+    }));
+
+  const active = candidates
+    .filter((candidate) => candidate.recentCount > HONOR_ACTIVE_THRESHOLD)
+    .sort(
+      (left, right) =>
+        right.recentCount - left.recentCount ||
+        right.latestTopicTime - left.latestTopicTime ||
+        left.uid - right.uid
+    )
+    .map(({ uid, name, avatar }) => ({ uid, name, avatar }));
+
+  return {
+    legacy,
+    active,
+    updatedAt:
+      Number(response._time) ||
+      topics.reduce(
+        (latest, topic) => Math.max(latest, Number(topic.mtime) || 0),
+        0
+      )
+  };
 }
 
 export async function getForums(): Promise<ForumsResponse> {

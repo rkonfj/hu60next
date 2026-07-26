@@ -69,6 +69,19 @@ export type HomeResponse = {
   __fallback?: boolean;
 };
 
+export type HonorMember = {
+  uid: number;
+  name: string;
+  avatar?: string | null;
+};
+
+export type HonorRoll = {
+  legacy: HonorMember[];
+  active: HonorMember[];
+  updatedAt: number;
+  __fallback?: boolean;
+};
+
 export type ForumsResponse = {
   fName: string;
   fIndex: ForumIndex[];

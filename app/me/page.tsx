@@ -5,6 +5,7 @@ import {
   MessageSquareText,
   PenLine,
   Settings,
+  Trophy,
   UserRound
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -65,6 +66,13 @@ export default async function MePage() {
           <span>
             <strong>我的主页</strong>
             <small>查看我的资料和发布内容</small>
+          </span>
+        </Link>
+        <Link href="/honors">
+          <Trophy size={20} />
+          <span>
+            <strong>社区荣誉</strong>
+            <small>看看本期被社区记住的名字</small>
           </span>
         </Link>
         <Link href="/favorites">
