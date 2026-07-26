@@ -41,6 +41,7 @@ export function ReviewActions({
   const [submitting, setSubmitting] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
   const canReview = Number(reviewState || 0) !== 0;
+  const isPendingReview = Number(reviewState) === 1;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -90,7 +91,11 @@ export function ReviewActions({
   }
 
   return (
-    <div className="review-actions-shell">
+    <div
+      className={`review-actions-shell${
+        isPendingReview ? " is-pending" : ""
+      }`}
+    >
       <div className="review-actions-row">
         {canReview ? (
           <>

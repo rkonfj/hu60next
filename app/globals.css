@@ -6434,6 +6434,11 @@ body :is(
   margin-top: 11px;
   padding-top: 10px;
   border-top: 1px solid var(--line);
+  border-radius: 0 !important;
+}
+
+.review-actions-shell.is-pending > .review-actions-row {
+  background: color-mix(in srgb, var(--orange) 14%, var(--surface));
 }
 
 .review-actions-row {
@@ -6566,12 +6571,10 @@ body :is(
 .review-log-timeline li {
   position: relative;
   padding: 0 0 13px 16px;
-  border-left: 1px solid var(--line-strong);
 }
 
 .review-log-timeline li:last-child {
   padding-bottom: 1px;
-  border-left-color: transparent;
 }
 
 .review-log-marker {
@@ -6584,6 +6587,10 @@ body :is(
   border-radius: 50%;
   background: var(--green);
   box-sizing: content-box;
+}
+
+.review-log-marker.rejected {
+  background: var(--red);
 }
 
 .review-log-heading {

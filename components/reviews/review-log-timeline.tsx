@@ -36,6 +36,10 @@ function reviewTime(timestamp: number) {
   }).format(new Date(timestamp * 1000));
 }
 
+function isRejectedReviewAction(stat: number) {
+  return stat === 2 || stat === 3 || stat === 5;
+}
+
 export function ReviewLogTimeline({
   logs,
   onClose
@@ -67,11 +71,17 @@ export function ReviewLogTimeline({
         <ol className="review-log-timeline">
           {[...entries].reverse().map((entry, index) => {
             const isAutomatic = Number(entry.uid) === -100;
+            const stat = Number(entry.stat);
             return (
               <li key={`${entry.time}-${entry.uid}-${index}`}>
-                <span className="review-log-marker" aria-hidden="true" />
+                <span
+                  className={`review-log-marker${
+                    isRejectedReviewAction(stat) ? " rejected" : ""
+                  }`}
+                  aria-hidden="true"
+                />
                 <div className="review-log-heading">
-                  <strong>{reviewActionName(Number(entry.stat))}</strong>
+                  <strong>{reviewActionName(stat)}</strong>
                   <time dateTime={new Date(entry.time * 1000).toISOString()}>
                     <Clock3 size={12} />
                     {reviewTime(Number(entry.time))}

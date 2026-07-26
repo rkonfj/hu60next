@@ -25,6 +25,7 @@ function HonorBoard({
   honorLabel,
   members,
   showMemberTitle = false,
+  showWeeklyScore = false,
   featured = false,
   icon: Icon
 }: {
@@ -33,6 +34,7 @@ function HonorBoard({
   honorLabel?: string;
   members: HonorMember[];
   showMemberTitle?: boolean;
+  showWeeklyScore?: boolean;
   featured?: boolean;
   icon: typeof Award;
 }) {
@@ -61,6 +63,12 @@ function HonorBoard({
                   <strong>{member.name}</strong>
                   {honorLabel ? (
                     <span className="honor-label">{honorLabel}</span>
+                  ) : null}
+                  {showWeeklyScore &&
+                  typeof member.weeklyScore === "number" ? (
+                    <span className="honor-score">
+                      {member.weeklyScore} 分
+                    </span>
                   ) : null}
                   {showMemberTitle && member.memberTitle ? (
                     <span className="member-badge honor-member-badge">
@@ -113,10 +121,10 @@ export default async function HonorsPage() {
 
       <div className="honors-grid">
         <HonorBoard
-          title="本周交流 MVP"
+          title="本周 MVP"
           description="按交流人数、破冰回复和带动讨论延续综合计算"
-          honorLabel="本周 MVP"
           members={mvp.members}
+          showWeeklyScore
           featured
           icon={Trophy}
         />
