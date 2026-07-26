@@ -4955,14 +4955,24 @@ body :is(
 
 @media (min-width: 901px) {
   .left-rail,
-  .right-rail,
-  .forum-sidebar,
+  .right-rail {
+    --sidebar-sticky-top: 66px;
+  }
+
+  .forum-sidebar {
+    --sidebar-sticky-top: 80px;
+  }
+
   .topic-aside {
+    --sidebar-sticky-top: 72px;
+  }
+
+  :is(.left-rail, .right-rail, .forum-sidebar, .topic-aside) {
     position: sticky;
-    top: 70px;
+    top: var(--sidebar-sticky-top);
     align-self: start;
     height: max-content;
-    max-height: calc(100dvh - 82px);
+    max-height: calc(100dvh - var(--sidebar-sticky-top) - 12px);
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-color: var(--line-strong) transparent;
