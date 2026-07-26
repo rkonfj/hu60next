@@ -424,7 +424,6 @@ select:focus-visible {
 .forum-nav > a:hover {
   background: rgba(255, 255, 255, 0.7);
   box-shadow: var(--shadow-soft);
-  transform: translateX(2px);
 }
 
 .forum-nav > a > span:nth-child(2) {
