@@ -21,12 +21,14 @@ export const dynamic = "force-dynamic";
 function HonorBoard({
   title,
   description,
+  honorLabel,
   members,
   showMemberTitle = false,
   icon: Icon
 }: {
   title: string;
   description: string;
+  honorLabel?: string;
   members: HonorMember[];
   showMemberTitle?: boolean;
   icon: typeof Award;
@@ -54,6 +56,9 @@ function HonorBoard({
                 <Avatar src={member.avatar} name={member.name} />
                 <span className="honor-member-copy">
                   <strong>{member.name}</strong>
+                  {honorLabel ? (
+                    <span className="honor-label">{honorLabel}</span>
+                  ) : null}
                   {showMemberTitle && member.memberTitle ? (
                     <span className="member-badge honor-member-badge">
                       {member.memberTitle}
@@ -103,6 +108,7 @@ export default async function HonorsPage() {
         <HonorBoard
           title="活跃荣誉"
           description="感谢让讨论持续发生的熟悉身影"
+          honorLabel="活跃荣誉"
           members={honors.active}
           icon={Sparkles}
         />
