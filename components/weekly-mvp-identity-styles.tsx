@@ -19,10 +19,13 @@ export async function WeeklyMvpIdentityStyles() {
   const selectors = memberIds
     .map((uid) => `[data-member-uid="${uid}"]`)
     .join(",");
+  const hoverSelectors = memberIds
+    .map((uid) => `[data-member-uid="${uid}"]:hover`)
+    .join(",");
 
   return (
     <style data-weekly-mvp-identities="active">
-      {`${selectors}{color:var(--epic-purple)!important}`}
+      {`${selectors}{color:var(--mvp-name)!important}${hoverSelectors}{color:var(--orange)!important}`}
     </style>
   );
 }

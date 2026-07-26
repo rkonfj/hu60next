@@ -14,7 +14,7 @@
   --orange: #ea8b3e;
   --orange-soft: #fff0e3;
   --red: #d95c4f;
-  --epic-purple: #7c3aed;
+  --mvp-name: color-mix(in srgb, var(--orange) 80%, var(--muted));
   --shadow: none;
   --shadow-soft: none;
   --radius: 14px;
@@ -5176,7 +5176,6 @@ body:has(> .auth-page) > .site-header {
     --green-soft: #1a3426;
     --orange: #ed9d58;
     --orange-soft: #3c2a1b;
-    --epic-purple: #c084fc;
     --shadow: 0 12px 36px rgba(0, 0, 0, 0.19);
     --shadow-soft: 0 5px 18px rgba(0, 0, 0, 0.12);
   }
