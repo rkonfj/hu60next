@@ -26,7 +26,24 @@
 html {
   max-width: 100%;
   overflow-x: clip;
+  scrollbar-color: var(--line-strong) var(--bg);
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
   scroll-behavior: smooth;
+}
+
+html::-webkit-scrollbar {
+  width: 8px;
+}
+
+html::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+html::-webkit-scrollbar-thumb {
+  border: 2px solid var(--bg);
+  background: var(--line-strong);
+  background-clip: padding-box;
 }
 
 body {
@@ -4967,9 +4984,30 @@ body :is(
   }
 
   :is(.left-rail, .right-rail, .forum-sidebar, .topic-aside) {
-    position: sticky;
+    position: fixed;
+    z-index: 5;
     top: var(--sidebar-sticky-top);
-    align-self: start;
+  }
+
+  .left-rail {
+    left: max(22px, calc((100% - 1240px) / 2));
+    width: 300px;
+  }
+
+  :is(.right-rail, .forum-sidebar, .topic-aside) {
+    right: max(22px, calc((100% - 1240px) / 2));
+    width: 300px;
+  }
+
+  .feed-column {
+    grid-column: 2;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1180px) {
+  .left-rail,
+  :is(.right-rail, .forum-sidebar, .topic-aside) {
+    width: 260px;
   }
 }
 
