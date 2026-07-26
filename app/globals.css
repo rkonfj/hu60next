@@ -4922,6 +4922,22 @@ body :is(
   top: 70px;
 }
 
+@media (min-width: 901px) {
+  .left-rail,
+  .right-rail,
+  .forum-sidebar,
+  .topic-aside {
+    position: sticky;
+    top: 70px;
+    align-self: start;
+    max-height: calc(100dvh - 82px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: var(--line-strong) transparent;
+    scrollbar-width: thin;
+  }
+}
+
 .forum-nav > a {
   padding: 6px 5px;
   gap: 7px;
