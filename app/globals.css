@@ -4566,7 +4566,12 @@ body:has(> .auth-page) > .site-header {
   }
 
   .site-footer {
-    display: none;
+    display: flex;
+    min-height: 52px;
+    padding: 10px 8px;
+    flex-wrap: wrap;
+    font-size: 9px;
+    gap: 5px 12px;
   }
 
   .content-page,
