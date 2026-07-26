@@ -20,7 +20,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getUserStatus } from "@/lib/hu60";
 import { relativeTime } from "@/lib/format";
-import { getPersonalWeeklyReport } from "@/lib/weekly-report";
+import {
+  getPersonalWeeklyReport,
+  weeklyMvpScore
+} from "@/lib/weekly-report";
 
 export const metadata: Metadata = { title: "我的" };
 
@@ -51,6 +54,10 @@ export default async function MePage() {
   const report =
     status.uid && status.name
       ? await getPersonalWeeklyReport(status.uid, status.name)
+      : null;
+  const currentMvpScore =
+    report && !report.__fallback
+      ? weeklyMvpScore(report.current)
       : null;
   const unread = Number(status.newMsg || 0) + Number(status.newAtInfo || 0);
   const metrics = report
@@ -128,12 +135,23 @@ export default async function MePage() {
               </p>
             ) : null}
           </div>
-          {report && !report.__fallback ? (
-            <time
-              dateTime={new Date(report.updatedAt * 1000).toISOString()}
-            >
-              {relativeTime(report.updatedAt)}
-            </time>
+          {report && !report.__fallback && currentMvpScore !== null ? (
+            <div className="weekly-report-heading-meta">
+              <time
+                dateTime={new Date(report.updatedAt * 1000).toISOString()}
+              >
+                {relativeTime(report.updatedAt)}
+              </time>
+              <span
+                className="weekly-report-mvp-score"
+                aria-label={`本周 MVP 分数 ${currentMvpScore} 分`}
+              >
+                <Trophy size={14} aria-hidden="true" />
+                <span>本周 MVP</span>
+                <strong>{currentMvpScore}</strong>
+                <small>分</small>
+              </span>
+            </div>
           ) : null}
         </header>
 
