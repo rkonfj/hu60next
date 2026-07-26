@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
+import { CodeCopyEnhancer } from "@/components/code-copy-enhancer";
 import { Header } from "@/components/header";
 import { NavigationProgress } from "@/components/navigation-progress";
 import "./globals.css";
@@ -29,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body>
+        <CodeCopyEnhancer />
         <Suspense fallback={null}>
           <NavigationProgress />
         </Suspense>
@@ -37,6 +39,13 @@ export default function RootLayout({
         <footer className="site-footer">
           <span>虎绿林</span>
           <span>让技术讨论持续生长</span>
+          <a
+            href="https://beian.miit.gov.cn/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            京ICP备18041936号-1
+          </a>
         </footer>
       </body>
     </html>

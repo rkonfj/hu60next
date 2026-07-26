@@ -24,6 +24,11 @@ import {
 } from "react";
 import SparkMD5 from "spark-md5";
 import { FacePicker } from "@/components/face-picker";
+import { highlightCode } from "@/lib/highlight";
+import {
+  resolveSafeMediaUrl,
+  resolveUbbVideoEmbedUrl
+} from "@/lib/media";
 import type { ForumFace, ForumTree } from "@/lib/types";
 
 type PickerLevel = {
@@ -224,15 +229,132 @@ export function ComposerPreview({
     /^<!--\s*markdown\s*-->\s*\n?/i,
     ""
   );
+  const lines = previewContent.split("\n");
+  const preview: ReactNode[] = [];
 
-  return previewContent.split("\n").map((line, index) => {
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const fence = line.trim().match(/^(```|~~~)\s*([a-z0-9_+#.-]*)\s*$/i);
+    if (fence) {
+      const codeLines: string[] = [];
+      const closingFence = fence[1];
+
+      while (
+        index + 1 < lines.length &&
+        lines[index + 1].trim() !== closingFence
+      ) {
+        codeLines.push(lines[index + 1]);
+        index += 1;
+      }
+      if (index + 1 < lines.length) index += 1;
+
+      const highlighted = highlightCode(codeLines.join("\n"), fence[2]);
+      preview.push(
+        <pre
+          className="syntax-highlight"
+          data-language={highlighted.language}
+          key={`code-${index}`}
+        >
+          <button
+            className="code-copy-button"
+            type="button"
+            data-copy-code
+            aria-label="复制代码"
+          >
+            复制
+          </button>
+          <code
+            className={
+              highlighted.language
+                ? `hljs language-${highlighted.language}`
+                : "hljs"
+            }
+            dangerouslySetInnerHTML={{ __html: highlighted.html }}
+          />
+        </pre>
+      );
+      continue;
+    }
+
+    const embeddedVideo = line.trim().match(/^《视频：(.+?)》$/);
+    if (embeddedVideo) {
+      const source = embeddedVideo[1];
+      const embedUrl = resolveUbbVideoEmbedUrl(source);
+      const sourceUrl = resolveSafeMediaUrl(source);
+      preview.push(
+        embedUrl ? (
+          <figure className="composer-media-preview" key={index}>
+            <iframe
+              className="hu60-video-frame"
+              src={embedUrl}
+              title="嵌入视频播放器"
+              loading="lazy"
+              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+              sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-presentation"
+            />
+            <figcaption>
+              <a href={sourceUrl || undefined} rel="noreferrer" target="_blank">
+                打开视频原页面
+              </a>
+            </figcaption>
+          </figure>
+        ) : sourceUrl ? (
+          <p className="composer-attachment-link" key={index}>
+            <a href={sourceUrl} rel="noreferrer" target="_blank">
+              {source}
+            </a>
+          </p>
+        ) : (
+          <p className="composer-attachment-link" key={index}>
+            {source}
+          </p>
+        )
+      );
+      continue;
+    }
+
+    const stream = line.trim().match(/^《(视频流|音频流)：(.+?)》$/);
+    if (stream) {
+      const [, type, source] = stream;
+      const mediaUrl = resolveSafeMediaUrl(source);
+      preview.push(
+        mediaUrl ? (
+          type === "视频流" ? (
+            <video
+              className="hu60-video-native composer-media-preview"
+              src={mediaUrl}
+              controls
+              playsInline
+              preload="metadata"
+              key={index}
+            />
+          ) : (
+            <audio
+              className="hu60-audio-native composer-media-preview"
+              src={mediaUrl}
+              controls
+              preload="metadata"
+              key={index}
+            />
+          )
+        ) : (
+          <p className="composer-attachment-link" key={index}>
+            {source}
+          </p>
+        )
+      );
+      continue;
+    }
+
     const attachment = line
       .trim()
       .match(/^《(图片|视频流|音频流|链接)：(.+?)，(.+?)（(.+?)）》$/);
     if (attachment) {
       const [, type, url, name, size] = attachment;
       if (type === "图片") {
-        return (
+        preview.push(
           <figure className="composer-attachment-preview" key={index}>
             <img alt={name} loading="lazy" src={url} />
             <figcaption>
@@ -240,8 +362,43 @@ export function ComposerPreview({
             </figcaption>
           </figure>
         );
+        continue;
       }
-      return (
+      const mediaUrl = resolveSafeMediaUrl(url);
+      if (type === "视频流" && mediaUrl) {
+        preview.push(
+          <figure className="composer-media-preview" key={index}>
+            <video
+              className="hu60-video-native"
+              src={mediaUrl}
+              controls
+              playsInline
+              preload="metadata"
+            />
+            <figcaption>
+              {name} · {size}
+            </figcaption>
+          </figure>
+        );
+        continue;
+      }
+      if (type === "音频流" && mediaUrl) {
+        preview.push(
+          <figure className="composer-media-preview" key={index}>
+            <audio
+              className="hu60-audio-native"
+              src={mediaUrl}
+              controls
+              preload="metadata"
+            />
+            <figcaption>
+              {name} · {size}
+            </figcaption>
+          </figure>
+        );
+        continue;
+      }
+      preview.push(
         <p className="composer-attachment-link" key={index}>
           <Paperclip size={14} />
           <a href={url} rel="noreferrer" target="_blank">
@@ -250,34 +407,50 @@ export function ComposerPreview({
           <span>{size}</span>
         </p>
       );
+      continue;
     }
     const image = line
       .trim()
       .match(/^!\[([^\]]*)\]\(((?:https?:\/\/|\/)[^)]+)\)$/);
     if (image) {
-      return <img alt={image[1]} key={index} loading="lazy" src={image[2]} />;
+      preview.push(
+        <img alt={image[1]} key={index} loading="lazy" src={image[2]} />
+      );
+      continue;
     }
     if (line.startsWith("### ")) {
-      return <h4 key={index}>{renderInline(line.slice(4), faceMap)}</h4>;
+      preview.push(
+        <h4 key={index}>{renderInline(line.slice(4), faceMap)}</h4>
+      );
+      continue;
     }
     if (line.startsWith("## ")) {
-      return <h3 key={index}>{renderInline(line.slice(3), faceMap)}</h3>;
+      preview.push(
+        <h3 key={index}>{renderInline(line.slice(3), faceMap)}</h3>
+      );
+      continue;
     }
     if (line.startsWith("# ")) {
-      return <h2 key={index}>{renderInline(line.slice(2), faceMap)}</h2>;
+      preview.push(
+        <h2 key={index}>{renderInline(line.slice(2), faceMap)}</h2>
+      );
+      continue;
     }
     if (line.startsWith("> ")) {
-      return (
+      preview.push(
         <blockquote key={index}>
           {renderInline(line.slice(2), faceMap)}
         </blockquote>
       );
+      continue;
     }
 
-    return (
+    preview.push(
       <p key={index}>{line ? renderInline(line, faceMap) : <br />}</p>
     );
-  });
+  }
+
+  return preview;
 }
 
 export function Composer({
