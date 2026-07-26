@@ -39,6 +39,13 @@ export default function RootLayout({
         <footer className="site-footer">
           <span>虎绿林</span>
           <span>让技术讨论持续生长</span>
+          <a
+            href="https://beian.miit.gov.cn/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            京ICP备18041936号-1
+          </a>
         </footer>
       </body>
     </html>
