@@ -31,7 +31,7 @@ const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
 const TOPICS_PER_PAGE = 30;
 const HONOR_TOPIC_SAMPLE_SIZE = 300;
-const HONOR_ACTIVE_THRESHOLD = 10;
+const HONOR_ACTIVE_MINIMUM = 8;
 // 16643 是 2012 年最后一位注册会员。
 const HONOR_LEGEND_UID_MAX = 16643;
 // HU60 的 UID 按注册顺序分配；21696 是 2016 年最后一位注册会员。
@@ -293,7 +293,7 @@ export async function getHonorRoll(): Promise<HonorRoll> {
     .map(toHonorMember);
 
   const active = candidates
-    .filter((candidate) => candidate.recentCount > HONOR_ACTIVE_THRESHOLD)
+    .filter((candidate) => candidate.recentCount >= HONOR_ACTIVE_MINIMUM)
     .sort(
       (left, right) =>
         right.recentCount - left.recentCount ||
