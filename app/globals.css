@@ -3280,7 +3280,7 @@ body:has(> .auth-page) > .site-header {
   align-items: center;
   justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 8px;
 }
 
 .attachment-actions :is(a, button) {
@@ -3294,6 +3294,7 @@ body:has(> .auth-page) > .site-header {
   background: transparent;
   font-size: 9px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .attachment-actions :is(a, button):hover {
@@ -6982,5 +6983,15 @@ body :is(
   .user-reply-content img {
     max-width: 800px;
     max-height: 600px;
+  }
+}
+
+@media (min-width: 901px) {
+  .user-page {
+    padding-top: 14px;
+  }
+
+  .user-profile-card {
+    --sidebar-sticky-top: 73px;
   }
 }
