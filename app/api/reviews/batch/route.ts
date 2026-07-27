@@ -130,11 +130,14 @@ function parseRequest(value: unknown): ReviewRequest | null {
 
   return {
     context: body.context,
-    items: body.items.map((item) => ({
-      contentId: Number(item.contentId),
-      decision: item.decision,
-      reason: item.reason.trim()
-    }))
+    items: body.items.map((item) => {
+      const reason = item.reason.trim();
+      return {
+        contentId: Number(item.contentId),
+        decision: item.decision,
+        reason: item.decision === "pass" && !reason ? "通过" : reason
+      };
+    })
   } as ReviewRequest;
 }
 
