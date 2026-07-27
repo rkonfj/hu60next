@@ -2142,7 +2142,7 @@ select:focus-visible {
   border: 1px solid var(--line);
   border-radius: 9px;
   background: var(--surface-soft);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 700;
   gap: 5px;
 }
@@ -4442,7 +4442,7 @@ body:has(> .auth-page) > .site-header {
   color: var(--green);
   border: 1px solid var(--line);
   background: var(--surface-soft);
-  font-size: 9px;
+  font-size: 14px;
   font-weight: 750;
   gap: 5px;
 }
@@ -4582,7 +4582,7 @@ body:has(> .auth-page) > .site-header {
   color: var(--green-strong);
   border: 1px solid var(--line-strong);
   background: var(--surface-soft);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 750;
   gap: 5px;
 }
@@ -5481,51 +5481,14 @@ body :is(
     max-width: 140px;
   }
 
-  .left-rail,
-  .right-rail,
-  .community-rail {
-    --sidebar-sticky-top: 66px;
-  }
-
-  .forum-sidebar {
-    --sidebar-sticky-top: 80px;
-  }
-
-  .topic-aside {
-    --sidebar-sticky-top: 72px;
+  :is(.right-rail, .community-rail, .topic-aside) {
+    position: sticky;
+    top: 96px;
   }
 
   .user-profile-card {
-    --sidebar-sticky-top: 80px;
-  }
-
-  :is(
-    .left-rail,
-    .right-rail,
-    .community-rail,
-    .forum-sidebar,
-    .topic-aside,
-    .user-profile-card
-  ) {
-    position: fixed;
-    z-index: 5;
-    top: var(--sidebar-sticky-top);
-  }
-
-  .left-rail {
-    left: max(22px, calc((100% - 1240px) / 2));
-    width: 300px;
-  }
-
-  :is(
-    .right-rail,
-    .community-rail,
-    .forum-sidebar,
-    .topic-aside,
-    .user-profile-card
-  ) {
-    right: max(22px, calc((100% - 1240px) / 2));
-    width: 300px;
+    position: sticky;
+    top: 96px;
   }
 
   .feed-column {
@@ -6582,7 +6545,7 @@ body :is(
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface-soft);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 800;
   gap: 4px;
 }
@@ -6744,7 +6707,7 @@ body :is(
 .review-log-timeline p {
   margin: 5px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 14px;
   line-height: 1.55;
   overflow-wrap: anywhere;
 }
@@ -6959,5 +6922,14 @@ body :is(
     left: 0;
     width: auto;
     transform: none;
+  }
+}
+
+@media screen and (min-width: 800px) {
+  .rich-content img:not(.hu60_face),
+  .message-content img:not(.hu60_face),
+  .user-reply-content img {
+    max-width: 800px;
+    max-height: 600px;
   }
 }
