@@ -337,6 +337,21 @@ function shanghaiDayStart(timestamp: number) {
 async function buildDailyForumTopicCounts(): Promise<DailyForumTopicCounts> {
   const counts: Record<number, number> = {};
   let updatedAt = Math.floor(Date.now() / 1000);
+  const forumForm = await getNewTopicForm();
+  if (forumForm.__fallback || !Array.isArray(forumForm.forums)) {
+    return { counts: {}, updatedAt: 0, __fallback: true };
+  }
+
+  const rootForumById = new Map<number, number>();
+  const mapForumTree = (forum: ForumTree, rootId: number) => {
+    rootForumById.set(Number(forum.id), rootId);
+    for (const child of forum.child ?? []) {
+      mapForumTree(child, rootId);
+    }
+  };
+  for (const forum of forumForm.forums) {
+    mapForumTree(forum, Number(forum.id));
+  }
 
   for (let page = 1; page <= DAILY_FORUM_TOPIC_MAX_PAGES; page += 1) {
     const response = await getWeeklyGlobalTopicsPage(
@@ -355,7 +370,9 @@ async function buildDailyForumTopicCounts(): Promise<DailyForumTopicCounts> {
 
     for (const topic of topics) {
       const createdAt = Number(topic.ctime) || 0;
-      const forumId = Number(topic.forum_id) || 0;
+      const topicForumId = Number(topic.forum_id) || 0;
+      const forumId =
+        rootForumById.get(topicForumId) ?? topicForumId;
       if (forumId > 0 && createdAt >= dayStart && createdAt <= updatedAt) {
         counts[forumId] = (counts[forumId] ?? 0) + 1;
       }

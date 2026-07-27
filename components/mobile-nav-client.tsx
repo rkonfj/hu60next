@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 type MobileNavClientProps = {
   isLoggedIn: boolean;
@@ -28,6 +28,9 @@ export function MobileNavClient({
 }: MobileNavClientProps) {
   const pathname = usePathname();
   const menuRef = useRef<HTMLDetailsElement>(null);
+  const closeMenu = () => {
+    menuRef.current?.removeAttribute("open");
+  };
   const forumId = pathname.match(/^\/forum\/(\d+)(?:\/|$)/)?.[1];
   const composeHref = forumId ? `/compose?forum=${forumId}` : "/compose";
   const links = [
@@ -47,6 +50,35 @@ export function MobileNavClient({
         ]
       : [])
   ];
+
+  useEffect(() => {
+    closeMenu();
+  }, [pathname]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (
+        menuRef.current?.open &&
+        event.target instanceof Node &&
+        !menuRef.current.contains(event.target)
+      ) {
+        closeMenu();
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && menuRef.current?.open) {
+        closeMenu();
+        menuRef.current.querySelector<HTMLElement>("summary")?.focus();
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
     <details className="mobile-menu" ref={menuRef}>
@@ -76,7 +108,7 @@ export function MobileNavClient({
               href={href}
               className={isActive ? "active" : undefined}
               aria-current={isActive ? "page" : undefined}
-              onClick={() => menuRef.current?.removeAttribute("open")}
+              onClick={closeMenu}
             >
               <Icon size={18} />
               <span>{label}</span>
@@ -85,7 +117,7 @@ export function MobileNavClient({
         })}
         {isLoggedIn ? (
           <form action="/api/logout" method="post">
-            <button type="submit">
+            <button type="submit" onClick={closeMenu}>
               <LogOut size={18} />
               <span>退出登录</span>
             </button>
@@ -94,7 +126,7 @@ export function MobileNavClient({
           <div className="mobile-menu-auth">
             <Link
               href="/login"
-              onClick={() => menuRef.current?.removeAttribute("open")}
+              onClick={closeMenu}
             >
               <LogIn size={18} />
               <span>登录</span>
