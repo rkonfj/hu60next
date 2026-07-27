@@ -137,7 +137,8 @@ export function ReplyForm({
       updateAttachment(id, {
         status: "done",
         progress: 100,
-        downloadUrl: form.downloadUrl
+        downloadUrl: form.downloadUrl,
+        contentUbb: form.contentUbb
       });
     } catch (error) {
       updateAttachment(id, {
@@ -347,14 +348,27 @@ export function ReplyForm({
                           : attachment.notice || "上传失败"}
                 </small>
               </span>
-              {attachment.downloadUrl ? (
-                <a
-                  href={attachment.downloadUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  查看附件
-                </a>
+              {attachment.downloadUrl || attachment.contentUbb ? (
+                <span className="attachment-actions">
+                  {attachment.contentUbb ? (
+                    <button
+                      type="button"
+                      onPointerDown={rememberEditorSelection}
+                      onClick={() => insertText(attachment.contentUbb!)}
+                    >
+                      插入回复
+                    </button>
+                  ) : null}
+                  {attachment.downloadUrl ? (
+                    <a
+                      href={attachment.downloadUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      查看附件
+                    </a>
+                  ) : null}
+                </span>
               ) : null}
             </div>
           ))}

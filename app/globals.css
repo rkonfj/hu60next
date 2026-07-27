@@ -3275,15 +3275,18 @@ body:has(> .auth-page) > .site-header {
   font-size: 9px;
 }
 
-.attachment-item > a {
-  color: var(--green);
-  font-size: 9px;
-  font-weight: 700;
+.attachment-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
-.reply-composer .attachment-item > a {
+.attachment-actions :is(a, button) {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-height: 28px;
   padding: 0 7px;
   color: var(--green);
@@ -3291,6 +3294,11 @@ body:has(> .auth-page) > .site-header {
   background: transparent;
   font-size: 9px;
   font-weight: 700;
+}
+
+.attachment-actions :is(a, button):hover {
+  border-color: var(--line-strong);
+  background: var(--green-soft);
 }
 
 .editor-shell textarea,
@@ -5500,15 +5508,15 @@ body :is(
   }
 
   :is(.right-rail, .community-rail) {
-    --sidebar-sticky-top: 79px;
+    --sidebar-sticky-top: 67px;
   }
 
   .topic-aside {
-    --sidebar-sticky-top: 85px;
+    --sidebar-sticky-top: 73px;
   }
 
   :is(.forum-sidebar, .user-profile-card) {
-    --sidebar-sticky-top: 93px;
+    --sidebar-sticky-top: 81px;
   }
 
   .feed-column {

@@ -47,6 +47,7 @@ export type AttachmentState = {
   progress: number;
   notice?: string;
   downloadUrl?: string;
+  contentUbb?: string;
 };
 
 export function filesFromClipboard(data: DataTransfer) {
@@ -716,7 +717,8 @@ export function Composer({
       updateAttachment(id, {
         status: "done",
         progress: 100,
-        downloadUrl: form.downloadUrl
+        downloadUrl: form.downloadUrl,
+        contentUbb: form.contentUbb
       });
     } catch (error) {
       updateAttachment(id, {
@@ -968,15 +970,28 @@ export function Composer({
                             : attachment.notice || "上传失败"}
                   </small>
                 </span>
-                {attachment.downloadUrl && (
-                  <a
-                    href={attachment.downloadUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    查看
-                  </a>
-                )}
+                {attachment.downloadUrl || attachment.contentUbb ? (
+                  <span className="attachment-actions">
+                    {attachment.contentUbb ? (
+                      <button
+                        type="button"
+                        onPointerDown={rememberEditorSelection}
+                        onClick={() => insertText(attachment.contentUbb!)}
+                      >
+                        插入正文
+                      </button>
+                    ) : null}
+                    {attachment.downloadUrl ? (
+                      <a
+                        href={attachment.downloadUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        查看
+                      </a>
+                    ) : null}
+                  </span>
+                ) : null}
               </div>
             ))}
           </div>
