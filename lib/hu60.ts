@@ -30,6 +30,7 @@ import type {
   UserRepliesResponse,
   UserStatus
 } from "@/lib/types";
+import { recordRecentVisitor } from "@/lib/recent-visitors";
 import { getMemberTitleByUid } from "@/lib/member";
 import type { CacheStatus } from "@/lib/cache-types";
 import {
@@ -1107,7 +1108,7 @@ async function getUserStatusUncached(sid?: string): Promise<UserStatus> {
 
   if (!sid) return anonymous;
 
-  return requestJson(
+  const status = await requestJson(
     "user.stat.json",
     { pageSize: 3 },
     anonymous,
@@ -1116,6 +1117,10 @@ async function getUserStatusUncached(sid?: string): Promise<UserStatus> {
       cache: "no-store"
     }
   );
+  if (status.isLogin === true && Number(status.uid) > 0) {
+    recordRecentVisitor(Number(status.uid), status.name);
+  }
+  return status;
 }
 
 export const getUserStatus = cache(getUserStatusUncached);

@@ -33,7 +33,16 @@ export type CacheRefreshHistory = {
   requests: UpstreamRequestLog[];
 };
 
+export type RecentVisitor = {
+  uid: number;
+  name: string;
+  firstVisitedAt: number;
+  lastVisitedAt: number;
+  visitCount: number;
+};
+
 export type CacheDashboardData = {
   caches: CacheStatus[];
   history: CacheRefreshHistory[];
+  visitors: RecentVisitor[];
 };

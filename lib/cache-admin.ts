@@ -12,6 +12,7 @@ import {
   refreshPersonalWeeklyReportCache,
   refreshWeeklyCache
 } from "@/lib/weekly-report";
+import { getRecentVisitors } from "@/lib/recent-visitors";
 import { withUpstreamRequestLog } from "@/lib/upstream-request-log";
 
 const refreshHistory: CacheRefreshHistory[] = [];
@@ -25,7 +26,8 @@ const HU60_CACHE_KEYS = new Set([
 export function getCacheDashboardData(): CacheDashboardData {
   return {
     caches: [...getHu60CacheStatuses(), ...getWeeklyCacheStatuses()],
-    history: refreshHistory.slice(0, 30)
+    history: refreshHistory.slice(0, 30),
+    visitors: getRecentVisitors()
   };
 }
 

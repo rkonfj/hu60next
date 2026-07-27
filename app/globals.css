@@ -7607,23 +7607,72 @@ body :is(
   }
 }
 
+.cache-visitors,
 .cache-history {
   margin-top: 24px;
 }
 
+.cache-visitors > header,
 .cache-history > header {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
 }
 
+.cache-visitors h2,
 .cache-history h2 {
   margin: 5px 0 0;
   font-size: 19px;
 }
 
+.cache-visitors > header > small,
 .cache-history > header > small {
   color: var(--faint);
   font-size: 11px;
+}
+
+.cache-visitor-list {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.cache-visitor-list a {
+  display: grid;
+  min-height: 42px;
+  padding: 9px 12px;
+  align-items: center;
+  color: inherit;
+  grid-template-columns: minmax(140px, 1fr) 100px 100px 150px;
+  gap: 12px;
+}
+
+.cache-visitor-list a + a {
+  border-top: 1px solid var(--line);
+}
+
+.cache-visitor-list a:hover {
+  background: var(--surface-soft);
+}
+
+.cache-visitor-list strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cache-visitor-list span,
+.cache-visitor-list time {
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.cache-visitor-list time {
+  text-align: right;
 }
 
 .cache-history article {
@@ -7736,6 +7785,7 @@ body :is(
   }
 
   .cache-history > header,
+  .cache-visitors > header,
   .cache-history article > header {
     align-items: flex-start;
     flex-direction: column;
@@ -7747,5 +7797,19 @@ body :is(
 
   .cache-history li > small {
     grid-column: 2;
+  }
+
+  .cache-visitor-list a {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 3px 10px;
+  }
+
+  .cache-visitor-list a > span:nth-of-type(2) {
+    display: none;
+  }
+
+  .cache-visitor-list time {
+    grid-column: 2;
+    grid-row: 1 / span 2;
   }
 }
