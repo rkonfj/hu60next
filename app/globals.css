@@ -869,14 +869,10 @@ select:focus-visible {
   white-space: nowrap;
 }
 
-.topic-card-author-copy strong {
-  font-size: 14px;
-}
-
 .topic-card-author-copy span {
   margin-top: 2px;
   color: var(--faint);
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .forum-pill {
@@ -997,6 +993,7 @@ select:focus-visible {
   padding-top: 12px;
   color: var(--faint);
   border-top: 1px solid var(--line);
+  font-size: 12px;
   gap: 9px;
 }
 
@@ -1005,7 +1002,6 @@ select:focus-visible {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
-  font-size: 10px;
   white-space: nowrap;
   gap: 4px;
 }
@@ -5100,15 +5096,7 @@ body:has(> .auth-page) > .site-header {
 
   .topic-card-meta {
     gap: 6px;
-  }
-
-  .topic-card-author-copy strong {
-    font-size: 13px;
-  }
-
-  .topic-card-stat,
-  .topic-card-open {
-    font-size: 9px;
+    font-size: 11px;
   }
 
   .mobile-menu {
