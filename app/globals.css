@@ -5494,11 +5494,21 @@ body :is(
     .topic-aside,
     .user-profile-card
   ) {
-    position: fixed;
-    z-index: 5;
-    top: 72px;
-    right: max(22px, calc((100% - 1240px) / 2));
-    width: 300px;
+    position: sticky;
+    top: var(--sidebar-sticky-top);
+    align-self: start;
+  }
+
+  :is(.right-rail, .community-rail) {
+    --sidebar-sticky-top: 79px;
+  }
+
+  .topic-aside {
+    --sidebar-sticky-top: 85px;
+  }
+
+  :is(.forum-sidebar, .user-profile-card) {
+    --sidebar-sticky-top: 93px;
   }
 
   .feed-column {
