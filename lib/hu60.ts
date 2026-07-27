@@ -371,11 +371,15 @@ async function buildDailyForumTopicCounts(): Promise<DailyForumTopicCounts> {
     const topics = response.topicList;
 
     for (const topic of topics) {
-      const createdAt = Number(topic.ctime) || 0;
+      const activityAt = Number(topic.mtime || topic.ctime) || 0;
       const topicForumId = Number(topic.forum_id) || 0;
       const forumId =
         rootForumById.get(topicForumId) ?? topicForumId;
-      if (forumId > 0 && createdAt >= dayStart && createdAt <= updatedAt) {
+      if (
+        forumId > 0 &&
+        activityAt >= dayStart &&
+        activityAt <= updatedAt
+      ) {
         counts[forumId] = (counts[forumId] ?? 0) + 1;
       }
     }

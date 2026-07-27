@@ -577,7 +577,7 @@ select:focus-visible {
 
 .forum-nav-tail small {
   color: var(--green);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
 }

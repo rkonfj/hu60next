@@ -103,8 +103,8 @@ export function CommunityRail({
                 <strong>{forum.name}</strong>
                 <span className="forum-nav-tail">
                   {dailyTopicCount > 0 ? (
-                    <small title={`今日新增 ${dailyTopicCount} 条主题`}>
-                      今日 {dailyTopicCount}
+                    <small title={`今日更新 ${dailyTopicCount} 条主题`}>
+                      {dailyTopicCount}
                     </small>
                   ) : null}
                   <ChevronRight size={14} aria-hidden="true" />
