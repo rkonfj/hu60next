@@ -32,7 +32,11 @@ export function TopicCard({
 
   if (compact) {
     return (
-      <Link href={`/topic/${topicId}`} className="compact-topic">
+      <Link
+        href={`/topic/${topicId}`}
+        className="compact-topic"
+        prefetch={false}
+      >
         {rank && <span className={`rank rank-${rank}`}>{rank}</span>}
         <span>
           <strong>{topic.title}</strong>
@@ -63,7 +67,7 @@ export function TopicCard({
       ) : null}
       <div className="topic-main">
         <h2>
-          <Link href={`/topic/${topicId}`}>
+          <Link href={`/topic/${topicId}`} prefetch={false}>
             {topic.essence ? (
               <span
                 className="topic-state essence"
@@ -88,7 +92,7 @@ export function TopicCard({
             {topic.forum_name}
           </Link>
         </h2>
-        <Link href={`/topic/${topicId}`}>
+        <Link href={`/topic/${topicId}`} prefetch={false}>
           <p>{cleanSummary(topic._topic_summary)}</p>
         </Link>
       </div>
@@ -103,6 +107,7 @@ export function TopicCard({
         <Link
           href={`/topic/${topicId}#quick-reply`}
           className="topic-card-stat"
+          prefetch={false}
           aria-label={`前往回复框，共 ${topic.reply_count} 条回复`}
         >
           <MessageCircle size={15} />
@@ -117,6 +122,7 @@ export function TopicCard({
         <Link
           href={lastReplyHref}
           className="topic-card-open"
+          prefetch={false}
           aria-label={
             topic.reply_count > 0 ? "查看最后一条回复" : "进入讨论"
           }

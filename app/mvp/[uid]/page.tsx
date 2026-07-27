@@ -221,6 +221,7 @@ export default async function MvpAnalysisPage({
               <Link
                 href={`/topic/${highlight.topicId}`}
                 key={highlight.topicId}
+                prefetch={false}
               >
                 <strong>{highlight.title}</strong>
                 <span>

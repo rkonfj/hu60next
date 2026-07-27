@@ -9,7 +9,8 @@ export function Pagination({
   query,
   className,
   previousPageTarget,
-  nextPageTarget
+  nextPageTarget,
+  prefetch
 }: {
   current: number;
   max?: number;
@@ -19,6 +20,7 @@ export function Pagination({
   className?: string;
   previousPageTarget?: string;
   nextPageTarget?: string;
+  prefetch?: boolean;
 }) {
   const knownMax = max && max >= 1 ? max : undefined;
   const canGoNext = knownMax ? current < knownMax : Boolean(hasNext);
@@ -39,6 +41,7 @@ export function Pagination({
       {current > 1 ? (
         <Link
           href={hrefFor(current - 1, previousPageTarget)}
+          prefetch={prefetch}
           aria-label="上一页"
         >
           <ChevronLeft size={16} />
@@ -56,6 +59,7 @@ export function Pagination({
       {canGoNext ? (
         <Link
           href={hrefFor(current + 1, nextPageTarget)}
+          prefetch={prefetch}
           aria-label="下一页"
         >
           <span className="pagination-label">下一页</span>

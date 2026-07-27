@@ -99,7 +99,9 @@ export default async function EditPostPage({
                 ? "登录状态已失效，请重新登录。"
                 : "你可能没有修改权限，或者楼层已被锁定。")}
           </p>
-          <Link href={returnPath}>返回帖子</Link>
+          <Link href={returnPath} prefetch={false}>
+            返回帖子
+          </Link>
         </div>
       )}
     </main>

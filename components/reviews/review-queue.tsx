@@ -187,6 +187,7 @@ export function ReviewQueue({
                   href={`/topic/${item.topic_id}${
                     isTopic ? "" : `#floor-${item.floor}`
                   }`}
+                  prefetch={false}
                 >
                   {item.topic?.title || `主题 ${item.topic_id}`}
                 </Link>

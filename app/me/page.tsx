@@ -211,7 +211,11 @@ export default async function MePage() {
                 <h3>本周值得记住的讨论</h3>
                 <div>
                   {report.highlights.map((item) => (
-                    <Link href={`/topic/${item.topicId}`} key={item.topicId}>
+                    <Link
+                      href={`/topic/${item.topicId}`}
+                      key={item.topicId}
+                      prefetch={false}
+                    >
                       <span>{item.title}</span>
                       <small>
                         {item.participants} 位会员参与 ·{" "}

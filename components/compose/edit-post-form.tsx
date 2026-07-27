@@ -265,7 +265,9 @@ export function EditPostForm({
       <input type="hidden" name="content" value={content} />
       <div className="edit-composer-top">
         <span>{editTitle ? "修改主题" : `修改第 ${floor} 楼`}</span>
-        <Link href={returnPath}>取消修改</Link>
+        <Link href={returnPath} prefetch={false}>
+          取消修改
+        </Link>
       </div>
       {editTitle ? (
         <input
@@ -447,7 +449,7 @@ export function EditPostForm({
           <span>{content.length} 字</span>
         )}
         <div>
-          <Link className="save-draft" href={returnPath}>
+          <Link className="save-draft" href={returnPath} prefetch={false}>
             <X size={16} /> 取消
           </Link>
           <button

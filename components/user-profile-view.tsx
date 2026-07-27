@@ -229,13 +229,17 @@ async function renderUserProfileView({
                       <div>
                         <span>回复了主题</span>
                         {topicHref ? (
-                          <Link href={topicHref}>{topicTitle}</Link>
+                          <Link href={topicHref} prefetch={false}>
+                            {topicTitle}
+                          </Link>
                         ) : (
                           <strong>{topicTitle}</strong>
                         )}
                       </div>
                       {floorHref ? (
-                        <Link href={floorHref}>#{floor}</Link>
+                        <Link href={floorHref} prefetch={false}>
+                          #{floor}
+                        </Link>
                       ) : (
                         <span>#{floor}</span>
                       )}
@@ -256,7 +260,9 @@ async function renderUserProfileView({
                         {relativeTime(Number(reply.ctime) || 0, replies._time)}
                       </span>
                       {floorHref ? (
-                        <Link href={floorHref}>查看完整回复</Link>
+                        <Link href={floorHref} prefetch={false}>
+                          查看完整回复
+                        </Link>
                       ) : (
                         <span>原回复不可用</span>
                       )}

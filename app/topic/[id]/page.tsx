@@ -238,6 +238,7 @@ export default async function TopicPage({
                 className="topic-pagination-top"
                 previousPageTarget="last-reply"
                 nextPageTarget="first-reply"
+                prefetch={false}
               />
             ) : null}
             <div className="reply-list">
@@ -347,6 +348,7 @@ export default async function TopicPage({
             path={`/topic/${topicId}`}
             previousPageTarget="last-reply"
             nextPageTarget="first-reply"
+            prefetch={false}
           />
 
           {topic.canReply && topic.token ? (
