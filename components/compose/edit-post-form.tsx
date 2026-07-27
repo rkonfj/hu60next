@@ -71,7 +71,17 @@ export function EditPostForm({
   const [notice, setNotice] = useState("");
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const selectionRef = useRef({ start: 0, end: 0 });
   const returnPath = topicPath(topicId, page, floor);
+
+  function rememberEditorSelection() {
+    const textarea = textAreaRef.current;
+    if (!textarea) return;
+    selectionRef.current = {
+      start: textarea.selectionStart,
+      end: textarea.selectionEnd
+    };
+  }
 
   function updateAttachment(id: string, patch: Partial<AttachmentState>) {
     setAttachments((current) =>
@@ -84,11 +94,19 @@ export function EditPostForm({
     let cursor = 0;
 
     setContent((value) => {
-      const start = textarea?.selectionStart ?? value.length;
-      const end = textarea?.selectionEnd ?? start;
+      const selection =
+        textarea && document.activeElement === textarea
+          ? {
+              start: textarea.selectionStart,
+              end: textarea.selectionEnd
+            }
+          : selectionRef.current;
+      const start = Math.min(selection.start, value.length);
+      const end = Math.min(Math.max(selection.end, start), value.length);
       const prefix = value.slice(0, start);
       const spacer = inline || !prefix || prefix.endsWith("\n") ? "" : "\n";
       cursor = start + spacer.length + text.length;
+      selectionRef.current = { start: cursor, end: cursor };
       return `${prefix}${spacer}${text}${value.slice(end)}`;
     });
     setMode("write");
@@ -110,6 +128,7 @@ export function EditPostForm({
     setMode("write");
     window.requestAnimationFrame(() => {
       const cursor = start + text.length;
+      selectionRef.current = { start: cursor, end: cursor };
       textAreaRef.current?.focus();
       textAreaRef.current?.setSelectionRange(cursor, cursor);
     });
@@ -293,6 +312,7 @@ export function EditPostForm({
               </button>
               <button
                 type="button"
+                onPointerDown={rememberEditorSelection}
                 onClick={() => fileInputRef.current?.click()}
                 aria-label="添加附件"
                 title="添加附件"
@@ -356,7 +376,14 @@ export function EditPostForm({
             <textarea
               ref={textAreaRef}
               value={content}
-              onChange={(event) => setContent(event.target.value)}
+              onChange={(event) => {
+                setContent(event.target.value);
+                selectionRef.current = {
+                  start: event.target.selectionStart,
+                  end: event.target.selectionEnd
+                };
+              }}
+              onSelect={rememberEditorSelection}
               maxLength={20000}
               aria-label="帖子内容"
             />

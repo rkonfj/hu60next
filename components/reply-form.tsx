@@ -28,6 +28,7 @@ import type { ForumFace } from "@/lib/types";
 
 type ReplyFormProps = {
   topicId: number;
+  userId: number;
   token: string;
   faces: ForumFace[];
   initialNotice?: string;
@@ -35,27 +36,48 @@ type ReplyFormProps = {
 
 export function ReplyForm({
   topicId,
+  userId,
   token,
   faces,
   initialNotice = ""
 }: ReplyFormProps) {
   const router = useRouter();
+  const draftKey = `hulvlin-reply-draft:${userId}:${topicId}`;
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState(initialNotice);
   const [success, setSuccess] = useState(false);
   const [content, setContent] = useState("");
+  const [loadedDraftKey, setLoadedDraftKey] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<AttachmentState[]>([]);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const selectionRef = useRef({ start: 0, end: 0 });
+
+  function rememberEditorSelection() {
+    const textarea = textAreaRef.current;
+    if (!textarea) return;
+    selectionRef.current = {
+      start: textarea.selectionStart,
+      end: textarea.selectionEnd
+    };
+  }
 
   const insertText = useCallback((text: string, scrollToEditor = false) => {
     const textarea = textAreaRef.current;
     let cursor = 0;
 
     setContent((value) => {
-      const start = textarea?.selectionStart ?? value.length;
-      const end = textarea?.selectionEnd ?? start;
+      const selection =
+        textarea && document.activeElement === textarea
+          ? {
+              start: textarea.selectionStart,
+              end: textarea.selectionEnd
+            }
+          : selectionRef.current;
+      const start = Math.min(selection.start, value.length);
+      const end = Math.min(Math.max(selection.end, start), value.length);
       cursor = start + text.length;
+      selectionRef.current = { start: cursor, end: cursor };
       return `${value.slice(0, start)}${text}${value.slice(end)}`;
     });
 
@@ -145,6 +167,29 @@ export function ReplyForm({
   }
 
   useEffect(() => {
+    try {
+      setContent(localStorage.getItem(draftKey) ?? "");
+    } catch {
+      setContent("");
+    }
+    setLoadedDraftKey(draftKey);
+  }, [draftKey]);
+
+  useEffect(() => {
+    if (loadedDraftKey !== draftKey) return;
+
+    try {
+      if (content) {
+        localStorage.setItem(draftKey, content);
+      } else {
+        localStorage.removeItem(draftKey);
+      }
+    } catch {
+      // 浏览器禁用或限制本地存储时仍允许正常回复。
+    }
+  }, [content, draftKey, loadedDraftKey]);
+
+  useEffect(() => {
     function handleFloorReply(event: MouseEvent) {
       if (!(event.target instanceof Element)) return;
       const trigger = event.target.closest<HTMLElement>("[data-reply-author]");
@@ -183,6 +228,11 @@ export function ReplyForm({
       }
 
       form.reset();
+      try {
+        localStorage.removeItem(draftKey);
+      } catch {
+        // 浏览器禁用或限制本地存储时无需额外处理。
+      }
       setContent("");
       setAttachments([]);
       setSuccess(true);
@@ -216,7 +266,14 @@ export function ReplyForm({
         ref={textAreaRef}
         name="content"
         value={content}
-        onChange={(event) => setContent(event.target.value)}
+        onChange={(event) => {
+          setContent(event.target.value);
+          selectionRef.current = {
+            start: event.target.selectionStart,
+            end: event.target.selectionEnd
+          };
+        }}
+        onSelect={rememberEditorSelection}
         required
         minLength={1}
         maxLength={20000}
@@ -226,6 +283,7 @@ export function ReplyForm({
       <div className="reply-editor-tools">
         <button
           type="button"
+          onPointerDown={rememberEditorSelection}
           onClick={() => fileInputRef.current?.click()}
           aria-label="添加附件"
           title="添加附件"

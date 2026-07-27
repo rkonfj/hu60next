@@ -53,6 +53,7 @@ body {
   margin: 0;
   color: var(--ink);
   background: var(--bg);
+  font-size: 15px;
   font-family:
     Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
     "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
@@ -373,7 +374,6 @@ select:focus-visible {
   padding: 8px 10px;
   border-radius: 10px;
   background: var(--green-soft);
-  font-size: 12px;
   font-weight: 750;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -422,6 +422,101 @@ select:focus-visible {
   color: var(--green);
   font-size: 11px;
   font-weight: 700;
+}
+
+.home-weekly-report {
+  display: block;
+  margin-bottom: 14px;
+  padding: 14px;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(135deg, var(--green-soft), transparent 58%),
+    var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.home-weekly-report > header,
+.home-weekly-report > header > span,
+.home-weekly-score,
+.home-weekly-score > span {
+  display: flex;
+  align-items: center;
+}
+
+.home-weekly-report > header {
+  justify-content: space-between;
+  color: var(--green);
+}
+
+.home-weekly-report > header > span {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  gap: 6px;
+}
+
+.home-weekly-report > header > svg {
+  color: var(--faint);
+}
+
+.home-weekly-report > p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.home-weekly-score {
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.home-weekly-score > span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 750;
+  gap: 5px;
+}
+
+.home-weekly-score > span > svg {
+  color: var(--orange);
+}
+
+.home-weekly-score > strong {
+  color: var(--orange);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.home-weekly-score small {
+  margin-left: 3px;
+  font-size: 9px;
+}
+
+.home-weekly-metrics {
+  display: grid;
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid var(--line);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.home-weekly-metrics > span {
+  color: var(--faint);
+  font-size: 8px;
+  text-align: center;
+}
+
+.home-weekly-metrics > span + span {
+  border-left: 1px solid var(--line);
+}
+
+.home-weekly-metrics strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--ink);
+  font-size: 14px;
 }
 
 .forum-nav {
@@ -774,14 +869,10 @@ select:focus-visible {
   white-space: nowrap;
 }
 
-.topic-card-author-copy strong {
-  font-size: 11px;
-}
-
 .topic-card-author-copy span {
   margin-top: 2px;
   color: var(--faint);
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .forum-pill {
@@ -902,7 +993,7 @@ select:focus-visible {
   padding-top: 12px;
   color: var(--faint);
   border-top: 1px solid var(--line);
-  font-size: 10px;
+  font-size: 12px;
   gap: 9px;
 }
 
@@ -1606,10 +1697,6 @@ select:focus-visible {
   display: block;
 }
 
-.article-meta strong {
-  font-size: 12px;
-}
-
 .article-meta > div:nth-child(2) span {
   display: flex;
   align-items: center;
@@ -1660,7 +1747,6 @@ select:focus-visible {
 .rich-content {
   overflow-wrap: anywhere;
   color: #27322c;
-  font-size: 14px;
   line-height: 1.85;
 }
 
@@ -2124,10 +2210,6 @@ select:focus-visible {
   display: block;
 }
 
-.reply-author strong {
-  font-size: 11px;
-}
-
 .reply-author span {
   margin-top: 3px;
   color: var(--faint);
@@ -2143,7 +2225,6 @@ select:focus-visible {
 
 .reply-content {
   padding-left: 46px;
-  font-size: 12px;
   line-height: 1.75;
 }
 
@@ -2312,7 +2393,6 @@ select:focus-visible {
   border: 0;
   border-radius: 9px;
   background: var(--green);
-  font-size: 10px;
   font-weight: 750;
   gap: 6px;
 }
@@ -2367,7 +2447,14 @@ select:focus-visible {
 
 .author-card-identity strong {
   display: block;
-  font-size: 16px;
+}
+
+.author-card-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .author-card > p {
@@ -3209,7 +3296,6 @@ body:has(> .auth-page) > .site-header {
   outline: 0;
   resize: vertical;
   background: transparent;
-  font-size: 12px;
   line-height: 1.75;
 }
 
@@ -3337,7 +3423,6 @@ body:has(> .auth-page) > .site-header {
   height: 38px;
   padding: 0 13px;
   border-radius: 10px;
-  font-size: 10px;
   font-weight: 750;
   gap: 6px;
 }
@@ -3345,6 +3430,7 @@ body:has(> .auth-page) > .site-header {
 .save-draft {
   border: 1px solid var(--line);
   background: var(--surface-soft);
+  font-size: 10px;
 }
 
 .publish-draft {
@@ -3583,7 +3669,6 @@ body:has(> .auth-page) > .site-header {
 
 .message-author strong {
   overflow: hidden;
-  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -3759,10 +3844,6 @@ body:has(> .auth-page) > .site-header {
   align-items: center;
   min-height: 27px;
   gap: 7px;
-}
-
-.chat-message-main > header strong {
-  font-size: 11px;
 }
 
 .chat-message-main > header a,
@@ -4477,7 +4558,6 @@ body:has(> .auth-page) > .site-header {
 
 .relationship-user strong {
   overflow: hidden;
-  font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -4570,7 +4650,7 @@ body:has(> .auth-page) > .site-header {
 }
 
 .author-member-badge {
-  margin: 6px auto 0;
+  margin: 0;
 }
 
 .user-profile-copy p {
@@ -4713,7 +4793,6 @@ body:has(> .auth-page) > .site-header {
   overflow: hidden;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  font-size: 12px;
 }
 
 .user-reply-content img {
@@ -5017,7 +5096,7 @@ body:has(> .auth-page) > .site-header {
 
   .topic-card-meta {
     gap: 6px;
-    font-size: 9px;
+    font-size: 11px;
   }
 
   .mobile-menu {
@@ -5106,10 +5185,6 @@ body:has(> .auth-page) > .site-header {
 
   .article-stats {
     display: none;
-  }
-
-  .rich-content {
-    font-size: 13px;
   }
 
   .rich-content h2 {
@@ -6113,19 +6188,8 @@ body :is(
 .honor-member-copy strong {
   overflow: hidden;
   min-width: 0;
-  font-size: 15px;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.honor-label {
-  flex: 0 0 auto;
-  padding: 2px 6px;
-  color: var(--green);
-  border: 1px solid var(--line);
-  background: var(--green-soft);
-  font-size: 10px;
-  font-weight: 750;
 }
 
 .honor-member > svg {
@@ -6472,7 +6536,6 @@ body :is(
   align-items: center;
   margin-top: 10px;
   color: var(--faint);
-  font-size: 9px;
   gap: 8px;
 }
 
@@ -6485,6 +6548,7 @@ body :is(
 
 .review-queue-author time {
   margin-left: auto;
+  font-size: 9px;
 }
 
 .review-queue-content {
@@ -6493,7 +6557,6 @@ body :is(
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-soft);
-  font-size: 12px;
   line-height: 1.65;
 }
 
@@ -6505,7 +6568,7 @@ body :is(
 }
 
 .review-actions-shell.is-pending {
-  border-top-width: 2px;
+  border-top-width: 5px;
   border-top-color: color-mix(in srgb, var(--orange) 72%, var(--line));
 }
 

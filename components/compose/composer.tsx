@@ -490,6 +490,16 @@ export function Composer({
   const [publishNotice, setPublishNotice] = useState("");
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const selectionRef = useRef({ start: 0, end: 0 });
+
+  function rememberEditorSelection() {
+    const textarea = textAreaRef.current;
+    if (!textarea) return;
+    selectionRef.current = {
+      start: textarea.selectionStart,
+      end: textarea.selectionEnd
+    };
+  }
 
   useEffect(() => {
     let draft: SavedDraft = {};
@@ -560,12 +570,20 @@ export function Composer({
     let cursor = 0;
 
     setContent((value) => {
-      const start = textarea?.selectionStart ?? value.length;
-      const end = textarea?.selectionEnd ?? start;
+      const selection =
+        textarea && document.activeElement === textarea
+          ? {
+              start: textarea.selectionStart,
+              end: textarea.selectionEnd
+            }
+          : selectionRef.current;
+      const start = Math.min(selection.start, value.length);
+      const end = Math.min(Math.max(selection.end, start), value.length);
       const prefix = value.slice(0, start);
       const suffix = value.slice(end);
       const spacer = prefix && !prefix.endsWith("\n") ? "\n" : "";
       cursor = start + spacer.length + text.length;
+      selectionRef.current = { start: cursor, end: cursor };
       return `${prefix}${spacer}${text}${suffix}`;
     });
     setMode("write");
@@ -581,9 +599,17 @@ export function Composer({
     let cursor = 0;
 
     setContent((value) => {
-      const start = textarea?.selectionStart ?? value.length;
-      const end = textarea?.selectionEnd ?? start;
+      const selection =
+        textarea && document.activeElement === textarea
+          ? {
+              start: textarea.selectionStart,
+              end: textarea.selectionEnd
+            }
+          : selectionRef.current;
+      const start = Math.min(selection.start, value.length);
+      const end = Math.min(Math.max(selection.end, start), value.length);
       cursor = start + text.length;
+      selectionRef.current = { start: cursor, end: cursor };
       return `${value.slice(0, start)}${text}${value.slice(end)}`;
     });
     setMode("write");
@@ -606,6 +632,7 @@ export function Composer({
 
     window.requestAnimationFrame(() => {
       const cursor = start + text.length;
+      selectionRef.current = { start: cursor, end: cursor };
       textAreaRef.current?.focus();
       textAreaRef.current?.setSelectionRange(cursor, cursor);
     });
@@ -867,6 +894,7 @@ export function Composer({
             </button>
             <button
               type="button"
+              onPointerDown={rememberEditorSelection}
               onClick={() => fileInputRef.current?.click()}
               aria-label="添加附件"
               title="添加附件"
@@ -932,7 +960,14 @@ export function Composer({
           <textarea
             ref={textAreaRef}
             value={content}
-            onChange={(event) => setContent(event.target.value)}
+            onChange={(event) => {
+              setContent(event.target.value);
+              selectionRef.current = {
+                start: event.target.selectionStart,
+                end: event.target.selectionEnd
+              };
+            }}
+            onSelect={rememberEditorSelection}
             placeholder="描述背景、已经尝试过的方案，以及你真正想讨论的问题……"
           />
         ) : (

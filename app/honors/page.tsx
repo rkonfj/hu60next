@@ -22,7 +22,6 @@ export const dynamic = "force-dynamic";
 function HonorBoard({
   title,
   description,
-  honorLabel,
   members,
   showMemberTitle = false,
   showWeeklyScore = false,
@@ -31,7 +30,6 @@ function HonorBoard({
 }: {
   title: string;
   description: string;
-  honorLabel?: string;
   members: HonorMember[];
   showMemberTitle?: boolean;
   showWeeklyScore?: boolean;
@@ -61,9 +59,6 @@ function HonorBoard({
                 <Avatar src={member.avatar} name={member.name} />
                 <span className="honor-member-copy">
                   <strong>{member.name}</strong>
-                  {honorLabel ? (
-                    <span className="honor-label">{honorLabel}</span>
-                  ) : null}
                   {showWeeklyScore &&
                   typeof member.weeklyScore === "number" ? (
                     <span className="honor-score">
@@ -130,14 +125,13 @@ export default async function HonorsPage() {
         />
         <HonorBoard
           title="活跃荣誉"
-          description="感谢让讨论持续发生的熟悉身影"
-          honorLabel="活跃荣誉"
+          description="近期持续发帖与参与评论的社区成员"
           members={honors.active}
           icon={Sparkles}
         />
         <HonorBoard
           title="资历荣誉"
-          description="致敬近期仍在社区留下作品的老朋友"
+          description="致敬近期仍在主题和评论中活跃的老朋友"
           members={honors.legacy}
           showMemberTitle
           icon={Award}
@@ -146,6 +140,11 @@ export default async function HonorsPage() {
       {mvp.partial ? (
         <p className="honor-partial">
           上周 MVP 根据最近一部分公开交流记录计算。
+        </p>
+      ) : null}
+      {honors.partial ? (
+        <p className="honor-partial">
+          评论数据暂时不可用，当前活跃与资历荣誉仅根据近期主题计算。
         </p>
       ) : null}
     </main>

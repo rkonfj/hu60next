@@ -94,6 +94,7 @@ export async function POST(request: Request, { params }: RouteContext) {
         body: new URLSearchParams({
           content,
           token,
+          useMarkdown: "1",
           go: "1"
         }),
         cache: "no-store"

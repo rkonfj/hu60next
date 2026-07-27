@@ -18,7 +18,7 @@ export function Avatar({
         // External avatars have inconsistent dimensions and are intentionally
         // rendered as regular images with a CSS crop.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={normalized} alt="" loading="lazy" referrerPolicy="no-referrer" />
+        <img src={normalized} alt="" loading="lazy" />
       ) : (
         <span>{letter}</span>
       )}

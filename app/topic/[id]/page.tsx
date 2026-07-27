@@ -302,6 +302,7 @@ export default async function TopicPage({
           {topic.canReply && topic.token ? (
             <ReplyForm
               topicId={topicId}
+              userId={sessionUid}
               token={topic.token}
               faces={faces}
               initialNotice={
@@ -333,14 +334,16 @@ export default async function TopicPage({
             <span className="aside-label">关于作者</span>
             <Link href={`/user/${meta.uid}`} className="author-card-identity">
               <Avatar src={meta._u_avatar} name={meta._u_name} size="xl" />
-              <strong data-member-uid={meta.uid}>
-                {meta._u_name || `用户 ${meta.uid}`}
-              </strong>
-              {authorMemberTitle ? (
-                <span className="member-badge author-member-badge">
-                  {authorMemberTitle}
-                </span>
-              ) : null}
+              <span className="author-card-name">
+                <strong data-member-uid={meta.uid}>
+                  {meta._u_name || `用户 ${meta.uid}`}
+                </strong>
+                {authorMemberTitle ? (
+                  <span className="member-badge author-member-badge">
+                    {authorMemberTitle}
+                  </span>
+                ) : null}
+              </span>
             </Link>
             <p>{meta._u_signature || "这位用户还没有留下个人签名。"}</p>
             <Link href={`/user/${meta.uid}`} className="author-card-link">

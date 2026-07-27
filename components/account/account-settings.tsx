@@ -145,7 +145,6 @@ export function AccountSettings({
                   src={currentAvatar}
                   alt=""
                   loading="lazy"
-                  referrerPolicy="no-referrer"
                 />
               ) : (
                 <span>{(name.trim() || "虎").slice(0, 1).toUpperCase()}</span>

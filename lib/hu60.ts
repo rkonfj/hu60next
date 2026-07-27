@@ -37,9 +37,12 @@ import {
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
 const TOPICS_PER_PAGE = 30;
-const HONOR_TOPIC_SAMPLE_SIZE = 300;
+const HONOR_TOPIC_SAMPLE_SIZE = 200;
 const HONOR_TOPIC_FETCH_SIZE = 360;
-const HONOR_ACTIVE_MINIMUM = 8;
+const HONOR_REPLY_SAMPLE_SIZE = 300;
+const HONOR_REPLY_FETCH_PAGES = 4;
+const HONOR_REPLY_WEIGHT = 0.5;
+const HONOR_ACTIVE_MINIMUM = 10;
 const HONOR_CACHE_SECONDS = 600;
 // 16643 是 2012 年最后一位注册会员。
 const HONOR_LEGEND_UID_MAX = 16643;
@@ -234,8 +237,9 @@ type HonorTopicResponse = {
 };
 
 type HonorCandidate = HonorMember & {
-  recentCount: number;
-  latestTopicTime: number;
+  topicCount: number;
+  replyCount: number;
+  latestActivityTime: number;
 };
 
 let honorMemoryCache:
@@ -261,19 +265,24 @@ async function getEarlyMemberTitle(uid: number) {
 }
 
 async function buildHonorRoll(): Promise<HonorRoll> {
-  const response = await requestPublicJson<HonorTopicResponse>(
-    "bbs.forum.0.1.0.json",
-    {
-      pageSize: HONOR_TOPIC_FETCH_SIZE,
-      _topic_summary: 0,
-      _uinfo: "name,avatar",
-      _time: 1
-    },
-    {
-      topicList: [],
-      __fallback: true
-    }
-  );
+  const [response, ...replyResponses] = await Promise.all([
+    requestPublicJson<HonorTopicResponse>(
+      "bbs.forum.0.1.0.json",
+      {
+        pageSize: HONOR_TOPIC_FETCH_SIZE,
+        _topic_summary: 0,
+        _uinfo: "name,avatar",
+        _time: 1
+      },
+      {
+        topicList: [],
+        __fallback: true
+      }
+    ),
+    ...Array.from({ length: HONOR_REPLY_FETCH_PAGES }, (_, index) =>
+      getWeeklyReplyFeedPage(index + 1, 100)
+    )
+  ]);
 
   if (response.__fallback || !Array.isArray(response.topicList)) {
     return {
@@ -294,6 +303,29 @@ async function buildHonorRoll(): Promise<HonorRoll> {
         Number(topic.mtime || topic.ctime || 0) <= updatedAt
     )
     .slice(0, HONOR_TOPIC_SAMPLE_SIZE);
+  const partial = replyResponses.some(
+    (replyResponse) =>
+      replyResponse.__fallback || !Array.isArray(replyResponse.replyList)
+  );
+  const replies = partial
+    ? []
+    : Array.from(
+        new Map(
+          replyResponses
+            .flatMap((replyResponse) => replyResponse.replyList)
+            .filter(
+              (reply) =>
+                Number(reply.mtime || reply.ctime || 0) <= updatedAt
+            )
+            .map((reply) => [Number(reply.id), reply] as const)
+        ).values()
+      )
+        .sort(
+          (left, right) =>
+            Number(right.mtime || right.ctime || 0) -
+            Number(left.mtime || left.ctime || 0)
+        )
+        .slice(0, HONOR_REPLY_SAMPLE_SIZE);
   const candidateMap = new Map<number, HonorCandidate>();
 
   for (const topic of topics) {
@@ -307,10 +339,31 @@ async function buildHonorRoll(): Promise<HonorRoll> {
       uid,
       name,
       avatar: topic._u_avatar || current?.avatar || null,
-      recentCount: (current?.recentCount ?? 0) + 1,
-      latestTopicTime: Math.max(
-        current?.latestTopicTime ?? 0,
-        Number(topic.ctime) || 0
+      topicCount: (current?.topicCount ?? 0) + 1,
+      replyCount: current?.replyCount ?? 0,
+      latestActivityTime: Math.max(
+        current?.latestActivityTime ?? 0,
+        Number(topic.mtime || topic.ctime) || 0
+      )
+    });
+  }
+
+  for (const reply of replies) {
+    const uid = Number(reply.uid);
+    if (!Number.isFinite(uid) || uid <= 0) continue;
+
+    const current = candidateMap.get(uid);
+    const name =
+      reply._u_name || reply.uinfo?.name || current?.name || `用户 ${uid}`;
+    candidateMap.set(uid, {
+      uid,
+      name,
+      avatar: reply._u_avatar || current?.avatar || null,
+      topicCount: current?.topicCount ?? 0,
+      replyCount: (current?.replyCount ?? 0) + 1,
+      latestActivityTime: Math.max(
+        current?.latestActivityTime ?? 0,
+        Number(reply.mtime || reply.ctime) || 0
       )
     });
   }
@@ -340,28 +393,43 @@ async function buildHonorRoll(): Promise<HonorRoll> {
           : null
   });
 
-  const legacy = candidates
-    .filter((candidate) => candidate.uid <= HONOR_LEGACY_UID_MAX)
-    .sort(
-      (left, right) =>
-        right.recentCount - left.recentCount || left.uid - right.uid
-    )
-    .map(toHonorMember);
+  const rankedCandidates = candidates.map((candidate) => ({
+    activityScore:
+      candidate.topicCount + candidate.replyCount * HONOR_REPLY_WEIGHT,
+    candidate,
+    member: toHonorMember(candidate)
+  }));
 
-  const active = candidates
-    .filter((candidate) => candidate.recentCount >= HONOR_ACTIVE_MINIMUM)
+  const legacy = rankedCandidates
+    .filter(
+      ({ activityScore, member }) =>
+        activityScore > 0 && Boolean(member.memberTitle)
+    )
     .sort(
       (left, right) =>
-        right.recentCount - left.recentCount ||
-        right.latestTopicTime - left.latestTopicTime ||
-        left.uid - right.uid
+        right.activityScore - left.activityScore ||
+        right.candidate.latestActivityTime -
+          left.candidate.latestActivityTime ||
+        left.candidate.uid - right.candidate.uid
     )
-    .map(toHonorMember);
+    .map(({ member }) => member);
+
+  const active = rankedCandidates
+    .filter(({ activityScore }) => activityScore >= HONOR_ACTIVE_MINIMUM)
+    .sort(
+      (left, right) =>
+        right.activityScore - left.activityScore ||
+        right.candidate.latestActivityTime -
+          left.candidate.latestActivityTime ||
+        left.candidate.uid - right.candidate.uid
+    )
+    .map(({ member }) => member);
 
   return {
     legacy,
     active,
-    updatedAt
+    updatedAt,
+    partial
   };
 }
 

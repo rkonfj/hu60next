@@ -39,7 +39,9 @@ export function ReviewActions({
   const [reason, setReason] = useState("");
   const [notice, setNotice] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [showLogs, setShowLogs] = useState(false);
+  const [showLogs, setShowLogs] = useState(
+    () => Number(reviewState) === 1
+  );
   const canReview = Number(reviewState || 0) !== 0;
   const isPendingReview = Number(reviewState) === 1;
 
