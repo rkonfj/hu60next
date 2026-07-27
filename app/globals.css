@@ -5494,11 +5494,11 @@ body :is(
     .topic-aside,
     .user-profile-card
   ) {
-    position: sticky;
+    position: fixed;
+    z-index: 5;
     top: 72px;
-    align-self: start;
-    backface-visibility: hidden;
-    transform: translateZ(0);
+    right: max(22px, calc((100% - 1240px) / 2));
+    width: 300px;
   }
 
   .feed-column {

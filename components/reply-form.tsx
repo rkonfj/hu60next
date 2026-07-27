@@ -10,6 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import {
   ChangeEvent,
+  ClipboardEvent,
   FormEvent,
   useCallback,
   useEffect,
@@ -18,6 +19,7 @@ import {
 } from "react";
 import {
   checksumFile,
+  filesFromClipboard,
   formatFileSize,
   type AttachmentState,
   type UploadFormResult,
@@ -146,10 +148,7 @@ export function ReplyForm({
     }
   }
 
-  async function selectAttachments(event: ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []);
-    event.target.value = "";
-
+  async function addAttachments(files: File[]) {
     for (const [index, file] of files.entries()) {
       const id = `${Date.now()}-${index}-${file.name}`;
       setAttachments((current) => [
@@ -164,6 +163,24 @@ export function ReplyForm({
       ]);
       await uploadAttachment(file, id);
     }
+  }
+
+  async function selectAttachments(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    await addAttachments(files);
+  }
+
+  async function pasteAttachments(event: ClipboardEvent<HTMLTextAreaElement>) {
+    const files = filesFromClipboard(event.clipboardData);
+    if (!files.length) return;
+
+    event.preventDefault();
+    selectionRef.current = {
+      start: event.currentTarget.selectionStart,
+      end: event.currentTarget.selectionEnd
+    };
+    await addAttachments(files);
   }
 
   useEffect(() => {
@@ -273,6 +290,7 @@ export function ReplyForm({
             end: event.target.selectionEnd
           };
         }}
+        onPaste={pasteAttachments}
         onSelect={rememberEditorSelection}
         required
         minLength={1}

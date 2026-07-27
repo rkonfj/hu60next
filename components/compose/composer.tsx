@@ -18,6 +18,7 @@ import {
 import { useRouter } from "next/navigation";
 import {
   ChangeEvent,
+  ClipboardEvent,
   FormEvent,
   ReactNode,
   useEffect,
@@ -47,6 +48,15 @@ export type AttachmentState = {
   notice?: string;
   downloadUrl?: string;
 };
+
+export function filesFromClipboard(data: DataTransfer) {
+  const itemFiles = Array.from(data.items)
+    .filter((item) => item.kind === "file")
+    .map((item) => item.getAsFile())
+    .filter((file): file is File => file !== null);
+
+  return itemFiles.length ? itemFiles : Array.from(data.files);
+}
 
 export type UploadFormResult = {
   success?: boolean;
@@ -717,10 +727,7 @@ export function Composer({
     }
   }
 
-  async function selectAttachments(event: ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []);
-    event.target.value = "";
-
+  async function addAttachments(files: File[]) {
     for (const [index, file] of files.entries()) {
       const id = `${Date.now()}-${index}-${file.name}`;
       setAttachments((current) => [
@@ -735,6 +742,24 @@ export function Composer({
       ]);
       await uploadAttachment(file, id);
     }
+  }
+
+  async function selectAttachments(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    await addAttachments(files);
+  }
+
+  async function pasteAttachments(event: ClipboardEvent<HTMLTextAreaElement>) {
+    const files = filesFromClipboard(event.clipboardData);
+    if (!files.length) return;
+
+    event.preventDefault();
+    selectionRef.current = {
+      start: event.currentTarget.selectionStart,
+      end: event.currentTarget.selectionEnd
+    };
+    await addAttachments(files);
   }
 
   const canPostToTarget = Boolean(
@@ -967,6 +992,7 @@ export function Composer({
                 end: event.target.selectionEnd
               };
             }}
+            onPaste={pasteAttachments}
             onSelect={rememberEditorSelection}
             placeholder="描述背景、已经尝试过的方案，以及你真正想讨论的问题……"
           />

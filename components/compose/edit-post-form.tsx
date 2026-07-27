@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ChangeEvent,
+  ClipboardEvent,
   FormEvent,
   useRef,
   useState
@@ -25,6 +26,7 @@ import { FacePicker } from "@/components/face-picker";
 import {
   checksumFile,
   ComposerPreview,
+  filesFromClipboard,
   formatFileSize,
   uploadToObjectStorage,
   type AttachmentState,
@@ -179,10 +181,7 @@ export function EditPostForm({
     }
   }
 
-  async function selectAttachments(event: ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []);
-    event.target.value = "";
-
+  async function addAttachments(files: File[]) {
     for (const [index, file] of files.entries()) {
       const id = `${Date.now()}-${index}-${file.name}`;
       setAttachments((current) => [
@@ -197,6 +196,24 @@ export function EditPostForm({
       ]);
       await uploadAttachment(file, id);
     }
+  }
+
+  async function selectAttachments(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    await addAttachments(files);
+  }
+
+  async function pasteAttachments(event: ClipboardEvent<HTMLTextAreaElement>) {
+    const files = filesFromClipboard(event.clipboardData);
+    if (!files.length) return;
+
+    event.preventDefault();
+    selectionRef.current = {
+      start: event.currentTarget.selectionStart,
+      end: event.currentTarget.selectionEnd
+    };
+    await addAttachments(files);
   }
 
   async function saveChanges(event: FormEvent<HTMLFormElement>) {
@@ -383,6 +400,7 @@ export function EditPostForm({
                   end: event.target.selectionEnd
                 };
               }}
+              onPaste={pasteAttachments}
               onSelect={rememberEditorSelection}
               maxLength={20000}
               aria-label="帖子内容"
