@@ -19,8 +19,7 @@ import { compactNumber, fullDate, relativeTime } from "@/lib/format";
 import {
   getFaces,
   getTopic,
-  getTopicMain,
-  getUserStatus
+  getTopicMain
 } from "@/lib/hu60";
 import { getMemberTitleByUid } from "@/lib/member";
 import {
@@ -62,10 +61,9 @@ export default async function TopicPage({
   const page = Math.max(1, Number(query.page) || 1);
   const cookieStore = await cookies();
   const sid = cookieStore.get("hulvlin_sid")?.value;
-  const [topic, faces, session] = await Promise.all([
+  const [topic, faces] = await Promise.all([
     getTopic(topicId, page, sid),
-    getFaces(),
-    getUserStatus(sid)
+    getFaces()
   ]);
 
   if (topic.__fallback) {
@@ -97,10 +95,10 @@ export default async function TopicPage({
     (floor) => Number(floor.floor) > 0
   );
   const meta = topic.tMeta;
-  const sessionUid = Number(topic._myself?.uid ?? session.uid);
+  const sessionUid = Number(topic._myself?.uid);
   const canReview =
-    session.isLogin === true &&
-    session.permissions?.includes("PERMISSION_REVIEW_POST");
+    topic._myself?.isLogin === true &&
+    topic._myself.permissions?.includes("PERMISSION_REVIEW_POST");
   const publishedAt = Number(mainFloor?.ctime ?? meta.ctime);
   const editedAt = Number(mainFloor?.mtime ?? publishedAt);
   const mainFloorEdited = editedAt !== publishedAt;

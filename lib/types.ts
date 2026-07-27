@@ -166,6 +166,7 @@ export type TopicResponse = {
     newMsg?: number;
     newAtInfo?: number;
     newChats?: ChatItem[] | null;
+    permissions?: string[];
   };
   tContents: Floor[];
   __fallback?: boolean;

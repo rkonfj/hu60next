@@ -798,7 +798,7 @@ async function getTopicUncached(
       floorReverse: 0,
       _uinfo: "name,avatar,sign",
       _content: "html",
-      _myself: "newMsg,newAtInfo,newChats",
+      _myself: "newMsg,newAtInfo,newChats,permissions",
       _time: 1
     },
     fallbackTopic,
