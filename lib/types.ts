@@ -97,6 +97,12 @@ export type ForumsResponse = {
   __fallback?: boolean;
 };
 
+export type DailyForumTopicCounts = {
+  counts: Record<number, number>;
+  updatedAt: number;
+  __fallback?: boolean;
+};
+
 export type ReviewLogEntry = {
   time: number;
   uid: number;

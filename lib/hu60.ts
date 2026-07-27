@@ -7,8 +7,9 @@ import {
   fallbackTopic
 } from "@/lib/fallback-data";
 import type {
-  ChatResponse,
   AccountProfile,
+  ChatResponse,
+  DailyForumTopicCounts,
   EditPostFormResponse,
   FavoriteTopicsResponse,
   ForumFace,
@@ -46,6 +47,10 @@ const HONOR_REPLY_WEIGHT = 0.5;
 const HONOR_ACTIVE_MINIMUM = 10;
 const HONOR_CACHE_SECONDS = 600;
 const FACE_CACHE_SECONDS = 3600;
+const DAILY_FORUM_TOPIC_CACHE_MS = 5 * 60 * 1000;
+const DAILY_FORUM_TOPIC_PAGE_SIZE = 500;
+const DAILY_FORUM_TOPIC_MAX_PAGES = 2;
+const SHANGHAI_OFFSET_SECONDS = 8 * 60 * 60;
 
 type QueryValue = string | number | boolean | undefined;
 
@@ -241,7 +246,7 @@ export async function getGlobalTopics(
   );
 }
 
-export async function getWeeklyGlobalTopicsPage(
+async function getWeeklyGlobalTopicsPageUncached(
   page = 1,
   pageSize = 100
 ): Promise<ForumsResponse> {
@@ -267,6 +272,103 @@ export async function getWeeklyGlobalTopicsPage(
       __fallback: true
     }
   );
+}
+
+export const getWeeklyGlobalTopicsPage = cache(
+  getWeeklyGlobalTopicsPageUncached
+);
+
+let dailyForumTopicCountMemoryCache:
+  | {
+      expiresAt: number;
+      value: DailyForumTopicCounts;
+    }
+  | undefined;
+let dailyForumTopicCountBuildPromise:
+  | Promise<DailyForumTopicCounts>
+  | undefined;
+
+function shanghaiDayStart(timestamp: number) {
+  const shifted = timestamp + SHANGHAI_OFFSET_SECONDS;
+  return (
+    Math.floor(shifted / 86_400) * 86_400 -
+    SHANGHAI_OFFSET_SECONDS
+  );
+}
+
+async function buildDailyForumTopicCounts(): Promise<DailyForumTopicCounts> {
+  const counts: Record<number, number> = {};
+  let updatedAt = Math.floor(Date.now() / 1000);
+
+  for (let page = 1; page <= DAILY_FORUM_TOPIC_MAX_PAGES; page += 1) {
+    const response = await getWeeklyGlobalTopicsPage(
+      page,
+      DAILY_FORUM_TOPIC_PAGE_SIZE
+    );
+    if (response.__fallback || !Array.isArray(response.topicList)) {
+      return { counts: {}, updatedAt: 0, __fallback: true };
+    }
+
+    if (page === 1 && response._time) {
+      updatedAt = Number(response._time) || updatedAt;
+    }
+    const dayStart = shanghaiDayStart(updatedAt);
+    const topics = response.topicList;
+
+    for (const topic of topics) {
+      const createdAt = Number(topic.ctime) || 0;
+      const forumId = Number(topic.forum_id) || 0;
+      if (forumId > 0 && createdAt >= dayStart && createdAt <= updatedAt) {
+        counts[forumId] = (counts[forumId] ?? 0) + 1;
+      }
+    }
+
+    const regularActivityTimes = topics
+      .filter((topic) => Number(topic.level || 0) === 0)
+      .map((topic) => Number(topic.mtime || topic.ctime) || 0);
+    const reachedDayBoundary =
+      regularActivityTimes.length > 0 &&
+      Math.min(...regularActivityTimes) < dayStart;
+    const reachedLastPage =
+      page >= Math.max(1, Number(response.maxPage) || 1);
+
+    if (
+      reachedDayBoundary ||
+      reachedLastPage ||
+      topics.length < DAILY_FORUM_TOPIC_PAGE_SIZE
+    ) {
+      break;
+    }
+  }
+
+  return { counts, updatedAt };
+}
+
+export async function getDailyForumTopicCounts() {
+  const now = Date.now();
+  if (
+    dailyForumTopicCountMemoryCache &&
+    dailyForumTopicCountMemoryCache.expiresAt > now
+  ) {
+    return dailyForumTopicCountMemoryCache.value;
+  }
+
+  if (!dailyForumTopicCountBuildPromise) {
+    dailyForumTopicCountBuildPromise = buildDailyForumTopicCounts();
+  }
+
+  try {
+    const value = await dailyForumTopicCountBuildPromise;
+    if (!value.__fallback) {
+      dailyForumTopicCountMemoryCache = {
+        expiresAt: Date.now() + DAILY_FORUM_TOPIC_CACHE_MS,
+        value
+      };
+    }
+    return value;
+  } finally {
+    dailyForumTopicCountBuildPromise = undefined;
+  }
 }
 
 type HonorTopicResponse = {

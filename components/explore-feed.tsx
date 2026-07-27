@@ -10,6 +10,7 @@ import { Pagination } from "@/components/pagination";
 import { TopicCard } from "@/components/topic-card";
 import {
   getActiveTopics,
+  getDailyForumTopicCounts,
   getForums,
   getGlobalTopics
 } from "@/lib/hu60";
@@ -37,7 +38,11 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
     activeTab === "latest" || activeTab === "essence"
       ? getGlobalTopics(page, activeTab === "essence")
       : getActiveTopics(page);
-  const [feed, forums] = await Promise.all([feedRequest, getForums()]);
+  const [feed, forums, dailyForumTopics] = await Promise.all([
+    feedRequest,
+    getForums(),
+    getDailyForumTopicCounts()
+  ]);
   const isHomeFeed = "newTopicList" in feed;
   const topics = [
     ...(isHomeFeed ? feed.newTopicList : (feed.topicList ?? []))
@@ -111,7 +116,10 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
           path={`/explore/${activeTab}`}
         />
       </section>
-      <CommunityRail forums={forums.childForum} />
+      <CommunityRail
+        forums={forums.childForum}
+        dailyTopicCounts={dailyForumTopics.counts}
+      />
     </main>
   );
 }

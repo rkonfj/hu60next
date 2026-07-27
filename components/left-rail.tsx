@@ -37,7 +37,7 @@ async function HomeWeeklyReport() {
       <header>
         <span>
           <Activity size={15} />
-          交流周报
+          足迹
         </span>
         <ArrowUpRight size={14} aria-hidden="true" />
       </header>
@@ -76,31 +76,44 @@ async function HomeWeeklyReport() {
   );
 }
 
-export function CommunityRail({ forums }: { forums: Forum[] }) {
+export function CommunityRail({
+  forums,
+  dailyTopicCounts
+}: {
+  forums: Forum[];
+  dailyTopicCounts: Record<number, number>;
+}) {
   return (
     <aside className="community-rail">
       <HomeWeeklyReport />
-      <div className="rail-title">
-        <span>社区版块</span>
-        <Link href="/forums">全部</Link>
-      </div>
-      <nav className="forum-nav" aria-label="社区版块">
-        {forums.slice(0, 8).map((forum, index) => {
-          const Icon = icons[index % icons.length];
-          return (
-            <Link href={`/forum/${forum.id}`} key={forum.id}>
-              <span className={`forum-icon forum-icon-${(index % 5) + 1}`}>
-                <Icon size={17} />
-              </span>
-              <span>
+      <section className="forum-rail-panel">
+        <div className="rail-title">
+          <span>社区版块</span>
+          <Link href="/forums">全部</Link>
+        </div>
+        <nav className="forum-nav" aria-label="社区版块">
+          {forums.slice(0, 8).map((forum, index) => {
+            const Icon = icons[index % icons.length];
+            const dailyTopicCount = dailyTopicCounts[forum.id] ?? 0;
+            return (
+              <Link href={`/forum/${forum.id}`} key={forum.id}>
+                <span className={`forum-icon forum-icon-${(index % 5) + 1}`}>
+                  <Icon size={16} />
+                </span>
                 <strong>{forum.name}</strong>
-                <small>{forum.newTopic?.length ?? 0} 条新讨论</small>
-              </span>
-              <ChevronRight size={15} />
-            </Link>
-          );
-        })}
-      </nav>
+                <span className="forum-nav-tail">
+                  {dailyTopicCount > 0 ? (
+                    <small title={`今日新增 ${dailyTopicCount} 条主题`}>
+                      今日 {dailyTopicCount}
+                    </small>
+                  ) : null}
+                  <ChevronRight size={14} aria-hidden="true" />
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
+      </section>
     </aside>
   );
 }

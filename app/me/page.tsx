@@ -126,7 +126,7 @@ export default async function MePage() {
           <div>
             <span className="eyebrow">
               <Activity size={14} />
-              交流周报
+              足迹
             </span>
             <h2>本周，你与社区的连接</h2>
             {report ? (
