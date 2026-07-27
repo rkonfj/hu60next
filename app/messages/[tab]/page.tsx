@@ -137,29 +137,26 @@ function MessageCard({
 function ChatCard({ item, now }: { item: ChatItem; now?: number }) {
   return (
     <article className="chat-message" id={`chat-${item.lid}`}>
-      <UserIdentity
-        uid={item.uid}
-        name={item._u_name}
-        avatar={item._u_avatar}
-      />
-      <div className="chat-message-main">
-        <header>
-          <strong data-member-uid={item.uid}>
-            {item._u_name || `用户 ${item.uid}`}
-          </strong>
+      <header>
+        <UserIdentity
+          uid={item.uid}
+          name={item._u_name}
+          avatar={item._u_avatar}
+        />
+        <div className="chat-message-meta">
           <a href={`#chat-${item.lid}`}>#{item.lid}</a>
           <time title={fullDate(item.time)}>
             {relativeTime(item.time, now)}
           </time>
-        </header>
-        <div
-          className="chat-message-content rich-content"
-          data-math-content
-          dangerouslySetInnerHTML={{
-            __html: sanitizeHu60Content(item.content)
-          }}
-        />
-      </div>
+        </div>
+      </header>
+      <div
+        className="chat-message-content rich-content"
+        data-math-content
+        dangerouslySetInnerHTML={{
+          __html: sanitizeHu60Content(item.content)
+        }}
+      />
     </article>
   );
 }

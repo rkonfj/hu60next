@@ -3986,34 +3986,35 @@ body:has(> .auth-page) > .site-header {
 }
 
 .chat-message {
-  display: grid;
   padding: 10px 11px;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 9px;
 }
 
-.chat-message > .message-author strong {
-  display: none;
-}
-
-.chat-message-main > header {
+.chat-message > header {
   display: flex;
   align-items: center;
-  min-height: 27px;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.chat-message > header > .message-author {
+  flex: 1 1 auto;
+}
+
+.chat-message-meta {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
   gap: 7px;
 }
 
-.chat-message-main > header a,
-.chat-message-main > header time {
+.chat-message-meta a,
+.chat-message-meta time {
   color: var(--faint);
   font-size: 9px;
 }
 
-.chat-message-main > header time {
-  margin-left: auto;
-}
-
 .chat-message-content {
+  margin-top: 8px;
   color: var(--ink);
   line-height: 1.65;
 }
