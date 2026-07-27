@@ -2,7 +2,6 @@
 
 import {
   Compass,
-  Database,
   Grid2X2,
   LogIn,
   LogOut,
@@ -45,8 +44,7 @@ export function MobileNavClient({
     { href: "/honors", label: "社区荣誉", icon: Trophy },
     ...(canReview
       ? [
-          { href: "/reviews", label: "审核中心", icon: ShieldCheck },
-          { href: "/cache", label: "缓存管理", icon: Database }
+          { href: "/reviews", label: "审核中心", icon: ShieldCheck }
         ]
       : [])
   ];
