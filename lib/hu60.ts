@@ -172,13 +172,20 @@ export async function hasCustomHu60RequestHeaders() {
   return hasForwardableHu60Headers(await requestHeaders());
 }
 
-let faceMemoryCache:
-  | {
-      expiresAt: number;
-      value: ForumFace[];
-    }
-  | undefined;
-let faceBuildPromise: Promise<ForumFace[]> | undefined;
+type FaceCacheState = {
+  memoryCache?: {
+    expiresAt: number;
+    value: ForumFace[];
+  };
+  buildPromise?: Promise<ForumFace[]>;
+};
+
+const faceCacheState = (() => {
+  const scope = globalThis as typeof globalThis & {
+    __hulvlinFaceCacheState?: FaceCacheState;
+  };
+  return (scope.__hulvlinFaceCacheState ??= {});
+})();
 
 async function buildFaces(): Promise<ForumFace[]> {
   const response = await requestPublicJson(
@@ -200,23 +207,28 @@ export async function getFaces(): Promise<ForumFace[]> {
   if (await hasCustomHu60RequestHeaders()) return buildFaces();
 
   const now = Date.now();
-  if (faceMemoryCache && faceMemoryCache.expiresAt > now) {
-    return faceMemoryCache.value;
+  if (
+    faceCacheState.memoryCache &&
+    faceCacheState.memoryCache.expiresAt > now
+  ) {
+    return faceCacheState.memoryCache.value;
   }
 
-  if (!faceBuildPromise) faceBuildPromise = buildFaces();
+  if (!faceCacheState.buildPromise) {
+    faceCacheState.buildPromise = buildFaces();
+  }
 
   try {
-    const faces = await faceBuildPromise;
+    const faces = await faceCacheState.buildPromise;
     if (faces.length) {
-      faceMemoryCache = {
+      faceCacheState.memoryCache = {
         expiresAt: Date.now() + FACE_CACHE_SECONDS * 1000,
         value: faces
       };
     }
     return faces;
   } finally {
-    faceBuildPromise = undefined;
+    faceCacheState.buildPromise = undefined;
   }
 }
 
@@ -299,15 +311,20 @@ export const getWeeklyGlobalTopicsPage = cache(
   getWeeklyGlobalTopicsPageUncached
 );
 
-let dailyForumTopicCountMemoryCache:
-  | {
-      expiresAt: number;
-      value: DailyForumTopicCounts;
-    }
-  | undefined;
-let dailyForumTopicCountBuildPromise:
-  | Promise<DailyForumTopicCounts>
-  | undefined;
+type DailyForumTopicCacheState = {
+  memoryCache?: {
+    expiresAt: number;
+    value: DailyForumTopicCounts;
+  };
+  buildPromise?: Promise<DailyForumTopicCounts>;
+};
+
+const dailyForumTopicCacheState = (() => {
+  const scope = globalThis as typeof globalThis & {
+    __hulvlinDailyForumTopicCacheState?: DailyForumTopicCacheState;
+  };
+  return (scope.__hulvlinDailyForumTopicCacheState ??= {});
+})();
 
 function shanghaiDayStart(timestamp: number) {
   const shifted = timestamp + SHANGHAI_OFFSET_SECONDS;
@@ -368,27 +385,28 @@ async function buildDailyForumTopicCounts(): Promise<DailyForumTopicCounts> {
 export async function getDailyForumTopicCounts() {
   const now = Date.now();
   if (
-    dailyForumTopicCountMemoryCache &&
-    dailyForumTopicCountMemoryCache.expiresAt > now
+    dailyForumTopicCacheState.memoryCache &&
+    dailyForumTopicCacheState.memoryCache.expiresAt > now
   ) {
-    return dailyForumTopicCountMemoryCache.value;
+    return dailyForumTopicCacheState.memoryCache.value;
   }
 
-  if (!dailyForumTopicCountBuildPromise) {
-    dailyForumTopicCountBuildPromise = buildDailyForumTopicCounts();
+  if (!dailyForumTopicCacheState.buildPromise) {
+    dailyForumTopicCacheState.buildPromise =
+      buildDailyForumTopicCounts();
   }
 
   try {
-    const value = await dailyForumTopicCountBuildPromise;
+    const value = await dailyForumTopicCacheState.buildPromise;
     if (!value.__fallback) {
-      dailyForumTopicCountMemoryCache = {
+      dailyForumTopicCacheState.memoryCache = {
         expiresAt: Date.now() + DAILY_FORUM_TOPIC_CACHE_MS,
         value
       };
     }
     return value;
   } finally {
-    dailyForumTopicCountBuildPromise = undefined;
+    dailyForumTopicCacheState.buildPromise = undefined;
   }
 }
 
@@ -619,19 +637,19 @@ export function getHu60CacheStatuses(): CacheStatus[] {
       "表情列表",
       "发帖和回复编辑器使用的论坛表情",
       FACE_CACHE_SECONDS * 1000,
-      faceMemoryCache,
-      Boolean(faceBuildPromise),
-      faceMemoryCache?.value.length
+      faceCacheState.memoryCache,
+      Boolean(faceCacheState.buildPromise),
+      faceCacheState.memoryCache?.value.length
     ),
     cacheStatus(
       "daily-forum-topics",
       "今日版块主题数",
       "按上海自然日统计各版块新建主题",
       DAILY_FORUM_TOPIC_CACHE_MS,
-      dailyForumTopicCountMemoryCache,
-      Boolean(dailyForumTopicCountBuildPromise),
-      dailyForumTopicCountMemoryCache
-        ? Object.keys(dailyForumTopicCountMemoryCache.value.counts).length
+      dailyForumTopicCacheState.memoryCache,
+      Boolean(dailyForumTopicCacheState.buildPromise),
+      dailyForumTopicCacheState.memoryCache
+        ? Object.keys(dailyForumTopicCacheState.memoryCache.value.counts).length
         : 0
     ),
     cacheStatus(
@@ -651,34 +669,37 @@ export function getHu60CacheStatuses(): CacheStatus[] {
 
 export async function refreshHu60Cache(key: string) {
   if (key === "faces") {
-    if (!faceBuildPromise) faceBuildPromise = buildFaces();
+    if (!faceCacheState.buildPromise) {
+      faceCacheState.buildPromise = buildFaces();
+    }
     try {
-      const value = await faceBuildPromise;
+      const value = await faceCacheState.buildPromise;
       if (!value.length) throw new Error("表情接口没有返回可缓存的数据");
-      faceMemoryCache = {
+      faceCacheState.memoryCache = {
         expiresAt: Date.now() + FACE_CACHE_SECONDS * 1000,
         value
       };
       return;
     } finally {
-      faceBuildPromise = undefined;
+      faceCacheState.buildPromise = undefined;
     }
   }
 
   if (key === "daily-forum-topics") {
-    if (!dailyForumTopicCountBuildPromise) {
-      dailyForumTopicCountBuildPromise = buildDailyForumTopicCounts();
+    if (!dailyForumTopicCacheState.buildPromise) {
+      dailyForumTopicCacheState.buildPromise =
+        buildDailyForumTopicCounts();
     }
     try {
-      const value = await dailyForumTopicCountBuildPromise;
+      const value = await dailyForumTopicCacheState.buildPromise;
       if (value.__fallback) throw new Error("今日版块主题统计更新失败");
-      dailyForumTopicCountMemoryCache = {
+      dailyForumTopicCacheState.memoryCache = {
         expiresAt: Date.now() + DAILY_FORUM_TOPIC_CACHE_MS,
         value
       };
       return;
     } finally {
-      dailyForumTopicCountBuildPromise = undefined;
+      dailyForumTopicCacheState.buildPromise = undefined;
     }
   }
 
