@@ -18,6 +18,7 @@ import {
 import { useRouter } from "next/navigation";
 import {
   ChangeEvent,
+  ClipboardEvent,
   FormEvent,
   ReactNode,
   useEffect,
@@ -46,7 +47,17 @@ export type AttachmentState = {
   progress: number;
   notice?: string;
   downloadUrl?: string;
+  contentUbb?: string;
 };
+
+export function filesFromClipboard(data: DataTransfer) {
+  const itemFiles = Array.from(data.items)
+    .filter((item) => item.kind === "file")
+    .map((item) => item.getAsFile())
+    .filter((file): file is File => file !== null);
+
+  return itemFiles.length ? itemFiles : Array.from(data.files);
+}
 
 export type UploadFormResult = {
   success?: boolean;
@@ -706,7 +717,8 @@ export function Composer({
       updateAttachment(id, {
         status: "done",
         progress: 100,
-        downloadUrl: form.downloadUrl
+        downloadUrl: form.downloadUrl,
+        contentUbb: form.contentUbb
       });
     } catch (error) {
       updateAttachment(id, {
@@ -717,10 +729,7 @@ export function Composer({
     }
   }
 
-  async function selectAttachments(event: ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []);
-    event.target.value = "";
-
+  async function addAttachments(files: File[]) {
     for (const [index, file] of files.entries()) {
       const id = `${Date.now()}-${index}-${file.name}`;
       setAttachments((current) => [
@@ -735,6 +744,24 @@ export function Composer({
       ]);
       await uploadAttachment(file, id);
     }
+  }
+
+  async function selectAttachments(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    await addAttachments(files);
+  }
+
+  async function pasteAttachments(event: ClipboardEvent<HTMLTextAreaElement>) {
+    const files = filesFromClipboard(event.clipboardData);
+    if (!files.length) return;
+
+    event.preventDefault();
+    selectionRef.current = {
+      start: event.currentTarget.selectionStart,
+      end: event.currentTarget.selectionEnd
+    };
+    await addAttachments(files);
   }
 
   const canPostToTarget = Boolean(
@@ -943,15 +970,28 @@ export function Composer({
                             : attachment.notice || "上传失败"}
                   </small>
                 </span>
-                {attachment.downloadUrl && (
-                  <a
-                    href={attachment.downloadUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    查看
-                  </a>
-                )}
+                {attachment.downloadUrl || attachment.contentUbb ? (
+                  <span className="attachment-actions">
+                    {attachment.contentUbb ? (
+                      <button
+                        type="button"
+                        onPointerDown={rememberEditorSelection}
+                        onClick={() => insertText(attachment.contentUbb!)}
+                      >
+                        插入正文
+                      </button>
+                    ) : null}
+                    {attachment.downloadUrl ? (
+                      <a
+                        href={attachment.downloadUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        查看
+                      </a>
+                    ) : null}
+                  </span>
+                ) : null}
               </div>
             ))}
           </div>
@@ -967,6 +1007,7 @@ export function Composer({
                 end: event.target.selectionEnd
               };
             }}
+            onPaste={pasteAttachments}
             onSelect={rememberEditorSelection}
             placeholder="描述背景、已经尝试过的方案，以及你真正想讨论的问题……"
           />

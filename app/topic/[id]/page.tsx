@@ -105,7 +105,13 @@ export default async function TopicPage({
     <main className="page-shell topic-page">
       <div className="topic-layout">
         <div className="topic-content-column">
-          <article className="topic-article">
+          <article
+            className={`topic-article${
+              canReview && Number(mainFloor?.review) === 1
+                ? " is-pending-review"
+                : ""
+            }`}
+          >
             {meta.essence || meta.locked ? (
               <div className="topic-labels">
                 {meta.essence ? (
@@ -217,7 +223,15 @@ export default async function TopicPage({
             </div>
             <div className="reply-list">
               {replies.map((floor) => (
-                <article className="reply-card" id={`floor-${floor.floor}`} key={floor.id}>
+                <article
+                  className={`reply-card${
+                    canReview && Number(floor.review) === 1
+                      ? " is-pending-review"
+                      : ""
+                  }`}
+                  id={`floor-${floor.floor}`}
+                  key={floor.id}
+                >
                   <div className="reply-author">
                     <Link href={`/user/${floor.uid}`}>
                       <Avatar

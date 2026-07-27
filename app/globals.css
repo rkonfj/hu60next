@@ -2142,7 +2142,7 @@ select:focus-visible {
   border: 1px solid var(--line);
   border-radius: 9px;
   background: var(--surface-soft);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 700;
   gap: 5px;
 }
@@ -2196,6 +2196,12 @@ select:focus-visible {
   border-radius: 16px;
   background: var(--surface);
   box-shadow: var(--shadow-soft);
+}
+
+.topic-article.is-pending-review,
+.reply-card.is-pending-review {
+  border-color: color-mix(in srgb, var(--orange) 55%, var(--line));
+  background: color-mix(in srgb, var(--orange) 16%, var(--surface));
 }
 
 .reply-author {
@@ -3269,15 +3275,18 @@ body:has(> .auth-page) > .site-header {
   font-size: 9px;
 }
 
-.attachment-item > a {
-  color: var(--green);
-  font-size: 9px;
-  font-weight: 700;
+.attachment-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
-.reply-composer .attachment-item > a {
+.attachment-actions :is(a, button) {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-height: 28px;
   padding: 0 7px;
   color: var(--green);
@@ -3285,6 +3294,11 @@ body:has(> .auth-page) > .site-header {
   background: transparent;
   font-size: 9px;
   font-weight: 700;
+}
+
+.attachment-actions :is(a, button):hover {
+  border-color: var(--line-strong);
+  background: var(--green-soft);
 }
 
 .editor-shell textarea,
@@ -3682,7 +3696,6 @@ body:has(> .auth-page) > .site-header {
 .message-content {
   margin: 9px 0;
   color: var(--ink);
-  font-size: 12px;
   line-height: 1.7;
 }
 
@@ -3858,7 +3871,6 @@ body:has(> .auth-page) > .site-header {
 
 .chat-message-content {
   color: var(--ink);
-  font-size: 12px;
   line-height: 1.65;
 }
 
@@ -3976,7 +3988,6 @@ body:has(> .auth-page) > .site-header {
 
 .account-links strong {
   color: var(--ink);
-  font-size: 12px;
 }
 
 .account-links small {
@@ -4070,7 +4081,6 @@ body:has(> .auth-page) > .site-header {
   max-width: 760px;
   margin: 15px 0 0;
   color: var(--muted);
-  font-size: 13px;
   line-height: 1.7;
 }
 
@@ -4446,7 +4456,7 @@ body:has(> .auth-page) > .site-header {
   color: var(--green);
   border: 1px solid var(--line);
   background: var(--surface-soft);
-  font-size: 9px;
+  font-size: 14px;
   font-weight: 750;
   gap: 5px;
 }
@@ -4586,7 +4596,7 @@ body:has(> .auth-page) > .site-header {
   color: var(--green-strong);
   border: 1px solid var(--line-strong);
   background: var(--surface-soft);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 750;
   gap: 5px;
 }
@@ -5485,51 +5495,28 @@ body :is(
     max-width: 140px;
   }
 
-  .left-rail,
-  .right-rail,
-  .community-rail {
-    --sidebar-sticky-top: 66px;
+  :is(
+    .right-rail,
+    .community-rail,
+    .forum-sidebar,
+    .topic-aside,
+    .user-profile-card
+  ) {
+    position: sticky;
+    top: var(--sidebar-sticky-top);
+    align-self: start;
   }
 
-  .forum-sidebar {
-    --sidebar-sticky-top: 80px;
+  :is(.right-rail, .community-rail) {
+    --sidebar-sticky-top: 67px;
   }
 
   .topic-aside {
-    --sidebar-sticky-top: 72px;
+    --sidebar-sticky-top: 73px;
   }
 
-  .user-profile-card {
-    --sidebar-sticky-top: 80px;
-  }
-
-  :is(
-    .left-rail,
-    .right-rail,
-    .community-rail,
-    .forum-sidebar,
-    .topic-aside,
-    .user-profile-card
-  ) {
-    position: fixed;
-    z-index: 5;
-    top: var(--sidebar-sticky-top);
-  }
-
-  .left-rail {
-    left: max(22px, calc((100% - 1240px) / 2));
-    width: 300px;
-  }
-
-  :is(
-    .right-rail,
-    .community-rail,
-    .forum-sidebar,
-    .topic-aside,
-    .user-profile-card
-  ) {
-    right: max(22px, calc((100% - 1240px) / 2));
-    width: 300px;
+  :is(.forum-sidebar, .user-profile-card) {
+    --sidebar-sticky-top: 81px;
   }
 
   .feed-column {
@@ -5914,11 +5901,6 @@ body :is(
 
   .message-card > header > time {
     display: none;
-  }
-
-  .message-content,
-  .chat-message-content {
-    font-size: 11px;
   }
 
   .message-compose-form,
@@ -6568,7 +6550,7 @@ body :is(
 }
 
 .review-actions-shell.is-pending {
-  border-top-width: 5px;
+  border-top-width: 2px;
   border-top-color: color-mix(in srgb, var(--orange) 72%, var(--line));
 }
 
@@ -6591,9 +6573,14 @@ body :is(
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface-soft);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 800;
   gap: 4px;
+  transition:
+    color 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease,
+    transform 140ms ease;
 }
 
 .review-actions-row .review-pass-button,
@@ -6609,8 +6596,30 @@ body :is(
 .review-reason-form .confirm-reject,
 .review-batch-bar .batch-reject,
 .review-batch-bar .confirm-reject {
-  color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+  color: var(--red);
+  background: color-mix(in srgb, var(--red) 8%, var(--surface));
+}
+
+:is(
+  .review-actions-row .review-pass-button,
+  .review-reason-form .confirm-pass,
+  .review-batch-bar .batch-pass,
+  .review-batch-bar .confirm-pass
+):not(:disabled):hover {
+  border-color: var(--green);
+  background: color-mix(in srgb, var(--green) 18%, var(--green-soft));
+  transform: translateY(-1px);
+}
+
+:is(
+  .review-actions-row .review-reject-button,
+  .review-reason-form .confirm-reject,
+  .review-batch-bar .batch-reject,
+  .review-batch-bar .confirm-reject
+):not(:disabled):hover {
+  border-color: var(--red);
+  background: color-mix(in srgb, var(--red) 16%, var(--surface));
+  transform: translateY(-1px);
 }
 
 .review-complete-label {
@@ -6637,6 +6646,10 @@ body :is(
   font-size: 9px;
   font-weight: 750;
   gap: 4px;
+}
+
+.review-actions-row > .review-log-trigger:hover {
+  color: var(--green);
 }
 
 .review-log-trigger span,
@@ -6675,12 +6688,14 @@ body :is(
   gap: 5px;
 }
 
-.review-log-close {
+.review-log-close,
+.review-reason-form > div button,
+.review-batch-bar form > div button {
   display: inline-grid;
-  width: 29px;
-  height: 29px;
+  width: 27px;
+  height: 27px;
   padding: 0;
-  color: var(--ink);
+  color: var(--faint);
   cursor: pointer;
   border: 0;
   border-radius: 0;
@@ -6688,8 +6703,10 @@ body :is(
   place-items: center;
 }
 
-.review-log-close:hover {
-  color: var(--danger);
+.review-log-close:hover,
+.review-reason-form > div button:hover,
+.review-batch-bar form > div button:hover {
+  color: var(--red);
   background: transparent;
 }
 
@@ -6753,7 +6770,7 @@ body :is(
 .review-log-timeline p {
   margin: 5px 0 0;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 14px;
   line-height: 1.55;
   overflow-wrap: anywhere;
 }
@@ -6784,18 +6801,6 @@ body :is(
 .review-reason-form > div strong,
 .review-batch-bar form strong {
   font-size: 10px;
-}
-
-.review-reason-form > div button,
-.review-batch-bar form > div button {
-  display: grid;
-  width: 27px;
-  height: 27px;
-  padding: 0;
-  color: var(--faint);
-  border: 0;
-  background: transparent;
-  place-items: center;
 }
 
 .review-reason-form textarea,
@@ -6968,5 +6973,14 @@ body :is(
     left: 0;
     width: auto;
     transform: none;
+  }
+}
+
+@media screen and (min-width: 800px) {
+  .rich-content img:not(.hu60_face),
+  .message-content img:not(.hu60_face),
+  .user-reply-content img {
+    max-width: 800px;
+    max-height: 600px;
   }
 }
