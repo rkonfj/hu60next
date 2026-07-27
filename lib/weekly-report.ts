@@ -16,11 +16,13 @@ import type {
 const DAY_SECONDS = 86_400;
 const REPORT_SECONDS = DAY_SECONDS * 7;
 const SOURCE_SECONDS = REPORT_SECONDS * 2;
-const MEMORY_CACHE_MS = 15 * 60 * 1000;
-const PAGE_SIZE = 100;
-const MAX_REPLY_PAGES = 20;
-const MAX_TOPIC_PAGES = 10;
-const MAX_GLOBAL_TOPIC_PAGES = 6;
+const SOURCE_CACHE_MS = 15 * 60 * 1000;
+const REPORT_CACHE_MS = 15 * 60 * 1000;
+const MVP_CACHE_MS = 60 * 60 * 1000;
+const PAGE_SIZE = 500;
+const MAX_REPLY_PAGES = 4;
+const MAX_TOPIC_PAGES = 2;
+const MAX_GLOBAL_TOPIC_PAGES = 2;
 const SHANGHAI_OFFSET_SECONDS = 8 * 60 * 60;
 
 type ReplySource = {
@@ -195,7 +197,7 @@ async function getReplySource(): Promise<ReplySource> {
     const source = await replySourceBuildPromise;
     if (!source.fallback) {
       replySourceMemoryCache = {
-        expiresAt: Date.now() + MEMORY_CACHE_MS,
+        expiresAt: Date.now() + SOURCE_CACHE_MS,
         value: source
       };
     }
@@ -273,7 +275,7 @@ async function getGlobalTopicSource(cutoff: number) {
     const source = await globalTopicSourceBuildPromise;
     if (!source.fallback) {
       globalTopicSourceMemoryCache = {
-        expiresAt: Date.now() + MEMORY_CACHE_MS,
+        expiresAt: Date.now() + SOURCE_CACHE_MS,
         value: source
       };
     }
@@ -497,10 +499,6 @@ async function buildWeeklyMvpRanking(): Promise<WeeklyMvpRanking> {
 }
 
 export async function getWeeklyMvpRanking(): Promise<WeeklyMvpRanking> {
-  if (await hasCustomHu60RequestHeaders()) {
-    return buildWeeklyMvpRanking();
-  }
-
   const now = Date.now();
   if (mvpMemoryCache && mvpMemoryCache.expiresAt > now) {
     return mvpMemoryCache.value;
@@ -514,7 +512,7 @@ export async function getWeeklyMvpRanking(): Promise<WeeklyMvpRanking> {
     const ranking = await mvpBuildPromise;
     if (!ranking.__fallback) {
       mvpMemoryCache = {
-        expiresAt: Date.now() + MEMORY_CACHE_MS,
+        expiresAt: Date.now() + MVP_CACHE_MS,
         value: ranking
       };
     }
@@ -788,7 +786,7 @@ export async function getPersonalWeeklyReport(
     const report = await buildPromise;
     if (!report.__fallback) {
       reportMemoryCache.set(cacheKey, {
-        expiresAt: Date.now() + MEMORY_CACHE_MS,
+        expiresAt: Date.now() + REPORT_CACHE_MS,
         value: report
       });
     }

@@ -147,10 +147,20 @@ export type TopicResponse = {
   currPage: number;
   maxPage: number;
   isLogin?: boolean | null;
+  isFavorite?: boolean;
+  isFavoriteTopic?: boolean;
+  favorite?: boolean;
   blockedReply?: number;
   floorReverse?: boolean;
   canReply?: boolean;
   token?: string;
+  _myself?: {
+    isLogin?: boolean | null;
+    uid?: number | null;
+    newMsg?: number;
+    newAtInfo?: number;
+    newChats?: ChatItem[] | null;
+  };
   tContents: Floor[];
   __fallback?: boolean;
 };

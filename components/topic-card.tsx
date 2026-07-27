@@ -7,12 +7,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
-import { ModeratorBadge } from "@/components/moderator-badge";
 import { cleanSummary, compactNumber, relativeTime } from "@/lib/format";
-import { isModerator } from "@/lib/moderator";
 import type { Topic } from "@/lib/types";
 
-export async function TopicCard({
+export function TopicCard({
   topic,
   now,
   compact = false,
@@ -24,7 +22,6 @@ export async function TopicCard({
   rank?: number;
 }) {
   const author = topic._u_name || topic.uinfo?.name || `用户 ${topic.uid}`;
-  const authorIsModerator = compact ? false : await isModerator(topic.uid);
 
   if (compact) {
     return (
@@ -74,10 +71,7 @@ export async function TopicCard({
         <Link href={`/user/${topic.uid}`} className="topic-card-author-link">
           <Avatar src={topic._u_avatar} name={author} size="sm" />
           <div className="topic-card-author-copy">
-            <div className="topic-card-author-name">
-              <strong data-member-uid={topic.uid}>{author}</strong>
-              <ModeratorBadge isModerator={authorIsModerator} />
-            </div>
+            <strong data-member-uid={topic.uid}>{author}</strong>
             <span>{relativeTime(topic.mtime || topic.ctime, now)}</span>
           </div>
         </Link>

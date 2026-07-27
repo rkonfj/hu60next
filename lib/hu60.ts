@@ -1,4 +1,5 @@
 import { cookies, headers as requestHeaders } from "next/headers";
+import { cache } from "react";
 import {
   fallbackForums,
   fallbackHome,
@@ -28,7 +29,7 @@ import type {
   UserRepliesResponse,
   UserStatus
 } from "@/lib/types";
-import { getMemberTitle } from "@/lib/member";
+import { getMemberTitleByUid } from "@/lib/member";
 import {
   createHu60UpstreamHeaders,
   hasForwardableHu60Headers
@@ -40,14 +41,11 @@ const TOPICS_PER_PAGE = 30;
 const HONOR_TOPIC_SAMPLE_SIZE = 200;
 const HONOR_TOPIC_FETCH_SIZE = 360;
 const HONOR_REPLY_SAMPLE_SIZE = 300;
-const HONOR_REPLY_FETCH_PAGES = 4;
+const HONOR_REPLY_FETCH_SIZE = 500;
 const HONOR_REPLY_WEIGHT = 0.5;
 const HONOR_ACTIVE_MINIMUM = 10;
 const HONOR_CACHE_SECONDS = 600;
-// 16643 是 2012 年最后一位注册会员。
-const HONOR_LEGEND_UID_MAX = 16643;
-// HU60 的 UID 按注册顺序分配；21696 是 2016 年最后一位注册会员。
-const HONOR_LEGACY_UID_MAX = 21696;
+const FACE_CACHE_SECONDS = 3600;
 
 type QueryValue = string | number | boolean | undefined;
 
@@ -71,6 +69,9 @@ async function requestJson<T>(
     if (!headers.has("accept")) headers.set("accept", "application/json");
     if (!headers.has("user-agent")) {
       headers.set("user-agent", "Hulvlin-Next/0.1");
+    }
+    if (query._json === undefined && !headers.has("x-json")) {
+      headers.set("x-json", "compact");
     }
     let sid = headers.get("x-sid");
 
@@ -123,6 +124,9 @@ async function requestPublicJson<T>(
       accept: "application/json",
       "user-agent": "Hulvlin-Next/0.1"
     });
+    if (query._json === undefined && !headers.has("x-json")) {
+      headers.set("x-json", "compact");
+    }
     const response = await fetch(url, {
       headers,
       cache: "no-store"
@@ -142,8 +146,16 @@ export async function hasCustomHu60RequestHeaders() {
   return hasForwardableHu60Headers(await requestHeaders());
 }
 
-export async function getFaces(): Promise<ForumFace[]> {
-  const response = await requestJson(
+let faceMemoryCache:
+  | {
+      expiresAt: number;
+      value: ForumFace[];
+    }
+  | undefined;
+let faceBuildPromise: Promise<ForumFace[]> | undefined;
+
+async function buildFaces(): Promise<ForumFace[]> {
+  const response = await requestPublicJson(
     "api.face.json",
     {},
     {
@@ -158,6 +170,30 @@ export async function getFaces(): Promise<ForumFace[]> {
   }));
 }
 
+export async function getFaces(): Promise<ForumFace[]> {
+  if (await hasCustomHu60RequestHeaders()) return buildFaces();
+
+  const now = Date.now();
+  if (faceMemoryCache && faceMemoryCache.expiresAt > now) {
+    return faceMemoryCache.value;
+  }
+
+  if (!faceBuildPromise) faceBuildPromise = buildFaces();
+
+  try {
+    const faces = await faceBuildPromise;
+    if (faces.length) {
+      faceMemoryCache = {
+        expiresAt: Date.now() + FACE_CACHE_SECONDS * 1000,
+        value: faces
+      };
+    }
+    return faces;
+  } finally {
+    faceBuildPromise = undefined;
+  }
+}
+
 export async function getActiveTopics(
   page = 1,
   sid?: string
@@ -168,7 +204,7 @@ export async function getActiveTopics(
       p: Math.max(1, page),
       pageSize: TOPICS_PER_PAGE,
       _topic_summary: 180,
-      _uinfo: "name,avatar,sign",
+      _uinfo: "name,avatar",
       _time: 1
     },
     fallbackHome,
@@ -189,7 +225,7 @@ export async function getGlobalTopics(
     {
       pageSize: TOPICS_PER_PAGE,
       _topic_summary: 180,
-      _uinfo: "name,avatar,sign",
+      _uinfo: "name,avatar",
       _time: 1
     },
     {
@@ -209,7 +245,10 @@ export async function getWeeklyGlobalTopicsPage(
   page = 1,
   pageSize = 100
 ): Promise<ForumsResponse> {
-  const safePageSize = Math.min(100, Math.max(1, Math.trunc(pageSize) || 100));
+  const safePageSize = Math.min(
+    1000,
+    Math.max(1, Math.trunc(pageSize) || 100)
+  );
 
   return requestPublicJson(
     `bbs.forum.0.${Math.max(1, Math.trunc(page) || 1)}.0.json`,
@@ -250,22 +289,8 @@ let honorMemoryCache:
   | undefined;
 let honorBuildPromise: Promise<HonorRoll> | undefined;
 
-async function getEarlyMemberTitle(uid: number) {
-  const profile = await requestPublicJson<UserProfile>(
-    `user.info.${uid}.json`,
-    { _time: 1 },
-    {
-      uid,
-      name: "",
-      __fallback: true
-    }
-  );
-
-  return profile.__fallback ? null : getMemberTitle(profile.regtime);
-}
-
 async function buildHonorRoll(): Promise<HonorRoll> {
-  const [response, ...replyResponses] = await Promise.all([
+  const [response, replyResponse] = await Promise.all([
     requestPublicJson<HonorTopicResponse>(
       "bbs.forum.0.1.0.json",
       {
@@ -279,9 +304,7 @@ async function buildHonorRoll(): Promise<HonorRoll> {
         __fallback: true
       }
     ),
-    ...Array.from({ length: HONOR_REPLY_FETCH_PAGES }, (_, index) =>
-      getWeeklyReplyFeedPage(index + 1, 100)
-    )
+    getWeeklyReplyFeedPage(1, HONOR_REPLY_FETCH_SIZE)
   ]);
 
   if (response.__fallback || !Array.isArray(response.topicList)) {
@@ -303,16 +326,13 @@ async function buildHonorRoll(): Promise<HonorRoll> {
         Number(topic.mtime || topic.ctime || 0) <= updatedAt
     )
     .slice(0, HONOR_TOPIC_SAMPLE_SIZE);
-  const partial = replyResponses.some(
-    (replyResponse) =>
-      replyResponse.__fallback || !Array.isArray(replyResponse.replyList)
-  );
+  const partial =
+    replyResponse.__fallback || !Array.isArray(replyResponse.replyList);
   const replies = partial
     ? []
     : Array.from(
         new Map(
-          replyResponses
-            .flatMap((replyResponse) => replyResponse.replyList)
+          replyResponse.replyList
             .filter(
               (reply) =>
                 Number(reply.mtime || reply.ctime || 0) <= updatedAt
@@ -369,28 +389,12 @@ async function buildHonorRoll(): Promise<HonorRoll> {
   }
 
   const candidates = Array.from(candidateMap.values());
-  const earlyCandidates = candidates.filter(
-    (candidate) => candidate.uid <= HONOR_LEGEND_UID_MAX
-  );
-  const earlyTitles = new Map(
-    await Promise.all(
-      earlyCandidates.map(async (candidate) => [
-        candidate.uid,
-        await getEarlyMemberTitle(candidate.uid)
-      ] as const)
-    )
-  );
 
   const toHonorMember = (candidate: HonorCandidate): HonorMember => ({
     uid: candidate.uid,
     name: candidate.name,
     avatar: candidate.avatar,
-    memberTitle:
-      candidate.uid <= HONOR_LEGEND_UID_MAX
-        ? earlyTitles.get(candidate.uid)
-        : candidate.uid <= HONOR_LEGACY_UID_MAX
-          ? "骨灰"
-          : null
+    memberTitle: getMemberTitleByUid(candidate.uid)
   });
 
   const rankedCandidates = candidates.map((candidate) => ({
@@ -514,7 +518,7 @@ export async function getForum(
     {
       pageSize: TOPICS_PER_PAGE,
       _topic_summary: 180,
-      _uinfo: "name,avatar,sign",
+      _uinfo: "name,avatar",
       _time: 1
     },
     {
@@ -526,15 +530,49 @@ export async function getForum(
   );
 }
 
-export async function getTopic(
+async function getTopicUncached(
   id: number,
-  page = 1,
+  page: number,
   sid?: string
 ): Promise<TopicResponse> {
   return requestJson(
     `bbs.topic.${id}.${Math.max(1, page)}.json`,
     {
       pageSize: TOPICS_PER_PAGE,
+      floorReverse: 0,
+      _uinfo: "name,avatar,sign",
+      _content: "html",
+      _myself: "newMsg,newAtInfo,newChats",
+      _time: 1
+    },
+    fallbackTopic,
+    sid
+      ? {
+          headers: { "x-sid": sid },
+          cache: "no-store"
+        }
+      : undefined
+  );
+}
+
+const getTopicCached = cache(getTopicUncached);
+
+export function getTopic(
+  id: number,
+  page = 1,
+  sid?: string
+): Promise<TopicResponse> {
+  return getTopicCached(id, Math.max(1, page), sid);
+}
+
+export async function getTopicMain(
+  id: number,
+  sid?: string
+): Promise<TopicResponse> {
+  return requestJson(
+    `bbs.topic.${id}.1.json`,
+    {
+      pageSize: 1,
       floorReverse: 0,
       _uinfo: "name,avatar,sign",
       _content: "html",
@@ -570,54 +608,6 @@ export async function getEditPostForm(
       cache: "no-store"
     }
   );
-}
-
-type FavoriteLookupResponse = {
-  topicList?: Topic[] | null;
-  currPage?: number;
-  maxPage?: number;
-};
-
-export async function isTopicFavorite(
-  topicId: number,
-  sid?: string
-): Promise<boolean> {
-  if (!sid) return false;
-
-  let page = 1;
-  let maxPage = 1;
-
-  do {
-    const favorites = await requestJson<FavoriteLookupResponse>(
-      "bbs.myfavorite.json",
-      {
-        p: page,
-        pageSize: 100
-      },
-      {
-        topicList: [],
-        currPage: page,
-        maxPage: page
-      },
-      {
-        headers: { "x-sid": sid },
-        cache: "no-store"
-      }
-    );
-
-    if (
-      favorites.topicList?.some(
-        (topic) => topic.id === topicId || topic.topic_id === topicId
-      )
-    ) {
-      return true;
-    }
-
-    maxPage = Math.max(page, favorites.maxPage ?? page);
-    page += 1;
-  } while (page <= maxPage);
-
-  return false;
 }
 
 export async function searchTopics(
@@ -673,7 +663,7 @@ export async function getUserTopics(
       p: Math.max(1, page),
       pageSize: TOPICS_PER_PAGE,
       _topic_summary: 180,
-      _uinfo: "name,avatar,sign",
+      _uinfo: "name,avatar",
       _time: 1
     },
     {
@@ -700,7 +690,7 @@ export async function getUserReplies(
       p: Math.max(1, page),
       pageSize: TOPICS_PER_PAGE,
       _topic_summary: 180,
-      _uinfo: "name,avatar,sign",
+      _uinfo: "name,avatar",
       _content: "html",
       _time: 1
     },
@@ -716,11 +706,14 @@ export async function getUserReplies(
   );
 }
 
-export async function getWeeklyReplyFeedPage(
+async function getWeeklyReplyFeedPageUncached(
   page = 1,
   pageSize = 100
 ): Promise<UserRepliesResponse> {
-  const safePageSize = Math.min(100, Math.max(1, Math.trunc(pageSize) || 100));
+  const safePageSize = Math.min(
+    1000,
+    Math.max(1, Math.trunc(pageSize) || 100)
+  );
 
   return requestPublicJson(
     "bbs.search.json",
@@ -747,6 +740,10 @@ export async function getWeeklyReplyFeedPage(
   );
 }
 
+export const getWeeklyReplyFeedPage = cache(
+  getWeeklyReplyFeedPageUncached
+);
+
 export type ReviewQueueFilter = "pending" | "mine" | "rejected";
 
 function reviewFilterValue(filter: ReviewQueueFilter) {
@@ -772,7 +769,7 @@ export async function getReviewQueue(
       showBot: showBot ? 1 : 0,
       p: safePage,
       pageSize: 20,
-      _uinfo: "name,avatar,sign",
+      _uinfo: "name,avatar",
       _time: 1
     },
     {
@@ -796,7 +793,10 @@ export async function getWeeklyUserTopicsPage(
   page = 1,
   pageSize = 100
 ): Promise<SearchResponse> {
-  const safePageSize = Math.min(100, Math.max(1, Math.trunc(pageSize) || 100));
+  const safePageSize = Math.min(
+    1000,
+    Math.max(1, Math.trunc(pageSize) || 100)
+  );
 
   return requestPublicJson(
     "bbs.search.json",
@@ -822,7 +822,7 @@ export async function getWeeklyUserTopicsPage(
   );
 }
 
-export async function getUserStatus(sid?: string): Promise<UserStatus> {
+async function getUserStatusUncached(sid?: string): Promise<UserStatus> {
   const anonymous: UserStatus = {
     uid: null,
     name: null,
@@ -844,6 +844,8 @@ export async function getUserStatus(sid?: string): Promise<UserStatus> {
     }
   );
 }
+
+export const getUserStatus = cache(getUserStatusUncached);
 
 export async function getRelationships(
   type: RelationshipType,
@@ -889,7 +891,7 @@ export async function getMessages(
       p: Math.max(1, page),
       pageSize: 15,
       _content: "html",
-      _uinfo: "name,avatar,sign",
+      _uinfo: "name,avatar",
       _time: 1
     },
     {
@@ -916,7 +918,7 @@ export async function getPublicChat(
       p: Math.max(1, page),
       pageSize: 20,
       _content: "html",
-      _uinfo: "name,avatar,sign",
+      _uinfo: "name,avatar",
       _time: 1
     },
     {
@@ -945,7 +947,7 @@ export async function getFavoriteTopics(
       p: Math.max(1, page),
       pageSize: TOPICS_PER_PAGE,
       _topic_summary: 180,
-      _uinfo: "name,avatar,sign",
+      _uinfo: "name,avatar",
       _time: 1
     },
     {
