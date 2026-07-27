@@ -215,7 +215,7 @@ export function ChatComposer({
             {notice}
           </p>
         ) : (
-          <span>支持虎绿林 UBB 与 Markdown 标记</span>
+          <span>支持虎绿林 UBB、Markdown 与 LaTeX 公式</span>
         )}
         <button type="submit" disabled={loading}>
           {loading ? (

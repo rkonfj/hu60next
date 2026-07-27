@@ -196,6 +196,7 @@ export async function UserProfileView({
                   </header>
                   <div
                     className="rich-content user-reply-content"
+                    data-math-content
                     dangerouslySetInnerHTML={{
                       __html: sanitizeHu60Content(reply.content)
                     }}

@@ -1961,6 +1961,26 @@ a.topic-card-stat:hover {
   white-space: pre;
 }
 
+[data-math-content] .katex {
+  font-size: 1.06em;
+}
+
+[data-math-content] .katex-display {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin: 1.2em 0;
+  padding: 3px 0 7px;
+}
+
+[data-math-content] .katex-display > .katex {
+  min-width: max-content;
+}
+
+.composer-math-block {
+  white-space: pre-wrap;
+}
+
 .rich-content .hu60-post-tail {
   position: relative;
   display: block;

@@ -204,6 +204,7 @@ export function ReviewQueue({
               </div>
               <div
                 className="rich-content review-queue-content"
+                data-math-content
                 dangerouslySetInnerHTML={{ __html: item.safeContent }}
               />
               <ReviewActions

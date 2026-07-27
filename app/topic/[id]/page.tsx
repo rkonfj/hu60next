@@ -172,6 +172,7 @@ export default async function TopicPage({
             {mainFloor ? (
               <div
                 className="rich-content"
+                data-math-content
                 dangerouslySetInnerHTML={{
                   __html:
                     canReview && Number(mainFloor.review || 0) !== 0
@@ -278,6 +279,7 @@ export default async function TopicPage({
                   </div>
                   <div
                     className="rich-content reply-content"
+                    data-math-content
                     dangerouslySetInnerHTML={{
                       __html:
                         canReview && Number(floor.review || 0) !== 0

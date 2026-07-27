@@ -2,8 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { CodeCopyEnhancer } from "@/components/code-copy-enhancer";
 import { Header } from "@/components/header";
+import { MathContentEnhancer } from "@/components/math-content-enhancer";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { WeeklyMvpIdentityStyles } from "@/components/weekly-mvp-identity-styles";
+import "katex/dist/katex.min.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -32,6 +34,7 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body>
         <CodeCopyEnhancer />
+        <MathContentEnhancer />
         <Suspense fallback={null}>
           <WeeklyMvpIdentityStyles />
         </Suspense>

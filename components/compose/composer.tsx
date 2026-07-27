@@ -187,10 +187,13 @@ function renderInline(
   faceMap: Map<string, string>
 ): ReactNode[] {
   const parts = text.split(
-    /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\((?:https?:\/\/|\/)[^)]+\)|\{[^{}]{1,16}\})/g
+    /(\$[^$\n]+\$|\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\((?:https?:\/\/|\/)[^)]+\)|\{[^{}]{1,16}\})/g
   );
 
   return parts.map((part, index) => {
+    if (part.startsWith("$") && part.endsWith("$")) {
+      return part;
+    }
     if (part.startsWith("**") && part.endsWith("**")) {
       return <strong key={index}>{part.slice(2, -2)}</strong>;
     }
@@ -247,6 +250,26 @@ export function ComposerPreview({
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
+    if (line.trim() === "$$") {
+      const closingIndex = lines.findIndex(
+        (candidate, candidateIndex) =>
+          candidateIndex > index && candidate.trim() === "$$"
+      );
+      if (closingIndex > index) {
+        preview.push(
+          <div
+            className="composer-math-block"
+            data-latex-display
+            key={`math-${index}`}
+          >
+            {lines.slice(index + 1, closingIndex).join("\n")}
+          </div>
+        );
+        index = closingIndex;
+        continue;
+      }
+    }
+
     const fence = line.trim().match(/^(```|~~~)\s*([a-z0-9_+#.-]*)\s*$/i);
     if (fence) {
       const codeLines: string[] = [];
@@ -1012,7 +1035,7 @@ export function Composer({
             placeholder="描述背景、已经尝试过的方案，以及你真正想讨论的问题……"
           />
         ) : (
-          <div className="composer-preview">
+          <div className="composer-preview" data-math-content>
             <ComposerPreview content={content} faces={faces} />
           </div>
         )}

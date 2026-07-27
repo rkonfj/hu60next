@@ -421,7 +421,7 @@ export function EditPostForm({
             />
           </>
         ) : (
-          <div className="composer-preview">
+          <div className="composer-preview" data-math-content>
             <ComposerPreview content={content} faces={faces} />
           </div>
         )}

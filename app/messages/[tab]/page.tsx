@@ -111,6 +111,7 @@ function MessageCard({
       </header>
       <div
         className="message-content rich-content"
+        data-math-content
         dangerouslySetInnerHTML={{
           __html: sanitizeHu60Content(message.content)
         }}
@@ -153,6 +154,7 @@ function ChatCard({ item, now }: { item: ChatItem; now?: number }) {
         </header>
         <div
           className="chat-message-content rich-content"
+          data-math-content
           dangerouslySetInnerHTML={{
             __html: sanitizeHu60Content(item.content)
           }}
