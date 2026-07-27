@@ -7,6 +7,7 @@ import {
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
+import { ErrorDetails } from "@/components/error-details";
 import { Pagination } from "@/components/pagination";
 import { TopicCard } from "@/components/topic-card";
 import { UserRelationshipActions } from "@/components/user-relationship-actions";
@@ -24,6 +25,28 @@ import { topicFloorHref } from "@/lib/topic-navigation";
 type UserProfileTab = "topics" | "replies";
 
 export async function UserProfileView({
+  uid,
+  page,
+  activeTab
+}: {
+  uid: number;
+  page: number;
+  activeTab: UserProfileTab;
+}) {
+  try {
+    return await renderUserProfileView({ uid, page, activeTab });
+  } catch (error) {
+    console.error("Failed to render user profile", {
+      uid,
+      page,
+      activeTab,
+      error
+    });
+    return <ErrorDetails error={error} title="会员内容加载失败" />;
+  }
+}
+
+async function renderUserProfileView({
   uid,
   page,
   activeTab
@@ -181,34 +204,66 @@ export async function UserProfileView({
         ) : replies ? (
           <>
             <div className="user-reply-list">
-              {replies.replyList.map((reply) => (
-                <article className="user-reply-card" key={reply.id}>
-                  <header>
-                    <div>
-                      <span>回复了主题</span>
-                      <Link href={`/topic/${reply.topic_id}`}>
-                        {reply.topic.title}
-                      </Link>
-                    </div>
-                    <Link href={topicFloorHref(reply.topic_id, reply.floor)}>
-                      #{reply.floor}
-                    </Link>
-                  </header>
-                  <div
-                    className="rich-content user-reply-content"
-                    data-math-content
-                    dangerouslySetInnerHTML={{
-                      __html: sanitizeHu60Content(reply.content)
-                    }}
-                  />
-                  <footer>
-                    <span>{relativeTime(reply.ctime, replies._time)}</span>
-                    <Link href={topicFloorHref(reply.topic_id, reply.floor)}>
-                      查看完整回复
-                    </Link>
-                  </footer>
-                </article>
-              ))}
+              {replies.replyList.map((reply) => {
+                const topic = reply.topic as
+                  | typeof reply.topic
+                  | null
+                  | undefined;
+                const topicId =
+                  Number(reply.topic_id) || Number(topic?.id) || 0;
+                const floor = Math.max(0, Number(reply.floor) || 0);
+                const topicTitle =
+                  typeof topic?.title === "string" && topic.title.trim()
+                    ? topic.title
+                    : topicId
+                      ? `主题 ${topicId}`
+                      : "原主题不可用";
+                const topicHref = topicId ? `/topic/${topicId}` : null;
+                const floorHref = topicId
+                  ? topicFloorHref(topicId, floor)
+                  : null;
+
+                return (
+                  <article className="user-reply-card" key={reply.id}>
+                    <header>
+                      <div>
+                        <span>回复了主题</span>
+                        {topicHref ? (
+                          <Link href={topicHref}>{topicTitle}</Link>
+                        ) : (
+                          <strong>{topicTitle}</strong>
+                        )}
+                      </div>
+                      {floorHref ? (
+                        <Link href={floorHref}>#{floor}</Link>
+                      ) : (
+                        <span>#{floor}</span>
+                      )}
+                    </header>
+                    <div
+                      className="rich-content user-reply-content"
+                      data-math-content
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeHu60Content(
+                          typeof reply.content === "string"
+                            ? reply.content
+                            : ""
+                        )
+                      }}
+                    />
+                    <footer>
+                      <span>
+                        {relativeTime(Number(reply.ctime) || 0, replies._time)}
+                      </span>
+                      {floorHref ? (
+                        <Link href={floorHref}>查看完整回复</Link>
+                      ) : (
+                        <span>原回复不可用</span>
+                      )}
+                    </footer>
+                  </article>
+                );
+              })}
             </div>
             {!replies.replyList.length ? (
               <div className="empty-state">

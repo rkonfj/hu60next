@@ -1665,6 +1665,58 @@ a.topic-card-stat:hover {
   font-weight: 700;
 }
 
+.error-details-page {
+  padding-top: 42px;
+  padding-bottom: 90px;
+}
+
+.error-details-card {
+  padding: 34px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.error-details-card > svg {
+  color: #c76731;
+}
+
+.error-details-card h1 {
+  margin: 14px 0 7px;
+  color: var(--ink);
+  font-size: 23px;
+}
+
+.error-details-card p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.error-details-card pre {
+  overflow-wrap: anywhere;
+  margin: 20px 0;
+  padding: 16px;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  font: 12px/1.65 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
+  white-space: pre-wrap;
+}
+
+.error-details-card a {
+  display: inline-flex;
+  padding: 9px 14px;
+  color: #fff;
+  border-radius: 10px;
+  background: var(--green);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .locked-state {
   min-height: 470px;
   justify-content: center;
