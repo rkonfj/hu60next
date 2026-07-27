@@ -438,10 +438,6 @@ async function buildHonorRoll(): Promise<HonorRoll> {
 }
 
 export async function getHonorRoll(): Promise<HonorRoll> {
-  if (await hasCustomHu60RequestHeaders()) {
-    return buildHonorRoll();
-  }
-
   const now = Date.now();
   if (honorMemoryCache && honorMemoryCache.expiresAt > now) {
     return honorMemoryCache.value;
