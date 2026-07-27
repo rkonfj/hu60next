@@ -5483,12 +5483,12 @@ body :is(
 
   :is(.right-rail, .community-rail, .topic-aside) {
     position: sticky;
-    top: 96px;
+    top: 71px;
   }
 
   .user-profile-card {
     position: sticky;
-    top: 96px;
+    top: 71px;
   }
 
   .feed-column {
@@ -6522,7 +6522,7 @@ body :is(
 }
 
 .review-actions-shell.is-pending {
-  border-top-width: 5px;
+  border-top-width: 2px;
   border-top-color: color-mix(in srgb, var(--orange) 72%, var(--line));
 }
 
@@ -6554,17 +6554,18 @@ body :is(
 .review-reason-form .confirm-pass,
 .review-batch-bar .batch-pass,
 .review-batch-bar .confirm-pass {
-  color: var(--green);
-  border-color: var(--line-strong);
-  background: var(--green-soft);
+  color: #fff;
+  border-color: var(--green);
+  background: var(--green);
 }
 
 .review-actions-row .review-reject-button,
 .review-reason-form .confirm-reject,
 .review-batch-bar .batch-reject,
 .review-batch-bar .confirm-reject {
-  color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+  color: #fff;
+  border-color: var(--red);
+  background: var(--red);
 }
 
 .review-complete-label {
