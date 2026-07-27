@@ -3,11 +3,13 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AccountSettings } from "@/components/account/account-settings";
+import { ModeratorBadge } from "@/components/moderator-badge";
 import {
   getAccountProfile,
   getUserProfile,
   getUserStatus
 } from "@/lib/hu60";
+import { hasModeratorPermission } from "@/lib/moderator";
 
 export const metadata: Metadata = { title: "账号设置" };
 
@@ -33,6 +35,9 @@ export default async function SettingsPage() {
         <h1>账号设置</h1>
         <p>
           <span data-member-uid={status.uid}>{status.name}</span>
+          <ModeratorBadge
+            isModerator={hasModeratorPermission(status.permissions)}
+          />
           ，在这里管理头像、资料和密码。
         </p>
       </header>

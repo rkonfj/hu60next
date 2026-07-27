@@ -18,7 +18,9 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ModeratorBadge } from "@/components/moderator-badge";
 import { getUserStatus } from "@/lib/hu60";
+import { hasModeratorPermission } from "@/lib/moderator";
 import { relativeTime } from "@/lib/format";
 import {
   getPersonalWeeklyReport,
@@ -109,9 +111,14 @@ export default async function MePage() {
         </span>
         <div>
           <span className="eyebrow">我的账号</span>
-          <h1 data-member-uid={status.uid}>
-            {status.name || "hu60 用户"}
-          </h1>
+          <div className="account-summary-name">
+            <h1 data-member-uid={status.uid}>
+              {status.name || "hu60 用户"}
+            </h1>
+            <ModeratorBadge
+              isModerator={hasModeratorPermission(status.permissions)}
+            />
+          </div>
           <p>UID {status.uid ?? "—"}</p>
         </div>
         <form action="/api/logout" method="post">

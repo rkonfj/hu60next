@@ -13,6 +13,7 @@ import {
   getUserStatus,
   type ReviewQueueFilter
 } from "@/lib/hu60";
+import { isModerator } from "@/lib/moderator";
 import { sanitizeHu60ReviewContent } from "@/lib/sanitize";
 
 export const metadata: Metadata = { title: "审核中心" };
@@ -57,6 +58,13 @@ export default async function ReviewsPage({
       Number(item.review || 0) !== 0
     )
   }));
+  const moderatorUids = (
+    await Promise.all(
+      [...new Set(items.map((item) => Number(item.uid)))]
+        .filter((uid) => uid > 0)
+        .map(async (uid) => ((await isModerator(uid)) ? uid : null))
+    )
+  ).filter((uid): uid is number => uid !== null);
   const tabs = [
     { key: "pending", label: "待审核", icon: Clock3 },
     { key: "mine", label: "我审核的", icon: ShieldCheck },
@@ -104,6 +112,7 @@ export default async function ReviewsPage({
           initialItems={items}
           page={page}
           filter={filter}
+          moderatorUids={moderatorUids}
         />
       )}
 

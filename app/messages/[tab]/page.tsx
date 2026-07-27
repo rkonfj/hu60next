@@ -11,14 +11,17 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Avatar } from "@/components/avatar";
+import { ModeratorBadge } from "@/components/moderator-badge";
 import {
   ChatComposer,
   MarkMessagesRead,
   PrivateMessageForm
 } from "@/components/messages/message-actions";
 import { Pagination } from "@/components/pagination";
+import { UserModeratorBadge } from "@/components/user-moderator-badge";
 import { fullDate, relativeTime } from "@/lib/format";
 import { getMessages, getPublicChat, getUserStatus } from "@/lib/hu60";
+import { hasModeratorPermission } from "@/lib/moderator";
 import { sanitizeHu60Content } from "@/lib/sanitize";
 import type { ChatItem, MessageItem } from "@/lib/types";
 
@@ -68,6 +71,7 @@ function UserIdentity({
     <>
       <Avatar src={avatar} name={name} size="md" />
       <strong data-member-uid={uid}>{name || `用户 ${uid}`}</strong>
+      <UserModeratorBadge uid={uid} />
     </>
   );
 
@@ -146,6 +150,7 @@ function ChatCard({ item, now }: { item: ChatItem; now?: number }) {
           <strong data-member-uid={item.uid}>
             {item._u_name || `用户 ${item.uid}`}
           </strong>
+          <UserModeratorBadge uid={item.uid} />
           <a href={`#chat-${item.lid}`}>#{item.lid}</a>
           <time title={fullDate(item.time)}>
             {relativeTime(item.time, now)}
@@ -201,7 +206,12 @@ export default async function MessageTabPage({
           <span className="eyebrow">
             <CurrentIcon size={14} />
             {status.name ? (
-              <span data-member-uid={status.uid}>{status.name}</span>
+              <>
+                <span data-member-uid={status.uid}>{status.name}</span>
+                <ModeratorBadge
+                  isModerator={hasModeratorPermission(status.permissions)}
+                />
+              </>
             ) : (
               "消息中心"
             )}

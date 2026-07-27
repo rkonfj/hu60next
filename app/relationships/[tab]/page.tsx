@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import { Avatar } from "@/components/avatar";
 import { Pagination } from "@/components/pagination";
 import { RelationshipListAction } from "@/components/relationship-list-action";
+import { UserModeratorBadge } from "@/components/user-moderator-badge";
 import { getRelationships, getUserStatus } from "@/lib/hu60";
 import type {
   RelationshipResponse,
@@ -169,6 +170,7 @@ export default async function RelationshipTabPage({
                 <strong data-member-uid={user.uid}>
                   {user.name || `用户 ${user.uid}`}
                 </strong>
+                <UserModeratorBadge uid={user.uid} />
                 <small>UID {user.uid}</small>
               </span>
             </Link>

@@ -7,6 +7,7 @@ import {
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
+import { ModeratorBadge } from "@/components/moderator-badge";
 import { Pagination } from "@/components/pagination";
 import { TopicCard } from "@/components/topic-card";
 import { UserRelationshipActions } from "@/components/user-relationship-actions";
@@ -18,6 +19,7 @@ import {
   getUserTopics
 } from "@/lib/hu60";
 import { getMemberTitle } from "@/lib/member";
+import { hasModeratorPermission } from "@/lib/moderator";
 import { sanitizeHu60Content } from "@/lib/sanitize";
 
 type UserProfileTab = "topics" | "replies";
@@ -85,6 +87,9 @@ export async function UserProfileView({
           </span>
           <div className="user-profile-title">
             <h1 data-member-uid={uid}>{displayName}</h1>
+            <ModeratorBadge
+              isModerator={hasModeratorPermission(profile.permissions)}
+            />
             {memberTitle ? (
               <span className="member-badge">{memberTitle}</span>
             ) : null}

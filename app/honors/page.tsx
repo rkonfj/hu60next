@@ -7,6 +7,7 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
+import { UserModeratorBadge } from "@/components/user-moderator-badge";
 import { fullDate } from "@/lib/format";
 import { getHonorRoll } from "@/lib/hu60";
 import type { HonorMember } from "@/lib/types";
@@ -59,6 +60,7 @@ function HonorBoard({
                 <Avatar src={member.avatar} name={member.name} />
                 <span className="honor-member-copy">
                   <strong>{member.name}</strong>
+                  <UserModeratorBadge uid={member.uid} />
                   {showWeeklyScore &&
                   typeof member.weeklyScore === "number" ? (
                     <span className="honor-score">

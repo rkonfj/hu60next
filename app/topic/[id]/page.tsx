@@ -12,6 +12,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
 import { FavoriteButton } from "@/components/favorite-button";
+import { ModeratorBadge } from "@/components/moderator-badge";
 import { Pagination } from "@/components/pagination";
 import { ReplyForm } from "@/components/reply-form";
 import { ReviewActions } from "@/components/reviews/review-actions";
@@ -24,6 +25,10 @@ import {
   isTopicFavorite
 } from "@/lib/hu60";
 import { getMemberTitle } from "@/lib/member";
+import {
+  hasModeratorPermission,
+  isModerator
+} from "@/lib/moderator";
 import {
   sanitizeHu60Content,
   sanitizeHu60ReviewContent
@@ -100,6 +105,18 @@ export default async function TopicPage({
   const publishedAt = Number(mainFloor?.ctime ?? meta.ctime);
   const editedAt = Number(mainFloor?.mtime ?? publishedAt);
   const mainFloorEdited = editedAt !== publishedAt;
+  const authorUid = Number(meta.uid);
+  const moderatorEntries = await Promise.all(
+    [...new Set([authorUid, ...replies.map((floor) => Number(floor.uid))])]
+      .filter((uid) => uid > 0)
+      .map(async (uid) => [
+        uid,
+        uid === authorUid
+          ? hasModeratorPermission(authorProfile.permissions)
+          : await isModerator(uid)
+      ] as const)
+  );
+  const moderatorUids = new Map(moderatorEntries);
 
   return (
     <main className="page-shell topic-page">
@@ -136,6 +153,7 @@ export default async function TopicPage({
                   <strong data-member-uid={meta.uid}>
                     {meta._u_name || `用户 ${meta.uid}`}
                   </strong>
+                  <ModeratorBadge isModerator={moderatorUids.get(authorUid)} />
                 </Link>
                 <div className="article-author-subline">
                   <span
@@ -245,6 +263,9 @@ export default async function TopicPage({
                         <strong data-member-uid={floor.uid}>
                           {floor._u_name || `用户 ${floor.uid}`}
                         </strong>
+                        <ModeratorBadge
+                          isModerator={moderatorUids.get(Number(floor.uid))}
+                        />
                       </Link>
                       <span title={fullDate(floor.ctime)}>
                         {relativeTime(floor.ctime)}
@@ -352,6 +373,7 @@ export default async function TopicPage({
                 <strong data-member-uid={meta.uid}>
                   {meta._u_name || `用户 ${meta.uid}`}
                 </strong>
+                <ModeratorBadge isModerator={moderatorUids.get(authorUid)} />
                 {authorMemberTitle ? (
                   <span className="member-badge author-member-badge">
                     {authorMemberTitle}

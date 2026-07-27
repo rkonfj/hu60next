@@ -322,15 +322,72 @@ async function buildUserTopicSource(
   };
 }
 
+export function weeklyMvpBreakdown(stats: WeeklyReportStats) {
+  return [
+    {
+      key: "firstReplies",
+      label: "破冰回复",
+      description: "作为主题的第一条回复，帮助新讨论获得回应",
+      value: stats.firstReplies,
+      weight: 5,
+      points: stats.firstReplies * 5
+    },
+    {
+      key: "continuedDiscussions",
+      label: "带动讨论延续",
+      description: "参与之后，仍有其他会员继续回复的讨论",
+      value: stats.continuedDiscussions,
+      weight: 4,
+      points: stats.continuedDiscussions * 4
+    },
+    {
+      key: "peopleInteracted",
+      label: "交流会员",
+      description: "本周与其产生有效交流的不同会员人数",
+      value: stats.peopleInteracted,
+      weight: 3,
+      points: stats.peopleInteracted * 3
+    },
+    {
+      key: "repliesReceived",
+      label: "收到交流",
+      description: "主题或回复收到的其他会员回复",
+      value: stats.repliesReceived,
+      weight: 2,
+      points: stats.repliesReceived * 2
+    },
+    {
+      key: "discussionsJoined",
+      label: "参与讨论",
+      description: "本周发帖或回复过的不同主题数",
+      value: stats.discussionsJoined,
+      weight: 2,
+      points: stats.discussionsJoined * 2
+    },
+    {
+      key: "activeDays",
+      label: "活跃天数",
+      description: "本周产生发帖或回复行为的自然日数量",
+      value: stats.activeDays,
+      weight: 2,
+      points: stats.activeDays * 2
+    },
+    {
+      key: "topicsCreated",
+      label: "创建主题",
+      description: "每个主题计1分，本项最多计5分",
+      value: stats.topicsCreated,
+      weight: 1,
+      cap: 5,
+      points: Math.min(stats.topicsCreated, 5)
+    }
+  ] as const;
+}
+
 export function weeklyMvpScore(stats: WeeklyReportStats) {
-  return (
-    stats.firstReplies * 5 +
-    stats.continuedDiscussions * 4 +
-    stats.peopleInteracted * 3 +
-    stats.repliesReceived * 2 +
-    stats.discussionsJoined * 2 +
-    stats.activeDays * 2 +
-    Math.min(stats.topicsCreated, 5)
+  return weeklyMvpBreakdown(stats).reduce(
+    (total, item) => total + item.points,
+    0
   );
 }
 
