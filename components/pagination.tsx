@@ -7,7 +7,9 @@ export function Pagination({
   hasNext,
   path,
   query,
-  className
+  className,
+  previousPageTarget,
+  nextPageTarget
 }: {
   current: number;
   max?: number;
@@ -15,15 +17,18 @@ export function Pagination({
   path: string;
   query?: Record<string, string>;
   className?: string;
+  previousPageTarget?: string;
+  nextPageTarget?: string;
 }) {
   const knownMax = max && max >= 1 ? max : undefined;
   const canGoNext = knownMax ? current < knownMax : Boolean(hasNext);
 
   if (current <= 1 && !canGoNext) return null;
 
-  const hrefFor = (page: number) => {
+  const hrefFor = (page: number, target?: string) => {
     const params = new URLSearchParams({ ...query, page: String(page) });
-    return `${path}?${params.toString()}`;
+    const hash = target ? `#${encodeURIComponent(target)}` : "";
+    return `${path}?${params.toString()}${hash}`;
   };
 
   return (
@@ -32,7 +37,10 @@ export function Pagination({
       aria-label="分页"
     >
       {current > 1 ? (
-        <Link href={hrefFor(current - 1)} aria-label="上一页">
+        <Link
+          href={hrefFor(current - 1, previousPageTarget)}
+          aria-label="上一页"
+        >
           <ChevronLeft size={16} />
           <span className="pagination-label">上一页</span>
         </Link>
@@ -46,7 +54,10 @@ export function Pagination({
         {knownMax ? `${current} / ${knownMax}` : `第 ${current} 页`}
       </strong>
       {canGoNext ? (
-        <Link href={hrefFor(current + 1)} aria-label="下一页">
+        <Link
+          href={hrefFor(current + 1, nextPageTarget)}
+          aria-label="下一页"
+        >
           <span className="pagination-label">下一页</span>
           <ChevronRight size={16} />
         </Link>

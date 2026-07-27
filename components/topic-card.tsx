@@ -8,24 +8,31 @@ import {
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
 import { cleanSummary, compactNumber, relativeTime } from "@/lib/format";
+import { topicFloorHref } from "@/lib/topic-navigation";
 import type { Topic } from "@/lib/types";
 
 export function TopicCard({
   topic,
   now,
   compact = false,
-  rank
+  rank,
+  pageFirst = false,
+  pageLast = false
 }: {
   topic: Topic;
   now?: number;
   compact?: boolean;
   rank?: number;
+  pageFirst?: boolean;
+  pageLast?: boolean;
 }) {
   const author = topic._u_name || topic.uinfo?.name || `用户 ${topic.uid}`;
+  const topicId = topic.topic_id || topic.id;
+  const lastReplyHref = topicFloorHref(topicId, topic.reply_count);
 
   if (compact) {
     return (
-      <Link href={`/topic/${topic.topic_id || topic.id}`} className="compact-topic">
+      <Link href={`/topic/${topicId}`} className="compact-topic">
         {rank && <span className={`rank rank-${rank}`}>{rank}</span>}
         <span>
           <strong>{topic.title}</strong>
@@ -40,9 +47,23 @@ export function TopicCard({
 
   return (
     <article className="topic-card">
+      {pageFirst ? (
+        <span
+          className="pagination-scroll-target"
+          id="first-topic"
+          aria-hidden="true"
+        />
+      ) : null}
+      {pageLast ? (
+        <span
+          className="pagination-scroll-target"
+          id="last-topic"
+          aria-hidden="true"
+        />
+      ) : null}
       <div className="topic-main">
         <h2>
-          <Link href={`/topic/${topic.topic_id || topic.id}`}>
+          <Link href={`/topic/${topicId}`}>
             {topic.essence ? (
               <span className="topic-state essence">
                 <Sparkles size={13} /> 精华
@@ -63,7 +84,7 @@ export function TopicCard({
             {topic.forum_name}
           </Link>
         </h2>
-        <Link href={`/topic/${topic.topic_id || topic.id}`}>
+        <Link href={`/topic/${topicId}`}>
           <p>{cleanSummary(topic._topic_summary)}</p>
         </Link>
       </div>
@@ -75,18 +96,26 @@ export function TopicCard({
             <span>{relativeTime(topic.mtime || topic.ctime, now)}</span>
           </div>
         </Link>
-        <span className="topic-card-stat">
+        <Link
+          href={lastReplyHref}
+          className="topic-card-stat"
+          aria-label={
+            topic.reply_count > 0
+              ? `查看最后一条回复，共 ${topic.reply_count} 条`
+              : "查看主题，暂无回复"
+          }
+        >
           <MessageCircle size={15} />
           {compactNumber(topic.reply_count)}
           <span className="topic-card-stat-label">回复</span>
-        </span>
+        </Link>
         <span className="topic-card-stat">
           <Eye size={15} />
           {compactNumber(topic.read_count)}
           <span className="topic-card-stat-label">阅读</span>
         </span>
         <Link
-          href={`/topic/${topic.topic_id || topic.id}`}
+          href={`/topic/${topicId}`}
           className="topic-card-open"
           aria-label="进入讨论"
         >

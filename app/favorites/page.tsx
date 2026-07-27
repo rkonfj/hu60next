@@ -54,11 +54,13 @@ export default async function FavoritesPage({
       ) : null}
 
       <div className="topic-list">
-        {data.topicList.map((topic) => (
+        {data.topicList.map((topic, index) => (
           <TopicCard
             key={`${topic.id}-${topic.content_id ?? topic.topic_id}`}
             topic={topic}
             now={data._time}
+            pageFirst={index === 0}
+            pageLast={index === data.topicList.length - 1}
           />
         ))}
       </div>
@@ -75,6 +77,8 @@ export default async function FavoritesPage({
         current={data.currPage}
         max={data.maxPage}
         path="/favorites"
+        previousPageTarget="last-topic"
+        nextPageTarget="first-topic"
       />
     </main>
   );

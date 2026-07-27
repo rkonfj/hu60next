@@ -37,11 +37,12 @@ import {
   createHu60UpstreamHeaders,
   hasForwardableHu60Headers
 } from "@/lib/hu60-headers";
+import { TOPIC_PAGE_SIZE } from "@/lib/topic-navigation";
 import { beginUpstreamRequest } from "@/lib/upstream-request-log";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
-const TOPICS_PER_PAGE = 30;
+const TOPICS_PER_PAGE = TOPIC_PAGE_SIZE;
 const HONOR_TOPIC_SAMPLE_SIZE = 200;
 const HONOR_TOPIC_FETCH_SIZE = 360;
 const HONOR_REPLY_SAMPLE_SIZE = 300;

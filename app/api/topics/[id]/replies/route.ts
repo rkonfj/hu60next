@@ -1,6 +1,10 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
+import {
+  topicFloorHref,
+  topicPageForFloor
+} from "@/lib/topic-navigation";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
@@ -28,6 +32,20 @@ function getPublicOrigin(request: Request) {
     forwardedProtocol || requestUrl.protocol.replace(/:$/, "");
 
   return host ? `${protocol}://${host}` : requestUrl.origin;
+}
+
+function replyDestination(topicId: number, upstreamUrl?: string) {
+  const floorMatch = upstreamUrl?.match(/[?&]floor=(\d+)/);
+  const floor = Number(floorMatch?.[1]);
+
+  if (!Number.isInteger(floor) || floor < 1) return null;
+
+  const page = topicPageForFloor(floor);
+  return {
+    floor,
+    page,
+    nextPath: topicFloorHref(topicId, floor)
+  };
 }
 
 function failure(
@@ -104,6 +122,7 @@ export async function POST(request: Request, { params }: RouteContext) {
       success?: boolean;
       notice?: string;
       error?: string | boolean;
+      url?: string;
     };
 
     if (!upstream.ok || data.success !== true || data.error) {
@@ -115,13 +134,20 @@ export async function POST(request: Request, { params }: RouteContext) {
       );
     }
 
+    const destination = replyDestination(topicId, data.url);
+
     if (isDocumentSubmission(request)) {
-      const url = new URL(`/topic/${topicId}`, getPublicOrigin(request));
-      url.hash = "replies";
+      const url = new URL(
+        destination?.nextPath ?? `/topic/${topicId}#replies`,
+        getPublicOrigin(request)
+      );
       return NextResponse.redirect(url, 303);
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      ...(destination ?? {})
+    });
   } catch {
     return failure(request, topicId, "暂时无法提交回复，请稍后再试。", 502);
   }

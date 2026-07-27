@@ -228,7 +228,7 @@ export default async function TopicPage({
               <span>默认正序</span>
             </div>
             <div className="reply-list">
-              {replies.map((floor) => (
+              {replies.map((floor, index) => (
                 <article
                   className={`reply-card${
                     canReview && Number(floor.review) === 1
@@ -238,6 +238,20 @@ export default async function TopicPage({
                   id={`floor-${floor.floor}`}
                   key={floor.id}
                 >
+                  {index === 0 ? (
+                    <span
+                      className="pagination-scroll-target"
+                      id="first-reply"
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                  {index === replies.length - 1 ? (
+                    <span
+                      className="pagination-scroll-target"
+                      id="last-reply"
+                      aria-hidden="true"
+                    />
+                  ) : null}
                   <div className="reply-author">
                     <Link href={`/user/${floor.uid}`}>
                       <Avatar
@@ -317,11 +331,14 @@ export default async function TopicPage({
             current={topic.currPage}
             max={topic.maxPage}
             path={`/topic/${topicId}`}
+            previousPageTarget="last-reply"
+            nextPageTarget="first-reply"
           />
 
           {topic.canReply && topic.token ? (
             <ReplyForm
               topicId={topicId}
+              currentPage={topic.currPage}
               userId={sessionUid}
               token={topic.token}
               faces={faces}

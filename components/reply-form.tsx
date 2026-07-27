@@ -30,6 +30,7 @@ import type { ForumFace } from "@/lib/types";
 
 type ReplyFormProps = {
   topicId: number;
+  currentPage: number;
   userId: number;
   token: string;
   faces: ForumFace[];
@@ -38,6 +39,7 @@ type ReplyFormProps = {
 
 export function ReplyForm({
   topicId,
+  currentPage,
   userId,
   token,
   faces,
@@ -238,6 +240,8 @@ export function ReplyForm({
       const result = (await response.json()) as {
         success?: boolean;
         notice?: string;
+        page?: number;
+        nextPath?: string;
       };
 
       if (!response.ok || !result.success) {
@@ -255,7 +259,11 @@ export function ReplyForm({
       setAttachments([]);
       setSuccess(true);
       setNotice("回复已发布。");
-      router.refresh();
+      if (result.nextPath && result.page !== currentPage) {
+        router.push(result.nextPath);
+      } else {
+        router.refresh();
+      }
     } catch {
       setNotice("暂时无法提交回复，请稍后再试。");
     } finally {

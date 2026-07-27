@@ -53,8 +53,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       )}
 
       <div className="topic-list">
-        {result?.topicList.map((topic) => (
-          <TopicCard key={topic.id} topic={topic} />
+        {result?.topicList.map((topic, index) => (
+          <TopicCard
+            key={topic.id}
+            topic={topic}
+            pageFirst={index === 0}
+            pageLast={index === result.topicList.length - 1}
+          />
         ))}
       </div>
 
@@ -72,6 +77,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           max={result.maxPage}
           path="/search"
           query={{ q: query }}
+          previousPageTarget="last-topic"
+          nextPageTarget="first-topic"
         />
       )}
     </main>

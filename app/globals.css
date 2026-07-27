@@ -1031,6 +1031,10 @@ select:focus-visible {
   display: inline;
 }
 
+a.topic-card-stat:hover {
+  color: var(--green);
+}
+
 .topic-card-open {
   color: var(--green);
   font-weight: 700;
@@ -2209,6 +2213,21 @@ select:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 9px;
+}
+
+.topic-card,
+.reply-card {
+  position: relative;
+}
+
+.pagination-scroll-target {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+  scroll-margin-top: 82px;
 }
 
 .reply-card {

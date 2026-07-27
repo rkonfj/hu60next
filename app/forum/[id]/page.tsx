@@ -57,8 +57,13 @@ export default async function ForumPage({
       <div className="forum-layout">
         <section className="forum-topic-column">
           <div className="topic-list">
-            {topics.map((topic) => (
-              <TopicCard key={`${topic.id}-${topic.forum_id}`} topic={topic} />
+            {topics.map((topic, index) => (
+              <TopicCard
+                key={`${topic.id}-${topic.forum_id}`}
+                topic={topic}
+                pageFirst={index === 0}
+                pageLast={index === topics.length - 1}
+              />
             ))}
           </div>
 
@@ -75,6 +80,8 @@ export default async function ForumPage({
             current={forum.currPage ?? page}
             max={forum.maxPage ?? page}
             path={`/forum/${forumId}`}
+            previousPageTarget="last-topic"
+            nextPageTarget="first-topic"
           />
         </section>
 

@@ -92,12 +92,20 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
             hasNext={hasNextPage}
             path={`/explore/${activeTab}`}
             className="feed-pagination-top"
+            previousPageTarget="last-topic"
+            nextPageTarget="first-topic"
           />
         </div>
 
         <div className="topic-list">
-          {topics.map((topic) => (
-            <TopicCard key={topic.id} topic={topic} now={feed._time} />
+          {topics.map((topic, index) => (
+            <TopicCard
+              key={topic.id}
+              topic={topic}
+              now={feed._time}
+              pageFirst={index === 0}
+              pageLast={index === topics.length - 1}
+            />
           ))}
         </div>
 
@@ -114,6 +122,8 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
           max={maxPage}
           hasNext={hasNextPage}
           path={`/explore/${activeTab}`}
+          previousPageTarget="last-topic"
+          nextPageTarget="first-topic"
         />
       </section>
       <CommunityRail

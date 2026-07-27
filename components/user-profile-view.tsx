@@ -19,13 +19,9 @@ import {
 } from "@/lib/hu60";
 import { getMemberTitle } from "@/lib/member";
 import { sanitizeHu60Content } from "@/lib/sanitize";
+import { topicFloorHref } from "@/lib/topic-navigation";
 
 type UserProfileTab = "topics" | "replies";
-
-function topicReplyHref(topicId: number, floor: number) {
-  const page = Math.floor(Math.max(0, floor) / 30) + 1;
-  return `/topic/${topicId}${page > 1 ? `?page=${page}` : ""}#floor-${floor}`;
-}
 
 export async function UserProfileView({
   uid,
@@ -164,11 +160,13 @@ export async function UserProfileView({
         ) : topics ? (
           <>
             <div className="topic-list">
-              {topics.topicList.map((topic) => (
+              {topics.topicList.map((topic, index) => (
                 <TopicCard
                   key={`${topic.id}-${topic.content_id ?? topic.topic_id}`}
                   topic={topic}
                   now={topics._time ?? profile._time}
+                  pageFirst={index === 0}
+                  pageLast={index === topics.topicList.length - 1}
                 />
               ))}
             </div>
@@ -192,7 +190,7 @@ export async function UserProfileView({
                         {reply.topic.title}
                       </Link>
                     </div>
-                    <Link href={topicReplyHref(reply.topic_id, reply.floor)}>
+                    <Link href={topicFloorHref(reply.topic_id, reply.floor)}>
                       #{reply.floor}
                     </Link>
                   </header>
@@ -204,7 +202,7 @@ export async function UserProfileView({
                   />
                   <footer>
                     <span>{relativeTime(reply.ctime, replies._time)}</span>
-                    <Link href={topicReplyHref(reply.topic_id, reply.floor)}>
+                    <Link href={topicFloorHref(reply.topic_id, reply.floor)}>
                       查看完整回复
                     </Link>
                   </footer>
@@ -229,6 +227,12 @@ export async function UserProfileView({
               activeTab === "replies"
                 ? `/user/${uid}/replies`
                 : `/user/${uid}`
+            }
+            previousPageTarget={
+              activeTab === "topics" ? "last-topic" : undefined
+            }
+            nextPageTarget={
+              activeTab === "topics" ? "first-topic" : undefined
             }
           />
         ) : null}

@@ -5,6 +5,10 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { EditPostForm } from "@/components/compose/edit-post-form";
 import { getEditPostForm, getFaces } from "@/lib/hu60";
+import {
+  topicFloorHref,
+  topicPageForFloor
+} from "@/lib/topic-navigation";
 
 export const metadata: Metadata = { title: "修改帖子" };
 
@@ -51,11 +55,12 @@ export default async function EditPostPage({
   const floor = Number(form.floorMeta?.floor ?? 0);
   const editPage = query.page
     ? page
-    : Math.floor(Math.max(0, floor) / 30) + 1;
-  const returnPath =
-    `/topic/${topicId}` +
-    (editPage > 1 ? `?page=${editPage}` : "") +
-    (floor > 0 ? `#floor-${floor}` : "");
+    : topicPageForFloor(floor);
+  const returnPath = query.page
+    ? `/topic/${topicId}${editPage > 1 ? `?page=${editPage}` : ""}${
+        floor > 0 ? `#floor-${floor}` : ""
+      }`
+    : topicFloorHref(topicId, floor);
   const formReady =
     form.isLogin === true &&
     typeof form.token === "string" &&
