@@ -7015,7 +7015,7 @@ body :is(
   display: inline-flex;
   align-items: center;
   color: var(--green);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 800;
   gap: 4px;
 }
@@ -7032,7 +7032,7 @@ body :is(
   border: 0;
   border-radius: 0;
   background: transparent;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 750;
   gap: 4px;
 }
@@ -7049,7 +7049,7 @@ body :is(
   color: var(--green);
   border-radius: 99px;
   background: var(--green-soft);
-  font-size: 8px;
+  font-size: 10px;
   place-items: center;
 }
 
