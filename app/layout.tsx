@@ -27,6 +27,32 @@ export const viewport: Viewport = {
   ]
 };
 
+function getBuildTime() {
+  const value = process.env.NEXT_PUBLIC_BUILD_TIME;
+  if (!value) return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return {
+    iso: date.toISOString(),
+    label: new Intl.DateTimeFormat("zh-CN", {
+      timeZone: "Asia/Shanghai",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23"
+    })
+      .format(date)
+      .replaceAll("/", "-")
+  };
+}
+
+const buildTime = getBuildTime();
+
 export default function RootLayout({
   children
 }: Readonly<{ children: React.ReactNode }>) {
@@ -46,6 +72,15 @@ export default function RootLayout({
         <footer className="site-footer">
           <span>虎绿林</span>
           <span>让技术讨论持续生长</span>
+          {buildTime ? (
+            <time
+              className="footer-build-time"
+              dateTime={buildTime.iso}
+              title="构建时间（北京时间）"
+            >
+              构建于 {buildTime.label}
+            </time>
+          ) : null}
           <nav className="footer-theme-links" aria-label="主题选择">
             <strong>主题</strong>
             <a href="https://hu60.cn/q.php/link.tpl.jhin.html">Jhin</a>

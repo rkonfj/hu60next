@@ -1232,13 +1232,17 @@ a.topic-card-stat:hover {
   padding: 18px;
   color: var(--faint);
   border-top: 1px solid var(--line);
-  font-size: 10px;
+  font-size: 12px;
   gap: 20px;
 }
 
 .site-footer span:first-child {
   color: var(--green);
   font-weight: 800;
+}
+
+.footer-build-time {
+  font-variant-numeric: tabular-nums;
 }
 
 .footer-theme-links {
@@ -5567,7 +5571,7 @@ body:has(> .auth-page) > .site-header {
     min-height: 52px;
     padding: 10px 8px;
     flex-wrap: wrap;
-    font-size: 9px;
+    font-size: 12px;
     gap: 5px 12px;
   }
 
