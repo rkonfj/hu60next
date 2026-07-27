@@ -1,7 +1,7 @@
 "use client";
 
 import { Smile } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import type { ForumFace } from "@/lib/types";
 
 export function FacePicker({
@@ -12,6 +12,34 @@ export function FacePicker({
   onSelect: (face: ForumFace) => void;
 }) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
+
+  useEffect(() => {
+    function closeOnOutsidePointer(event: PointerEvent) {
+      const picker = detailsRef.current;
+      if (
+        picker?.open &&
+        event.target instanceof Node &&
+        !picker.contains(event.target)
+      ) {
+        picker.open = false;
+      }
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      const picker = detailsRef.current;
+      if (event.key !== "Escape" || !picker?.open) return;
+
+      picker.open = false;
+      picker.querySelector("summary")?.focus();
+    }
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
 
   if (!faces.length) return null;
 

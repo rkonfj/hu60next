@@ -165,7 +165,6 @@ export type TopicResponse = {
     uid?: number | null;
     newMsg?: number;
     newAtInfo?: number;
-    newChats?: ChatItem[] | null;
     permissions?: string[];
   };
   tContents: Floor[];
@@ -304,7 +303,6 @@ export type UserStatus = {
   permissions?: string[];
   newMsg: number;
   newAtInfo: number;
-  newChats: unknown;
 };
 
 export type RelationshipType =

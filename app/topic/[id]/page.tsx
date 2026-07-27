@@ -114,21 +114,23 @@ export default async function TopicPage({
                 : ""
             }`}
           >
-            {meta.essence || meta.locked ? (
-              <div className="topic-labels">
-                {meta.essence ? (
-                  <span className="topic-state essence">
-                    <Sparkles size={13} /> 精华
-                  </span>
-                ) : null}
-                {meta.locked ? (
-                  <span className="topic-state locked">
-                    <LockKeyhole size={13} /> 已锁定
-                  </span>
-                ) : null}
-              </div>
-            ) : null}
-            <h1>{meta.title}</h1>
+            <h1>
+              {meta.title}
+              {meta.essence || meta.locked ? (
+                <span className="topic-labels">
+                  {meta.essence ? (
+                    <span className="topic-state essence">
+                      <Sparkles size={13} /> 精华
+                    </span>
+                  ) : null}
+                  {meta.locked ? (
+                    <span className="topic-state locked">
+                      <LockKeyhole size={13} /> 已锁定
+                    </span>
+                  ) : null}
+                </span>
+              ) : null}
+            </h1>
             <div className="article-meta">
               <Link href={`/user/${meta.uid}`} className="article-author-avatar">
                 <Avatar src={meta._u_avatar} name={meta._u_name} size="lg" />

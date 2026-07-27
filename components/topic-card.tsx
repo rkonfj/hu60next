@@ -65,8 +65,12 @@ export function TopicCard({
         <h2>
           <Link href={`/topic/${topicId}`}>
             {topic.essence ? (
-              <span className="topic-state essence">
-                <Sparkles size={13} /> 精华
+              <span
+                className="topic-state essence"
+                aria-label="精华"
+                title="精华"
+              >
+                <Sparkles size={15} aria-hidden="true" />
               </span>
             ) : null}
             {topic.locked ? (
@@ -97,13 +101,9 @@ export function TopicCard({
           </div>
         </Link>
         <Link
-          href={lastReplyHref}
+          href={`/topic/${topicId}#quick-reply`}
           className="topic-card-stat"
-          aria-label={
-            topic.reply_count > 0
-              ? `查看最后一条回复，共 ${topic.reply_count} 条`
-              : "查看主题，暂无回复"
-          }
+          aria-label={`前往回复框，共 ${topic.reply_count} 条回复`}
         >
           <MessageCircle size={15} />
           {compactNumber(topic.reply_count)}
@@ -115,9 +115,11 @@ export function TopicCard({
           <span className="topic-card-stat-label">阅读</span>
         </span>
         <Link
-          href={`/topic/${topicId}`}
+          href={lastReplyHref}
           className="topic-card-open"
-          aria-label="进入讨论"
+          aria-label={
+            topic.reply_count > 0 ? "查看最后一条回复" : "进入讨论"
+          }
         >
           <ArrowUpRight size={16} />
         </Link>

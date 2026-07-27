@@ -1007,6 +1007,13 @@ select:focus-visible {
   background: #edf0ee;
 }
 
+.topic-card .topic-state.essence {
+  margin-right: 6px;
+  padding: 0;
+  background: transparent;
+  vertical-align: -2px;
+}
+
 .topic-card-meta {
   display: flex;
   flex-wrap: nowrap;
@@ -1684,10 +1691,15 @@ a.topic-card-stat:hover {
 }
 
 .topic-labels {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  margin-bottom: 12px;
+  margin-left: 10px;
+  vertical-align: middle;
   gap: 5px;
+}
+
+.topic-labels .topic-state {
+  margin-right: 0;
 }
 
 .topic-article > h1 {
@@ -2370,7 +2382,7 @@ a.topic-card-stat:hover {
 }
 
 .reply-editor-tools .face-picker {
-  position: static;
+  position: relative;
 }
 
 .reply-editor-tools > button {
@@ -3126,7 +3138,7 @@ body:has(> .auth-page) > .site-header {
 
 .editor-tabs {
   display: flex;
-  padding: 7px 8px 0;
+  padding: 6px 8px;
   border-bottom: 1px solid var(--line);
   gap: 3px;
 }
@@ -3134,7 +3146,7 @@ body:has(> .auth-page) > .site-header {
 .editor-tabs button {
   display: flex;
   align-items: center;
-  padding: 8px 10px;
+  padding: 6px 10px;
   color: var(--faint);
   border: 0;
   border-radius: 8px 8px 0 0;
@@ -3179,7 +3191,7 @@ body:has(> .auth-page) > .site-header {
 }
 
 .editor-toolbar .face-picker {
-  position: static;
+  position: relative;
 }
 
 .face-picker > summary {
@@ -3227,15 +3239,15 @@ body:has(> .auth-page) > .site-header {
 }
 
 .editor-toolbar .face-picker-popover {
-  right: 8px;
-  left: auto;
+  right: auto;
+  left: 0;
 }
 
 .face-picker-grid {
   display: grid;
   max-height: 230px;
   overflow-y: auto;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, 34px);
   gap: 4px;
 }
 
@@ -5379,6 +5391,11 @@ body:has(> .auth-page) > .site-header {
     padding-bottom: 0;
   }
 
+  .editor-toolbar .face-picker,
+  .reply-editor-tools .face-picker {
+    position: static;
+  }
+
   .editor-toolbar .face-picker-popover,
   .reply-editor-tools .face-picker-popover {
     right: 6px;
@@ -5953,6 +5970,13 @@ body :is(
   }
 }
 
+@media (min-width: 901px) and (max-width: 1920px) {
+  .header-inner,
+  .page-shell {
+    width: min(1180px, calc(100% - 44px));
+  }
+}
+
 @media (min-width: 901px) and (max-width: 1180px) {
   .header-inner {
     grid-template-columns: auto auto minmax(0, 1fr) 260px;
@@ -6137,11 +6161,11 @@ body :is(
 }
 
 .editor-tabs {
-  padding: 4px 5px 0;
+  padding: 4px 5px;
 }
 
 .editor-tabs button {
-  padding: 6px 8px;
+  padding: 4px 8px;
 }
 
 .editor-toolbar {

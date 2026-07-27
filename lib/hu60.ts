@@ -817,7 +817,7 @@ async function getTopicUncached(
       floorReverse: 0,
       _uinfo: "name,avatar,sign",
       _content: "html",
-      _myself: "newMsg,newAtInfo,newChats,permissions",
+      _myself: "newMsg,newAtInfo,permissions",
       _time: 1
     },
     fallbackTopic,
@@ -1103,15 +1103,14 @@ async function getUserStatusUncached(sid?: string): Promise<UserStatus> {
     name: null,
     isLogin: null,
     newMsg: 0,
-    newAtInfo: 0,
-    newChats: null
+    newAtInfo: 0
   };
 
   if (!sid) return anonymous;
 
   const status = await requestJson(
     "user.stat.json",
-    { pageSize: 3 },
+    { pageSize: 1 },
     anonymous,
     {
       headers: { "x-sid": sid },
