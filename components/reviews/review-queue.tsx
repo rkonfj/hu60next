@@ -12,7 +12,6 @@ import {
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { Avatar } from "@/components/avatar";
-import { ModeratorBadge } from "@/components/moderator-badge";
 import {
   ReviewActions,
   type ReviewActionContext
@@ -30,13 +29,11 @@ type BatchDecision = "pass" | "reject";
 export function ReviewQueue({
   initialItems,
   page,
-  filter,
-  moderatorUids
+  filter
 }: {
   initialItems: ReviewQueueDisplayItem[];
   page: number;
   filter: ReviewQueueFilter;
-  moderatorUids: number[];
 }) {
   const [items, setItems] = useState(initialItems);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -202,9 +199,6 @@ export function ReviewQueue({
                     size="sm"
                   />
                   <strong data-member-uid={item.uid}>{author}</strong>
-                  <ModeratorBadge
-                    isModerator={moderatorUids.includes(Number(item.uid))}
-                  />
                 </Link>
                 <time>{relativeTime(item.mtime || item.ctime)}</time>
               </div>

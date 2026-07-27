@@ -5033,42 +5033,48 @@ body:has(> .auth-page) > .site-header {
 .moderator-badge {
   --moderator-color: #16704f;
   display: inline-flex;
-  height: 22px;
+  width: 16px;
+  height: 16px;
   flex: 0 0 auto;
   align-items: center;
-  gap: 4px;
-  padding: 0 6px;
+  justify-content: center;
+  padding: 0;
   color: var(--moderator-color);
-  border: 1px solid #b9ddcb;
-  border-radius: 5px;
-  background: #e9f6ef;
-  font-size: 10px;
-  font-weight: 850;
   line-height: 1;
-  letter-spacing: 0.07em;
   vertical-align: middle;
-  white-space: nowrap;
 }
 
 .moderator-badge svg {
+  width: 15px;
+  height: 15px;
   flex: 0 0 auto;
 }
 
 .article-meta > div:nth-child(2) > a,
 .reply-author > div > a,
-.topic-card-author-name,
-.account-summary-name {
+.topic-card-author-name {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
 .article-meta > div:nth-child(2) .moderator-badge,
-.reply-author .moderator-badge {
+.reply-author .moderator-badge,
+.topic-card-author-copy .moderator-badge {
   display: inline-flex;
   margin-top: 0;
   color: var(--moderator-color);
-  font-size: 10px;
+  overflow: visible;
+}
+
+.topic-card-author-copy .topic-card-author-name {
+  display: inline-flex;
+  align-items: center;
+  overflow: visible;
+  margin-top: 0;
+  color: inherit;
+  font-size: inherit;
+  gap: 5px;
 }
 
 .user-profile-copy p {
@@ -5784,8 +5790,6 @@ body:has(> .auth-page) > .site-header {
   .moderator-badge {
     --moderator-color: #64d49e;
     color: var(--moderator-color);
-    border-color: #286648;
-    background: #153a2b;
   }
 }
 

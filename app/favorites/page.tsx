@@ -2,11 +2,9 @@ import { Bookmark, LockKeyhole } from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { ModeratorBadge } from "@/components/moderator-badge";
 import { Pagination } from "@/components/pagination";
 import { TopicCard } from "@/components/topic-card";
 import { getFavoriteTopics, getUserStatus } from "@/lib/hu60";
-import { hasModeratorPermission } from "@/lib/moderator";
 
 export const metadata: Metadata = { title: "我的收藏" };
 
@@ -45,9 +43,6 @@ export default async function FavoritesPage({
           <span className="eyebrow">
             <Bookmark size={14} />
             <span data-member-uid={status.uid}>{status.name}</span>
-            <ModeratorBadge
-              isModerator={hasModeratorPermission(status.permissions)}
-            />
           </span>
           <h1>我的收藏</h1>
         </div>

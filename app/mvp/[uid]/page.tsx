@@ -13,7 +13,6 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Avatar } from "@/components/avatar";
-import { ModeratorBadge } from "@/components/moderator-badge";
 import { fullDate } from "@/lib/format";
 import { getUserProfile, getUserStatus } from "@/lib/hu60";
 import { hasModeratorPermission } from "@/lib/moderator";
@@ -112,9 +111,6 @@ export default async function MvpAnalysisPage({
             <span>UID {uid}</span>
             <div>
               <h2 data-member-uid={uid}>{name}</h2>
-              <ModeratorBadge
-                isModerator={hasModeratorPermission(profile.permissions)}
-              />
             </div>
             <p>
               <CalendarDays size={14} />

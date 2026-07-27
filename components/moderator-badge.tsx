@@ -8,10 +8,12 @@ export function ModeratorBadge({
   if (!isModerator) return null;
 
   return (
-    <span className="moderator-badge" title="拥有帖子审核权限">
-      <ShieldCheck size={13} strokeWidth={2.2} aria-hidden="true" />
-      MOD
+    <span
+      className="moderator-badge"
+      title="拥有帖子审核权限"
+      aria-label="MOD"
+    >
+      <ShieldCheck size={15} strokeWidth={2.2} aria-hidden="true" />
     </span>
   );
 }
-

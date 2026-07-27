@@ -74,10 +74,10 @@ export async function TopicCard({
         <Link href={`/user/${topic.uid}`} className="topic-card-author-link">
           <Avatar src={topic._u_avatar} name={author} size="sm" />
           <div className="topic-card-author-copy">
-            <span className="topic-card-author-name">
+            <div className="topic-card-author-name">
               <strong data-member-uid={topic.uid}>{author}</strong>
               <ModeratorBadge isModerator={authorIsModerator} />
-            </span>
+            </div>
             <span>{relativeTime(topic.mtime || topic.ctime, now)}</span>
           </div>
         </Link>

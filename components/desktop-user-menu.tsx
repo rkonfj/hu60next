@@ -9,7 +9,6 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { ModeratorBadge } from "@/components/moderator-badge";
 
 type DesktopUserMenuProps = {
   userId: number | string;
@@ -64,7 +63,6 @@ export function DesktopUserMenu({
       <summary className="session-user">
         <UserRound size={17} />
         <span data-member-uid={userId}>{userName}</span>
-        <ModeratorBadge isModerator={canReview} />
         <ChevronDown size={13} />
       </summary>
       <nav className="desktop-user-popover" aria-label="用户菜单">
