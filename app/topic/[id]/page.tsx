@@ -230,6 +230,16 @@ export default async function TopicPage({
               </div>
               <span>默认正序</span>
             </div>
+            {replies.length > 10 ? (
+              <Pagination
+                current={topic.currPage}
+                max={topic.maxPage}
+                path={`/topic/${topicId}`}
+                className="topic-pagination-top"
+                previousPageTarget="last-reply"
+                nextPageTarget="first-reply"
+              />
+            ) : null}
             <div className="reply-list">
               {replies.map((floor, index) => (
                 <article

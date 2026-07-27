@@ -2245,6 +2245,10 @@ a.topic-card-stat:hover {
   font-size: 9px;
 }
 
+.topic-pagination-top {
+  margin: 0 0 12px;
+}
+
 .reply-list {
   display: flex;
   flex-direction: column;
