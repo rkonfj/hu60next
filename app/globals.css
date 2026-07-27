@@ -2198,6 +2198,13 @@ select:focus-visible {
   box-shadow: var(--shadow-soft);
 }
 
+.topic-article.is-pending-review,
+.reply-card.is-pending-review {
+  border-color: color-mix(in srgb, var(--orange) 55%, var(--line));
+  background: color-mix(in srgb, var(--orange) 16%, var(--surface));
+  box-shadow: inset 3px 0 0 var(--orange);
+}
+
 .reply-author {
   display: flex;
   align-items: center;
@@ -6554,18 +6561,17 @@ body :is(
 .review-reason-form .confirm-pass,
 .review-batch-bar .batch-pass,
 .review-batch-bar .confirm-pass {
-  color: #fff;
-  border-color: var(--green);
-  background: var(--green);
+  color: var(--green);
+  border-color: var(--line-strong);
+  background: var(--green-soft);
 }
 
 .review-actions-row .review-reject-button,
 .review-reason-form .confirm-reject,
 .review-batch-bar .batch-reject,
 .review-batch-bar .confirm-reject {
-  color: #fff;
-  border-color: var(--red);
-  background: var(--red);
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
 }
 
 .review-complete-label {
