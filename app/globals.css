@@ -1583,7 +1583,7 @@ a.topic-card-stat:hover {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   gap: 4px;
 }
