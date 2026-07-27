@@ -31,10 +31,12 @@ import type {
   UserStatus
 } from "@/lib/types";
 import { getMemberTitleByUid } from "@/lib/member";
+import type { CacheStatus } from "@/lib/cache-types";
 import {
   createHu60UpstreamHeaders,
   hasForwardableHu60Headers
 } from "@/lib/hu60-headers";
+import { beginUpstreamRequest } from "@/lib/upstream-request-log";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
@@ -91,15 +93,26 @@ async function requestJson<T>(
       !forwardedCustomHeaders &&
       !init?.method &&
       init?.cache !== "no-store";
-    const response = await fetch(url, {
-      ...init,
-      headers,
-      ...(sid || forwardedCustomHeaders
-        ? { cache: "no-store" }
-        : shouldRevalidate
-          ? { next: { revalidate: 90 } }
-          : {})
-    });
+    const finishLog = beginUpstreamRequest(
+      init?.method || "GET",
+      url.toString()
+    );
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...init,
+        headers,
+        ...(sid || forwardedCustomHeaders
+          ? { cache: "no-store" }
+          : shouldRevalidate
+            ? { next: { revalidate: 90 } }
+            : {})
+      });
+      finishLog(response.status);
+    } catch (error) {
+      finishLog(null, error);
+      throw error;
+    }
 
     if (!response.ok) return fallback;
     const data = (await response.json()) as T & {
@@ -132,10 +145,18 @@ async function requestPublicJson<T>(
     if (query._json === undefined && !headers.has("x-json")) {
       headers.set("x-json", "compact");
     }
-    const response = await fetch(url, {
-      headers,
-      cache: "no-store"
-    });
+    const finishLog = beginUpstreamRequest("GET", url.toString());
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        headers,
+        cache: "no-store"
+      });
+      finishLog(response.status);
+    } catch (error) {
+      finishLog(null, error);
+      throw error;
+    }
     if (!response.ok) return fallback;
 
     const data = (await response.json()) as T & {
@@ -561,6 +582,122 @@ export async function getHonorRoll(): Promise<HonorRoll> {
   } finally {
     honorBuildPromise = undefined;
   }
+}
+
+function cacheStatus(
+  key: string,
+  label: string,
+  description: string,
+  ttlMs: number,
+  cache: { expiresAt: number } | undefined,
+  building: boolean,
+  entryCount?: number
+): CacheStatus {
+  const now = Date.now();
+  return {
+    key,
+    label,
+    description,
+    ttlMs,
+    lastUpdatedAt: cache ? cache.expiresAt - ttlMs : null,
+    expiresAt: cache?.expiresAt ?? null,
+    state: building
+      ? "building"
+      : !cache
+        ? "empty"
+        : cache.expiresAt > now
+          ? "fresh"
+          : "expired",
+    ...(entryCount === undefined ? {} : { entryCount })
+  };
+}
+
+export function getHu60CacheStatuses(): CacheStatus[] {
+  return [
+    cacheStatus(
+      "faces",
+      "表情列表",
+      "发帖和回复编辑器使用的论坛表情",
+      FACE_CACHE_SECONDS * 1000,
+      faceMemoryCache,
+      Boolean(faceBuildPromise),
+      faceMemoryCache?.value.length
+    ),
+    cacheStatus(
+      "daily-forum-topics",
+      "今日版块主题数",
+      "按上海自然日统计各版块新建主题",
+      DAILY_FORUM_TOPIC_CACHE_MS,
+      dailyForumTopicCountMemoryCache,
+      Boolean(dailyForumTopicCountBuildPromise),
+      dailyForumTopicCountMemoryCache
+        ? Object.keys(dailyForumTopicCountMemoryCache.value.counts).length
+        : 0
+    ),
+    cacheStatus(
+      "honor-roll",
+      "社区荣誉榜",
+      "活跃荣誉和资历荣誉排名",
+      HONOR_CACHE_SECONDS * 1000,
+      honorMemoryCache,
+      Boolean(honorBuildPromise),
+      honorMemoryCache
+        ? honorMemoryCache.value.active.length +
+            honorMemoryCache.value.legacy.length
+        : 0
+    )
+  ];
+}
+
+export async function refreshHu60Cache(key: string) {
+  if (key === "faces") {
+    if (!faceBuildPromise) faceBuildPromise = buildFaces();
+    try {
+      const value = await faceBuildPromise;
+      if (!value.length) throw new Error("表情接口没有返回可缓存的数据");
+      faceMemoryCache = {
+        expiresAt: Date.now() + FACE_CACHE_SECONDS * 1000,
+        value
+      };
+      return;
+    } finally {
+      faceBuildPromise = undefined;
+    }
+  }
+
+  if (key === "daily-forum-topics") {
+    if (!dailyForumTopicCountBuildPromise) {
+      dailyForumTopicCountBuildPromise = buildDailyForumTopicCounts();
+    }
+    try {
+      const value = await dailyForumTopicCountBuildPromise;
+      if (value.__fallback) throw new Error("今日版块主题统计更新失败");
+      dailyForumTopicCountMemoryCache = {
+        expiresAt: Date.now() + DAILY_FORUM_TOPIC_CACHE_MS,
+        value
+      };
+      return;
+    } finally {
+      dailyForumTopicCountBuildPromise = undefined;
+    }
+  }
+
+  if (key === "honor-roll") {
+    if (!honorBuildPromise) honorBuildPromise = buildHonorRoll();
+    try {
+      const value = await honorBuildPromise;
+      if (value.__fallback) throw new Error("社区荣誉榜更新失败");
+      honorMemoryCache = {
+        expiresAt: Date.now() + HONOR_CACHE_SECONDS * 1000,
+        value
+      };
+      return;
+    } finally {
+      honorBuildPromise = undefined;
+    }
+  }
+
+  throw new Error("未知的缓存项目");
 }
 
 export async function getForums(): Promise<ForumsResponse> {

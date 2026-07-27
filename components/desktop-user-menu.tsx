@@ -2,6 +2,7 @@
 
 import {
   ChevronDown,
+  Database,
   ShieldCheck,
   Trophy,
   UserRound
@@ -75,10 +76,16 @@ export function DesktopUserMenu({
           社区荣誉
         </Link>
         {canReview ? (
-          <Link href="/reviews" onClick={closeMenu}>
-            <ShieldCheck size={16} />
-            审核中心
-          </Link>
+          <>
+            <Link href="/reviews" onClick={closeMenu}>
+              <ShieldCheck size={16} />
+              审核中心
+            </Link>
+            <Link href="/cache" onClick={closeMenu}>
+              <Database size={16} />
+              缓存管理
+            </Link>
+          </>
         ) : null}
       </nav>
     </details>

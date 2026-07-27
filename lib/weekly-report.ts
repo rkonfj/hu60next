@@ -3,6 +3,7 @@ import {
   getWeeklyReplyFeedPage,
   getWeeklyUserTopicsPage
 } from "@/lib/hu60";
+import type { CacheStatus } from "@/lib/cache-types";
 import type {
   PersonalWeeklyReport,
   Topic,
@@ -64,6 +65,8 @@ const reportMemoryCache = new Map<
   {
     expiresAt: number;
     value: PersonalWeeklyReport;
+    uid: number;
+    username: string;
   }
 >();
 const reportBuildPromises = new Map<
@@ -772,12 +775,190 @@ export async function getPersonalWeeklyReport(
   try {
     const report = await buildPromise;
     if (!report.__fallback) {
+      for (const [key, entry] of reportMemoryCache) {
+        if (entry.uid === uid && key !== cacheKey) {
+          reportMemoryCache.delete(key);
+        }
+      }
       reportMemoryCache.set(cacheKey, {
         expiresAt: Date.now() + REPORT_CACHE_MS,
-        value: report
+        value: report,
+        uid,
+        username
       });
     }
     return report;
+  } finally {
+    reportBuildPromises.delete(cacheKey);
+  }
+}
+
+function weeklyCacheStatus(
+  key: string,
+  label: string,
+  description: string,
+  ttlMs: number,
+  cache: { expiresAt: number } | undefined,
+  building: boolean,
+  entryCount?: number
+): CacheStatus {
+  const now = Date.now();
+  return {
+    key,
+    label,
+    description,
+    ttlMs,
+    lastUpdatedAt: cache ? cache.expiresAt - ttlMs : null,
+    expiresAt: cache?.expiresAt ?? null,
+    state: building
+      ? "building"
+      : !cache
+        ? "empty"
+        : cache.expiresAt > now
+          ? "fresh"
+          : "expired",
+    ...(entryCount === undefined ? {} : { entryCount })
+  };
+}
+
+export function getWeeklyCacheStatuses(): CacheStatus[] {
+  const reportEntries = Array.from(reportMemoryCache.values());
+
+  return [
+    weeklyCacheStatus(
+      "weekly-reply-source",
+      "周统计回复数据源",
+      "MVP和个人足迹共享的最近两周回复",
+      SOURCE_CACHE_MS,
+      replySourceMemoryCache,
+      Boolean(replySourceBuildPromise),
+      replySourceMemoryCache?.value.replies.length
+    ),
+    weeklyCacheStatus(
+      "weekly-global-topics",
+      "MVP主题数据源",
+      "上周MVP计算使用的全站主题",
+      SOURCE_CACHE_MS,
+      globalTopicSourceMemoryCache,
+      Boolean(globalTopicSourceBuildPromise),
+      globalTopicSourceMemoryCache?.value.topics.length
+    ),
+    weeklyCacheStatus(
+      "weekly-mvp",
+      "上周MVP排名",
+      "全站前5名MVP及分数",
+      MVP_CACHE_MS,
+      mvpMemoryCache,
+      Boolean(mvpBuildPromise),
+      mvpMemoryCache?.value.members.length
+    ),
+    ...reportEntries.map((entry) => ({
+      ...weeklyCacheStatus(
+        `personal-weekly-report:${entry.uid}`,
+        `个人足迹 · ${entry.username}`,
+        `用户 #${entry.uid} 的个人交流统计`,
+        REPORT_CACHE_MS,
+        entry,
+        reportBuildPromises.has(`${entry.uid}:${entry.username}`),
+        1
+      ),
+      targetUid: entry.uid
+    }))
+  ];
+}
+
+async function refreshReplySourceCache() {
+  if (!replySourceBuildPromise) {
+    replySourceBuildPromise = buildReplySource();
+  }
+  try {
+    const value = await replySourceBuildPromise;
+    if (value.fallback) throw new Error("周统计回复数据源更新失败");
+    replySourceMemoryCache = {
+      expiresAt: Date.now() + SOURCE_CACHE_MS,
+      value
+    };
+  } finally {
+    replySourceBuildPromise = undefined;
+  }
+}
+
+async function refreshGlobalTopicSourceCache() {
+  if (!globalTopicSourceBuildPromise) {
+    globalTopicSourceBuildPromise = buildGlobalTopicSource(
+      Math.floor(Date.now() / 1000) - SOURCE_SECONDS
+    );
+  }
+  try {
+    const value = await globalTopicSourceBuildPromise;
+    if (value.fallback) throw new Error("MVP主题数据源更新失败");
+    globalTopicSourceMemoryCache = {
+      expiresAt: Date.now() + SOURCE_CACHE_MS,
+      value
+    };
+  } finally {
+    globalTopicSourceBuildPromise = undefined;
+  }
+}
+
+export async function refreshWeeklyCache(key: string) {
+  if (key === "weekly-reply-source") {
+    await refreshReplySourceCache();
+    return;
+  }
+
+  if (key === "weekly-global-topics") {
+    await refreshGlobalTopicSourceCache();
+    return;
+  }
+
+  if (key === "weekly-mvp") {
+    await refreshReplySourceCache();
+    await refreshGlobalTopicSourceCache();
+    if (!mvpBuildPromise) mvpBuildPromise = buildWeeklyMvpRanking();
+    try {
+      const value = await mvpBuildPromise;
+      if (value.__fallback) throw new Error("上周MVP排名更新失败");
+      mvpMemoryCache = {
+        expiresAt: Date.now() + MVP_CACHE_MS,
+        value
+      };
+      return;
+    } finally {
+      mvpBuildPromise = undefined;
+    }
+  }
+
+  throw new Error("未知的缓存项目");
+}
+
+export async function refreshPersonalWeeklyReportCache(
+  uid: number,
+  username: string
+) {
+  const cacheKey = `${uid}:${username}`;
+  let buildPromise = reportBuildPromises.get(cacheKey);
+  if (!buildPromise) {
+    buildPromise = buildPersonalWeeklyReport(uid, username);
+    reportBuildPromises.set(cacheKey, buildPromise);
+  }
+
+  try {
+    const report = await buildPromise;
+    if (report.__fallback) {
+      throw new Error(`用户 ${uid} 的个人足迹更新失败`);
+    }
+    for (const [key, entry] of reportMemoryCache) {
+      if (entry.uid === uid && key !== cacheKey) {
+        reportMemoryCache.delete(key);
+      }
+    }
+    reportMemoryCache.set(cacheKey, {
+      expiresAt: Date.now() + REPORT_CACHE_MS,
+      value: report,
+      uid,
+      username
+    });
   } finally {
     reportBuildPromises.delete(cacheKey);
   }
