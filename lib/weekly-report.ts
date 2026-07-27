@@ -387,27 +387,13 @@ export function weeklyMvpScore(stats: WeeklyReportStats) {
   );
 }
 
-async function buildWeeklyMvpRanking(): Promise<WeeklyMvpRanking> {
-  const replySource = await getReplySource();
-  if (replySource.fallback) {
-    return {
-      members: [],
-      updatedAt: replySource.now,
-      __fallback: true
-    };
-  }
-
-  const periodEnd = shanghaiWeekStart(replySource.now);
-  const periodStart = periodEnd - REPORT_SECONDS;
-  const topicSource = await getGlobalTopicSource(periodStart);
-  if (topicSource.fallback) {
-    return {
-      members: [],
-      updatedAt: periodEnd,
-      __fallback: true
-    };
-  }
-
+function rankMvpMembers(
+  replySource: ReplySource,
+  topicSource: TopicSource,
+  periodStart: number,
+  periodEnd: number,
+  limit: number
+) {
   const periodReplies = replySource.replies.filter((reply) =>
     inPeriod(Number(reply.ctime) || 0, periodStart, periodEnd)
   );
@@ -450,7 +436,7 @@ async function buildWeeklyMvpRanking(): Promise<WeeklyMvpRanking> {
     }
   }
 
-  const members = Array.from(candidates)
+  return Array.from(candidates)
     .map((uid) => {
       const stats = buildPeriodStats(
         uid,
@@ -482,11 +468,39 @@ async function buildWeeklyMvpRanking(): Promise<WeeklyMvpRanking> {
         right.stats.activeDays - left.stats.activeDays ||
         left.uid - right.uid
     )
-    .slice(0, 5)
+    .slice(0, limit)
     .map(({ stats: _stats, ...member }) => member);
+}
+
+async function buildWeeklyMvpRanking(): Promise<WeeklyMvpRanking> {
+  const replySource = await getReplySource();
+  if (replySource.fallback) {
+    return {
+      members: [],
+      updatedAt: replySource.now,
+      __fallback: true
+    };
+  }
+
+  const periodEnd = shanghaiWeekStart(replySource.now);
+  const periodStart = periodEnd - REPORT_SECONDS;
+  const topicSource = await getGlobalTopicSource(periodStart);
+  if (topicSource.fallback) {
+    return {
+      members: [],
+      updatedAt: periodEnd,
+      __fallback: true
+    };
+  }
 
   return {
-    members,
+    members: rankMvpMembers(
+      replySource,
+      topicSource,
+      periodStart,
+      periodEnd,
+      5
+    ),
     updatedAt: periodEnd,
     partial: replySource.partial || topicSource.partial
   };
@@ -514,6 +528,41 @@ export async function getWeeklyMvpRanking(): Promise<WeeklyMvpRanking> {
   } finally {
     mvpBuildPromise = undefined;
   }
+}
+
+export async function getCurrentWeeklyMvpRanking(): Promise<WeeklyMvpRanking> {
+  const replySource = await getReplySource();
+  if (replySource.fallback) {
+    return {
+      members: [],
+      updatedAt: replySource.now,
+      __fallback: true
+    };
+  }
+
+  const periodStart = shanghaiWeekStart(replySource.now);
+  const topicSource = await getGlobalTopicSource(
+    periodStart - REPORT_SECONDS
+  );
+  if (topicSource.fallback) {
+    return {
+      members: [],
+      updatedAt: replySource.now,
+      __fallback: true
+    };
+  }
+
+  return {
+    members: rankMvpMembers(
+      replySource,
+      topicSource,
+      periodStart,
+      replySource.now + 1,
+      10
+    ),
+    updatedAt: replySource.now,
+    partial: replySource.partial || topicSource.partial
+  };
 }
 
 function buildPeriodStats(
@@ -837,7 +886,7 @@ export function getWeeklyCacheStatuses(): CacheStatus[] {
     weeklyCacheStatus(
       "weekly-global-topics",
       "MVP主题数据源",
-      "上周MVP计算使用的全站主题",
+      "本周与上周MVP计算使用的全站主题",
       SOURCE_CACHE_MS,
       globalTopicSourceMemoryCache,
       Boolean(globalTopicSourceBuildPromise),

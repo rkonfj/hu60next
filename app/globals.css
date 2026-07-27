@@ -4158,10 +4158,283 @@ body:has(> .auth-page) > .site-header {
   margin-top: 14px;
 }
 
-/* MOD-only MVP analysis */
+/* MVP ranking and MOD-only score analysis */
 .mvp-analysis-page {
   display: grid;
   gap: 14px;
+}
+
+.mvp-ranking-page {
+  padding-top: 22px;
+}
+
+.mvp-ranking-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 2px 15px;
+  border-bottom: 1px solid var(--line);
+  gap: 24px;
+}
+
+.mvp-ranking-heading h1,
+.mvp-ranking-heading p {
+  margin: 0;
+}
+
+.mvp-ranking-heading h1 {
+  margin-top: 6px;
+  font-size: clamp(26px, 3vw, 40px);
+  letter-spacing: -0.04em;
+}
+
+.mvp-ranking-heading p {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.mvp-ranking-heading time {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  color: var(--faint);
+  font-size: 12px;
+  gap: 5px;
+}
+
+.mvp-ranking-page > .data-notice {
+  margin-top: 12px;
+}
+
+.mvp-ranking-grid {
+  display: grid;
+  align-items: start;
+  margin-top: 14px;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.85fr);
+  gap: 14px;
+}
+
+.mvp-ranking-board {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.mvp-ranking-board.is-current {
+  border-color: var(--line-strong);
+  background:
+    linear-gradient(135deg, var(--orange-soft), transparent 42%),
+    var(--surface);
+}
+
+.mvp-ranking-board > header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  gap: 11px;
+}
+
+.mvp-ranking-board-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  color: var(--green);
+  background: var(--green-soft);
+  place-items: center;
+}
+
+.mvp-ranking-board.is-current .mvp-ranking-board-icon {
+  color: var(--orange);
+  background: color-mix(in srgb, var(--orange-soft) 80%, var(--surface));
+}
+
+.mvp-ranking-board > header h2,
+.mvp-ranking-board > header p {
+  margin: 0;
+}
+
+.mvp-ranking-board > header h2 {
+  font-size: 19px;
+}
+
+.mvp-ranking-board > header p {
+  margin-top: 3px;
+  color: var(--faint);
+  font-size: 12px;
+}
+
+.mvp-ranking-board > header > strong {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.mvp-ranking-list {
+  margin: 0;
+  padding: 0 13px;
+  list-style: none;
+}
+
+.mvp-ranking-list > li {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  border-radius: 0 !important;
+}
+
+.mvp-ranking-list > li + li {
+  border-top: 1px solid var(--line);
+}
+
+.mvp-ranking-position {
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+.mvp-ranking-list > li:nth-child(1) .mvp-ranking-position {
+  color: #bf792f;
+}
+
+.mvp-ranking-list > li:nth-child(2) .mvp-ranking-position {
+  color: #70877a;
+}
+
+.mvp-ranking-list > li:nth-child(3) .mvp-ranking-position {
+  color: #9b6542;
+}
+
+.mvp-ranking-member {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  padding: 11px 2px;
+  gap: 10px;
+}
+
+.mvp-ranking-member-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.mvp-ranking-member-copy strong,
+.mvp-ranking-member-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mvp-ranking-member-copy small {
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.mvp-ranking-score {
+  display: inline-flex;
+  align-items: baseline;
+  color: var(--orange);
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.mvp-ranking-score strong {
+  font-size: 18px;
+}
+
+.mvp-ranking-score small {
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.mvp-ranking-member > svg {
+  color: var(--faint);
+}
+
+.mvp-ranking-member:hover > svg {
+  color: var(--green);
+}
+
+.mvp-ranking-empty {
+  padding: 42px 16px;
+  color: var(--faint);
+  text-align: center;
+  font-size: 13px;
+}
+
+.mvp-ranking-partial,
+.mvp-ranking-footer {
+  margin: 10px 2px 0;
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.mvp-ranking-footer {
+  padding-top: 11px;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 900px) {
+  .mvp-ranking-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .mvp-ranking-page {
+    padding-top: 12px;
+  }
+
+  .mvp-ranking-heading {
+    display: block;
+    padding-bottom: 11px;
+  }
+
+  .mvp-ranking-heading h1 {
+    font-size: 27px;
+  }
+
+  .mvp-ranking-heading p {
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .mvp-ranking-heading time {
+    margin-top: 7px;
+  }
+
+  .mvp-ranking-grid {
+    margin-top: 9px;
+    gap: 9px;
+  }
+
+  .mvp-ranking-board > header {
+    padding: 11px 10px;
+  }
+
+  .mvp-ranking-list {
+    padding: 0 9px;
+  }
+
+  .mvp-ranking-list > li {
+    grid-template-columns: 29px minmax(0, 1fr);
+  }
+
+  .mvp-ranking-member {
+    padding: 9px 1px;
+    gap: 8px;
+  }
+
+  .mvp-ranking-member-copy small {
+    font-size: 10px;
+  }
 }
 
 .mvp-analysis-heading,
