@@ -63,11 +63,9 @@ export default async function TopicPage({
   const page = Math.max(1, Number(query.page) || 1);
   const cookieStore = await cookies();
   const sid = cookieStore.get("hulvlin_sid")?.value;
-  const topicPromise = getTopic(topicId, page, sid);
-  const [topic, faces, firstPageTopic] = await Promise.all([
-    topicPromise,
-    getFaces(),
-    page === 1 ? topicPromise : getTopicMain(topicId, sid)
+  const [topic, faces] = await Promise.all([
+    getTopic(topicId, page, sid),
+    getFaces()
   ]);
 
   if (topic.__fallback) {
@@ -89,6 +87,11 @@ export default async function TopicPage({
     );
   }
 
+  const firstPageTopic = await (
+    page === 1
+      ? Promise.resolve(topic)
+      : getTopicMain(topicId, sid)
+  );
   const authorMemberTitle = getMemberTitleByUid(topic.tMeta.uid);
   const mainFloor = firstPageTopic.tContents.find(
     (floor) => Number(floor.floor) === 0
@@ -248,7 +251,7 @@ export default async function TopicPage({
                 className="topic-pagination-top"
                 previousPageTarget="last-reply"
                 nextPageTarget="first-reply"
-                prefetch
+                prefetch={false}
               />
             ) : null}
             <div className="reply-list">
@@ -362,7 +365,7 @@ export default async function TopicPage({
             path={`/topic/${topicId}`}
             previousPageTarget="last-reply"
             nextPageTarget="first-reply"
-            prefetch
+            prefetch={false}
           />
 
           {topic.canReply && topic.token ? (
