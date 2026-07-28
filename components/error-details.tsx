@@ -27,3 +27,28 @@ export function ErrorDetails({
     </main>
   );
 }
+
+export function InlineErrorDetails({
+  error,
+  title = "详细错误"
+}: {
+  error: unknown;
+  title?: string;
+}) {
+  const details = getPublicErrorDetails(error);
+
+  return (
+    <section className="inline-error-details" aria-label={title}>
+      <header>
+        <AlertTriangle size={17} aria-hidden="true" />
+        <strong>{title}</strong>
+      </header>
+      <pre>
+        <strong>{details.name}</strong>
+        {"\n"}
+        {details.message}
+      </pre>
+      <p>以上内容已经脱敏，凭据、请求参数和本机路径不会显示。</p>
+    </section>
+  );
+}

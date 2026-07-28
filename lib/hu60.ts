@@ -32,6 +32,7 @@ import type {
 } from "@/lib/types";
 import { recordRecentVisitor } from "@/lib/recent-visitors";
 import { getMemberTitleByUid } from "@/lib/member";
+import { getPublicErrorDetails } from "@/lib/public-error";
 import type { CacheStatus } from "@/lib/cache-types";
 import {
   createHu60UpstreamHeaders,
@@ -57,6 +58,68 @@ const DAILY_FORUM_TOPIC_MAX_PAGES = 2;
 const SHANGHAI_OFFSET_SECONDS = 8 * 60 * 60;
 
 type QueryValue = string | number | boolean | undefined;
+
+function requestError(error: unknown) {
+  if (error instanceof Error) return error;
+
+  const wrapped = new Error(
+    typeof error === "string" && error.trim()
+      ? error
+      : "上游接口返回了未说明原因的错误"
+  );
+  wrapped.name = "UpstreamError";
+  return wrapped;
+}
+
+function fallbackWithError<T>(fallback: T, error: unknown): T {
+  if (!fallback || typeof fallback !== "object" || Array.isArray(fallback)) {
+    return fallback;
+  }
+
+  return {
+    ...fallback,
+    __error: getPublicErrorDetails(requestError(error))
+  };
+}
+
+async function responseError(response: Response) {
+  let detail = "";
+
+  try {
+    const body = await response.text();
+    if (body) {
+      try {
+        const data = JSON.parse(body) as {
+          error?: unknown;
+          notice?: unknown;
+          message?: unknown;
+        };
+        const candidate =
+          data.notice ??
+          data.message ??
+          (typeof data.error === "string" ? data.error : undefined);
+        if (typeof candidate === "string") detail = candidate.trim();
+      } catch {
+        if (
+          response.headers.get("content-type")?.includes("text/plain")
+        ) {
+          detail = body.trim();
+        }
+      }
+    }
+  } catch {
+    // 即使响应正文无法读取，也保留 HTTP 状态信息。
+  }
+
+  const statusText = response.statusText.trim();
+  const error = new Error(
+    `上游请求失败：HTTP ${response.status}${
+      statusText ? ` ${statusText}` : ""
+    }${detail ? `；${detail}` : ""}`
+  );
+  error.name = "UpstreamHttpError";
+  return error;
+}
 
 async function requestJson<T>(
   route: string,
@@ -116,15 +179,28 @@ async function requestJson<T>(
       throw error;
     }
 
-    if (!response.ok) return fallback;
+    if (!response.ok) {
+      return fallbackWithError(fallback, await responseError(response));
+    }
     const data = (await response.json()) as T & {
       error?: string | boolean;
+      notice?: string;
+      message?: string;
       page?: string;
     };
-    if (data?.error) return fallback;
+    if (data?.error) {
+      return fallbackWithError(
+        fallback,
+        data.notice ||
+          data.message ||
+          (typeof data.error === "string"
+            ? data.error
+            : "上游接口返回错误")
+      );
+    }
     return data;
-  } catch {
-    return fallback;
+  } catch (error) {
+    return fallbackWithError(fallback, error);
   }
 }
 

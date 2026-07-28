@@ -11,6 +11,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
+import { InlineErrorDetails } from "@/components/error-details";
 import { FavoriteButton } from "@/components/favorite-button";
 import { Pagination } from "@/components/pagination";
 import { ReplyForm } from "@/components/reply-form";
@@ -72,6 +73,9 @@ export default async function TopicPage({
         <div className="data-notice">
           暂时无法读取这个帖子，请稍后刷新重试。
         </div>
+        {topic.__error ? (
+          <InlineErrorDetails error={topic.__error} title="帖子读取失败详情" />
+        ) : null}
         <div className="empty-state">
           <MessageCircle size={30} />
           <h1>帖子暂时不可用</h1>
@@ -132,11 +136,15 @@ export default async function TopicPage({
               ) : null}
             </h1>
             <div className="article-meta">
-              <Link href={`/user/${meta.uid}`} className="article-author-avatar">
+              <Link
+                href={`/user/${meta.uid}`}
+                className="article-author-avatar"
+                prefetch={false}
+              >
                 <Avatar src={meta._u_avatar} name={meta._u_name} size="lg" />
               </Link>
               <div>
-                <Link href={`/user/${meta.uid}`}>
+                <Link href={`/user/${meta.uid}`} prefetch={false}>
                   <strong data-member-uid={meta.uid}>
                     {meta._u_name || `用户 ${meta.uid}`}
                   </strong>
@@ -267,7 +275,7 @@ export default async function TopicPage({
                     />
                   ) : null}
                   <div className="reply-author">
-                    <Link href={`/user/${floor.uid}`}>
+                    <Link href={`/user/${floor.uid}`} prefetch={false}>
                       <Avatar
                         src={floor._u_avatar}
                         name={floor._u_name}
@@ -275,7 +283,7 @@ export default async function TopicPage({
                       />
                     </Link>
                     <div>
-                      <Link href={`/user/${floor.uid}`}>
+                      <Link href={`/user/${floor.uid}`} prefetch={false}>
                         <strong data-member-uid={floor.uid}>
                           {floor._u_name || `用户 ${floor.uid}`}
                         </strong>
@@ -385,7 +393,11 @@ export default async function TopicPage({
         <aside className="topic-aside">
           <section className="author-card">
             <span className="aside-label">关于作者</span>
-            <Link href={`/user/${meta.uid}`} className="author-card-identity">
+            <Link
+              href={`/user/${meta.uid}`}
+              className="author-card-identity"
+              prefetch={false}
+            >
               <Avatar src={meta._u_avatar} name={meta._u_name} size="xl" />
               <span className="author-card-name">
                 <strong data-member-uid={meta.uid}>
@@ -399,7 +411,11 @@ export default async function TopicPage({
               </span>
             </Link>
             <p>{meta._u_signature || "这位用户还没有留下个人签名。"}</p>
-            <Link href={`/user/${meta.uid}`} className="author-card-link">
+            <Link
+              href={`/user/${meta.uid}`}
+              className="author-card-link"
+              prefetch={false}
+            >
               查看用户主页
             </Link>
           </section>

@@ -1717,6 +1717,36 @@ a.topic-card-stat:hover {
   font-weight: 700;
 }
 
+.inline-error-details {
+  margin: 14px 0;
+  padding: 15px 17px;
+  color: var(--muted);
+  border: 1px solid #e9c7a6;
+  border-radius: 12px;
+  background: #fff8ef;
+}
+
+.inline-error-details header {
+  display: flex;
+  align-items: center;
+  color: #9a4b20;
+  gap: 7px;
+}
+
+.inline-error-details pre {
+  overflow-wrap: anywhere;
+  margin: 11px 0 7px;
+  color: var(--ink);
+  font: 11px/1.65 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
+  white-space: pre-wrap;
+}
+
+.inline-error-details p {
+  margin: 0;
+  font-size: 10px;
+}
+
 .locked-state {
   min-height: 470px;
   justify-content: center;

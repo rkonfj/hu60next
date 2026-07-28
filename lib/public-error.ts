@@ -1,5 +1,10 @@
 const MAX_PUBLIC_ERROR_LENGTH = 800;
 
+export type PublicErrorDetails = {
+  name: string;
+  message: string;
+};
+
 function redactUrls(value: string) {
   return value.replace(/\bhttps?:\/\/[^\s<>"']+/gi, (match) => {
     try {
@@ -51,6 +56,20 @@ export function getPublicErrorDetails(error: unknown) {
     return {
       name: "Error",
       message: redactPublicErrorMessage(error)
+    };
+  }
+
+  if (
+    error &&
+    typeof error === "object" &&
+    "name" in error &&
+    "message" in error &&
+    typeof error.name === "string" &&
+    typeof error.message === "string"
+  ) {
+    return {
+      name: redactPublicErrorMessage(error.name || "Error"),
+      message: redactPublicErrorMessage(error.message)
     };
   }
 

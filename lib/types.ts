@@ -169,6 +169,10 @@ export type TopicResponse = {
   };
   tContents: Floor[];
   __fallback?: boolean;
+  __error?: {
+    name: string;
+    message: string;
+  };
 };
 
 export type EditPostFormResponse = {

@@ -97,7 +97,11 @@ export function TopicCard({
         </Link>
       </div>
       <div className="topic-card-meta">
-        <Link href={`/user/${topic.uid}`} className="topic-card-author-link">
+        <Link
+          href={`/user/${topic.uid}`}
+          className="topic-card-author-link"
+          prefetch={false}
+        >
           <Avatar src={topic._u_avatar} name={author} size="sm" />
           <div className="topic-card-author-copy">
             <strong data-member-uid={topic.uid}>{author}</strong>

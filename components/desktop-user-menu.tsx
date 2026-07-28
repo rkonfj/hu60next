@@ -66,7 +66,11 @@ export function DesktopUserMenu({
         <ChevronDown size={13} />
       </summary>
       <nav className="desktop-user-popover" aria-label="用户菜单">
-        <Link href={`/user/${userId}`} onClick={closeMenu}>
+        <Link
+          href={`/user/${userId}`}
+          prefetch={false}
+          onClick={closeMenu}
+        >
           <UserRound size={16} />
           我的主页
         </Link>
