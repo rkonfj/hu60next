@@ -66,7 +66,7 @@ function RankingBoard({
                 {String(index + 1).padStart(2, "0")}
               </span>
               <Link
-                href={`/user/${member.uid}`}
+                href={current ? `/mvp/${member.uid}` : `/user/${member.uid}`}
                 className="mvp-ranking-member"
               >
                 <Avatar src={member.avatar} name={member.name} />
