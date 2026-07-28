@@ -15,7 +15,8 @@ import {
   useCallback,
   useEffect,
   useRef,
-  useState
+  useState,
+  useTransition
 } from "react";
 import {
   checksumFile,
@@ -53,6 +54,8 @@ export function ReplyForm({
   const [content, setContent] = useState("");
   const [loadedDraftKey, setLoadedDraftKey] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<AttachmentState[]>([]);
+  const [pendingFloor, setPendingFloor] = useState<number | null>(null);
+  const [updatingReplies, startUpdatingReplies] = useTransition();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectionRef = useRef({ start: 0, end: 0 });
@@ -225,6 +228,16 @@ export function ReplyForm({
     return () => document.removeEventListener("click", handleFloorReply);
   }, [insertText]);
 
+  useEffect(() => {
+    if (updatingReplies || pendingFloor === null) return;
+
+    const target = document.getElementById(`floor-${pendingFloor}`);
+    if (!target) return;
+
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    setPendingFloor(null);
+  }, [pendingFloor, updatingReplies]);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
@@ -240,6 +253,7 @@ export function ReplyForm({
       const result = (await response.json()) as {
         success?: boolean;
         notice?: string;
+        floor?: number;
         page?: number;
         nextPath?: string;
       };
@@ -259,11 +273,17 @@ export function ReplyForm({
       setAttachments([]);
       setSuccess(true);
       setNotice("回复已发布。");
-      if (result.nextPath && result.page !== currentPage) {
-        router.push(result.nextPath);
-      } else {
-        router.refresh();
+      const floor = Number(result.floor);
+      if (Number.isInteger(floor) && floor > 0) {
+        setPendingFloor(floor);
       }
+      startUpdatingReplies(() => {
+        if (result.nextPath && result.page !== currentPage) {
+          router.push(result.nextPath);
+        } else {
+          router.refresh();
+        }
+      });
     } catch {
       setNotice("暂时无法提交回复，请稍后再试。");
     } finally {
@@ -390,10 +410,14 @@ export function ReplyForm({
         ) : (
           <span>支持虎绿林 UBB、Markdown 与 LaTeX 公式</span>
         )}
-        <button type="submit" disabled={loading || attachmentBusy}>
-          {loading ? (
+        <button
+          type="submit"
+          disabled={loading || updatingReplies || attachmentBusy}
+        >
+          {loading || updatingReplies ? (
             <>
-              <LoaderCircle className="spin" size={16} /> 正在发布
+              <LoaderCircle className="spin" size={16} />{" "}
+              {loading ? "正在发布" : "正在显示回复"}
             </>
           ) : attachmentBusy ? (
             <>
