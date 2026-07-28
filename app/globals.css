@@ -925,6 +925,10 @@ select:focus-visible {
   object-fit: cover;
 }
 
+.avatar > span {
+  line-height: 1;
+}
+
 .avatar-sm {
   width: 28px;
   height: 28px;
@@ -1815,8 +1819,8 @@ a.topic-card-stat:hover {
   flex: 0 0 auto;
 }
 
-.article-meta strong,
-.article-meta span {
+.article-meta > div:nth-child(2) strong,
+.article-meta > div:nth-child(2) span {
   display: block;
 }
 
@@ -2395,12 +2399,12 @@ a.topic-card-stat:hover {
   gap: 9px;
 }
 
-.reply-author strong,
-.reply-author span {
+.reply-author > div strong,
+.reply-author > div span {
   display: block;
 }
 
-.reply-author span {
+.reply-author > div span {
   margin-top: 3px;
   color: var(--faint);
   font-size: 9px;
