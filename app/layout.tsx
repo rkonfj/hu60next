@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { CodeCopyEnhancer } from "@/components/code-copy-enhancer";
+import { ContentImageEnhancer } from "@/components/content-image-enhancer";
 import { Header } from "@/components/header";
 import { MathContentEnhancer } from "@/components/math-content-enhancer";
 import { NavigationProgress } from "@/components/navigation-progress";
@@ -60,6 +61,7 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body>
         <CodeCopyEnhancer />
+        <ContentImageEnhancer />
         <MathContentEnhancer />
         <Suspense fallback={null}>
           <WeeklyMvpIdentityStyles />

@@ -1953,6 +1953,17 @@ a.topic-card-stat:hover {
   vertical-align: middle;
 }
 
+.rich-content img.hu60-inline-image:not(.hu60_face) {
+  display: inline-block;
+  width: auto;
+  max-width: min(96px, 100%);
+  height: auto;
+  max-height: 96px;
+  margin: 0 0.15em;
+  border-radius: 6px;
+  vertical-align: middle;
+}
+
 .rich-content .video_box {
   margin: 18px 0;
 }
