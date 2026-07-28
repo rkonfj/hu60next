@@ -3241,14 +3241,29 @@ body:has(> .auth-page) > .site-header {
 }
 
 .composer-title {
-  width: 100%;
-  padding: 24px 24px 17px;
+  width: calc(100% - 40px);
+  margin: 14px 20px;
+  padding: 24px 18px 17px;
   border: 0;
   outline: 0;
   background: transparent;
   font-size: 21px;
   font-weight: 750;
   letter-spacing: -0.025em;
+  transition: box-shadow 150ms ease;
+}
+
+.composer-title:placeholder-shown {
+  border-radius: 10px;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--green) 18%, transparent),
+    0 0 14px color-mix(in srgb, var(--green) 12%, transparent);
+}
+
+.composer-title:placeholder-shown:focus {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--green) 32%, transparent),
+    0 0 18px color-mix(in srgb, var(--green) 18%, transparent);
 }
 
 .editor-shell {
@@ -3601,7 +3616,15 @@ body:has(> .auth-page) > .site-header {
 
 .composer-footer > div {
   display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 7px;
+}
+
+.composer-footer .draft-state {
+  margin-right: 2px;
+  white-space: nowrap;
 }
 
 .save-draft,
@@ -5959,6 +5982,10 @@ body:has(> .auth-page) > .site-header {
     font-size: 34px;
   }
 
+  .compose-page .page-heading :is(h1, p) {
+    display: none;
+  }
+
   .forum-grid,
   .message-grid,
   .account-links {
@@ -6080,7 +6107,9 @@ body:has(> .auth-page) > .site-header {
   }
 
   .composer-title {
-    padding: 20px 16px 14px;
+    width: calc(100% - 26px);
+    margin: 12px 13px;
+    padding: 20px 18px 14px;
     font-size: 18px;
   }
 
@@ -6548,7 +6577,9 @@ body :is(
 }
 
 .composer-title {
-  padding: 15px 15px 11px;
+  width: calc(100% - 24px);
+  margin: 12px;
+  padding: 15px 12px 11px;
 }
 
 .editor-shell {

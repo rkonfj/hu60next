@@ -883,17 +883,13 @@ export function Composer({
                 : "请选择发布板块"}
           </small>
         </div>
-        <span className="draft-state">
-          <Save size={14} />
-          {saved ? "草稿已保存" : "草稿仅保存在本机"}
-        </span>
       </div>
       <input
         className="composer-title"
         name="title"
         value={title}
         onChange={(event) => setTitle(event.target.value)}
-        placeholder="一句清楚的标题，会带来更好的讨论"
+        placeholder="标题"
         maxLength={120}
         required
       />
@@ -1064,6 +1060,9 @@ export function Composer({
           <span>{content.length} 字</span>
         )}
         <div>
+          <span className="draft-state">
+            {saved ? "草稿已保存" : "草稿仅保存在本机"}
+          </span>
           <button className="save-draft" type="button" onClick={saveDraft}>
             <Save size={16} /> 保存草稿
           </button>
