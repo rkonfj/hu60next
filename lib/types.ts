@@ -16,6 +16,7 @@ export type Topic = {
   review?: number;
   _u_name?: string | null;
   _u_avatar?: string | null;
+  _u_regtime?: number | null;
   _u_signature?: string | null;
   _topic_summary?: string | null;
   uinfo?: { name?: string | null };
@@ -228,6 +229,7 @@ export type UserReply = {
   review_log?: ReviewLogEntry[];
   _u_name?: string | null;
   _u_avatar?: string | null;
+  _u_regtime?: number | null;
   _u_signature?: string | null;
   uinfo?: { name?: string | null };
   topic: {

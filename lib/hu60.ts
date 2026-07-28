@@ -31,7 +31,10 @@ import type {
   UserStatus
 } from "@/lib/types";
 import { recordRecentVisitor } from "@/lib/recent-visitors";
-import { getMemberTitleByUid } from "@/lib/member";
+import {
+  getMemberTitle,
+  getMemberTitleByUid
+} from "@/lib/member";
 import { getPublicErrorDetails } from "@/lib/public-error";
 import type { CacheStatus } from "@/lib/cache-types";
 import {
@@ -516,6 +519,7 @@ type HonorTopicResponse = {
 };
 
 type HonorCandidate = HonorMember & {
+  regtime?: number | null;
   topicCount: number;
   replyCount: number;
   latestActivityTime: number;
@@ -536,7 +540,7 @@ async function buildHonorRoll(): Promise<HonorRoll> {
       {
         pageSize: HONOR_TOPIC_FETCH_SIZE,
         _topic_summary: 0,
-        _uinfo: "name,avatar",
+        _uinfo: "name,avatar,regtime",
         _time: 1
       },
       {
@@ -599,6 +603,7 @@ async function buildHonorRoll(): Promise<HonorRoll> {
       uid,
       name,
       avatar: topic._u_avatar || current?.avatar || null,
+      regtime: topic._u_regtime ?? current?.regtime ?? null,
       topicCount: (current?.topicCount ?? 0) + 1,
       replyCount: current?.replyCount ?? 0,
       latestActivityTime: Math.max(
@@ -619,6 +624,7 @@ async function buildHonorRoll(): Promise<HonorRoll> {
       uid,
       name,
       avatar: reply._u_avatar || current?.avatar || null,
+      regtime: reply._u_regtime ?? current?.regtime ?? null,
       topicCount: current?.topicCount ?? 0,
       replyCount: (current?.replyCount ?? 0) + 1,
       latestActivityTime: Math.max(
@@ -634,7 +640,10 @@ async function buildHonorRoll(): Promise<HonorRoll> {
     uid: candidate.uid,
     name: candidate.name,
     avatar: candidate.avatar,
-    memberTitle: getMemberTitleByUid(candidate.uid)
+    memberTitle:
+      candidate.regtime === undefined || candidate.regtime === null
+        ? getMemberTitleByUid(candidate.uid)
+        : getMemberTitle(candidate.regtime)
   });
 
   const rankedCandidates = candidates.map((candidate) => ({
@@ -1079,7 +1088,7 @@ async function getWeeklyReplyFeedPageUncached(
       pageSize: safePageSize,
       showBot: 0,
       _content: "text",
-      _uinfo: "name,avatar",
+      _uinfo: "name,avatar,regtime",
       _time: 1,
       _json: "compact"
     },
