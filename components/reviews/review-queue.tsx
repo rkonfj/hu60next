@@ -18,6 +18,7 @@ import {
 } from "@/components/reviews/review-actions";
 import { relativeTime } from "@/lib/format";
 import type { ReviewQueueFilter } from "@/lib/hu60";
+import { isHu60MarkdownContent } from "@/lib/markdown";
 import type { UserReply } from "@/lib/types";
 
 export type ReviewQueueDisplayItem = UserReply & {
@@ -205,7 +206,11 @@ export function ReviewQueue({
               </div>
               <div
                 className="rich-content review-queue-content"
-                data-math-content
+                data-math-content={
+                  isHu60MarkdownContent(item.safeContent)
+                    ? "markdown"
+                    : undefined
+                }
                 dangerouslySetInnerHTML={{ __html: item.safeContent }}
               />
               <ReviewActions

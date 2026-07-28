@@ -22,6 +22,7 @@ import {
   getTopic,
   getTopicMain
 } from "@/lib/hu60";
+import { isHu60MarkdownContent } from "@/lib/markdown";
 import { getMemberTitleByUid } from "@/lib/member";
 import {
   sanitizeHu60Content,
@@ -180,7 +181,11 @@ export default async function TopicPage({
             {mainFloor ? (
               <div
                 className="rich-content"
-                data-math-content
+                data-math-content={
+                  isHu60MarkdownContent(mainFloor.content)
+                    ? "markdown"
+                    : undefined
+                }
                 dangerouslySetInnerHTML={{
                   __html:
                     canReview && Number(mainFloor.review || 0) !== 0
@@ -298,7 +303,11 @@ export default async function TopicPage({
                   </div>
                   <div
                     className="rich-content reply-content"
-                    data-math-content
+                    data-math-content={
+                      isHu60MarkdownContent(floor.content)
+                        ? "markdown"
+                        : undefined
+                    }
                     dangerouslySetInnerHTML={{
                       __html:
                         canReview && Number(floor.review || 0) !== 0

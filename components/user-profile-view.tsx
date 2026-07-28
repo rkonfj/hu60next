@@ -18,6 +18,7 @@ import {
   getUserStatus,
   getUserTopics
 } from "@/lib/hu60";
+import { isHu60MarkdownContent } from "@/lib/markdown";
 import { getMemberTitle } from "@/lib/member";
 import { sanitizeHu60Content } from "@/lib/sanitize";
 import { topicFloorHref } from "@/lib/topic-navigation";
@@ -246,7 +247,11 @@ async function renderUserProfileView({
                     </header>
                     <div
                       className="rich-content user-reply-content"
-                      data-math-content
+                      data-math-content={
+                        isHu60MarkdownContent(reply.content)
+                          ? "markdown"
+                          : undefined
+                      }
                       dangerouslySetInnerHTML={{
                         __html: sanitizeHu60Content(
                           typeof reply.content === "string"
