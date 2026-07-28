@@ -126,6 +126,9 @@ export function MathContentEnhancer() {
 
     enhanceWithin(document);
 
+    const observe = () => {
+      observer.observe(document.body, { childList: true, subtree: true });
+    };
     const observer = new MutationObserver((mutations) => {
       const rootsToRefresh = new Set<HTMLElement>();
 
@@ -147,9 +150,14 @@ export function MathContentEnhancer() {
         }
       }
 
+      // KaTeX 会改写公式节点。刷新已有根节点时暂时停止观察，
+      // 避免这些内部 DOM 变更再次触发同一个根节点的渲染。
+      observer.disconnect();
       rootsToRefresh.forEach(renderMathRoot);
+      observer.takeRecords();
+      observe();
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observe();
 
     return () => observer.disconnect();
   }, []);
