@@ -34,7 +34,7 @@ const tabMeta: Record<
   { label: string; title: string; icon: typeof Inbox }
 > = {
   inbox: { label: "私信", title: "私信", icon: Inbox },
-  mentions: { label: "@我的", title: "@我的", icon: AtSign },
+  mentions: { label: "提醒", title: "提醒", icon: AtSign },
   sent: { label: "已发送", title: "已发送", icon: Send },
   chat: { label: "聊天室", title: "公共聊天室", icon: MessageSquareText }
 };

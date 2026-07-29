@@ -1,5 +1,7 @@
 "use client";
 
+import { Bell } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export const SESSION_UPDATE_EVENT = "hulvlin:session-update";
@@ -9,26 +11,27 @@ type SessionUpdate = {
   newAtInfo: number;
 };
 
-export function UnreadBadge({
+export function MessageNotificationLink({
   initialNewMsg,
   initialNewAtInfo
 }: {
   initialNewMsg: number;
   initialNewAtInfo: number;
 }) {
-  const [unread, setUnread] = useState(
-    Math.max(0, initialNewMsg) + Math.max(0, initialNewAtInfo)
-  );
+  const [unread, setUnread] = useState({
+    newMsg: Math.max(0, initialNewMsg),
+    newAtInfo: Math.max(0, initialNewAtInfo)
+  });
 
   useEffect(() => {
     function updateUnread(event: Event) {
       const detail = (event as CustomEvent<SessionUpdate>).detail;
       if (!detail) return;
 
-      setUnread(
-        Math.max(0, Number(detail.newMsg) || 0) +
-          Math.max(0, Number(detail.newAtInfo) || 0)
-      );
+      setUnread({
+        newMsg: Math.max(0, Number(detail.newMsg) || 0),
+        newAtInfo: Math.max(0, Number(detail.newAtInfo) || 0)
+      });
     }
 
     window.addEventListener(SESSION_UPDATE_EVENT, updateUnread);
@@ -37,7 +40,16 @@ export function UnreadBadge({
     };
   }, []);
 
-  if (unread < 1) return null;
+  const count = unread.newMsg + unread.newAtInfo;
+  const href =
+    unread.newMsg === 0 && unread.newAtInfo > 0
+      ? "/messages/mentions"
+      : "/messages/inbox";
 
-  return <span className="notification-dot">{unread}</span>;
+  return (
+    <Link href={href} className="icon-button" aria-label="消息">
+      <Bell size={18} />
+      {count > 0 ? <span className="notification-dot">{count}</span> : null}
+    </Link>
+  );
 }

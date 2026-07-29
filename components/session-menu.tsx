@@ -1,12 +1,11 @@
 import {
-  Bell,
   LogIn,
   LogOut
 } from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { DesktopUserMenu } from "@/components/desktop-user-menu";
-import { UnreadBadge } from "@/components/unread-badge";
+import { MessageNotificationLink } from "@/components/unread-badge";
 import { getUserStatus } from "@/lib/hu60";
 
 export async function SessionMenu() {
@@ -25,13 +24,10 @@ export async function SessionMenu() {
 
   return (
     <div className="session-actions">
-      <Link href="/messages/inbox" className="icon-button" aria-label="消息">
-        <Bell size={18} />
-        <UnreadBadge
-          initialNewMsg={Number(session.newMsg || 0)}
-          initialNewAtInfo={Number(session.newAtInfo || 0)}
-        />
-      </Link>
+      <MessageNotificationLink
+        initialNewMsg={Number(session.newMsg || 0)}
+        initialNewAtInfo={Number(session.newAtInfo || 0)}
+      />
       <DesktopUserMenu
         userId={Number(session.uid)}
         userName={session.name || "已登录"}
