@@ -63,6 +63,10 @@ export type HomeResponse = {
     name?: string | null;
     isLogin?: boolean | null;
   };
+  _myself?: {
+    newMsg?: number;
+    newAtInfo?: number;
+  };
   currPage: number;
   hasNextPage: boolean;
   newTopicList: Topic[];

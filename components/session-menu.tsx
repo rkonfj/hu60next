@@ -6,6 +6,7 @@ import {
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { DesktopUserMenu } from "@/components/desktop-user-menu";
+import { UnreadBadge } from "@/components/unread-badge";
 import { getUserStatus } from "@/lib/hu60";
 
 export async function SessionMenu() {
@@ -22,13 +23,14 @@ export async function SessionMenu() {
     );
   }
 
-  const unread = Number(session.newMsg || 0) + Number(session.newAtInfo || 0);
-
   return (
     <div className="session-actions">
       <Link href="/messages/inbox" className="icon-button" aria-label="消息">
         <Bell size={18} />
-        {unread > 0 && <span className="notification-dot">{unread}</span>}
+        <UnreadBadge
+          initialNewMsg={Number(session.newMsg || 0)}
+          initialNewAtInfo={Number(session.newAtInfo || 0)}
+        />
       </Link>
       <DesktopUserMenu
         userId={Number(session.uid)}

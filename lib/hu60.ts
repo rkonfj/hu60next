@@ -324,6 +324,7 @@ export async function getActiveTopics(
       pageSize: TOPICS_PER_PAGE,
       _topic_summary: 180,
       _uinfo: "name,avatar",
+      _myself: "newMsg,newAtInfo",
       _time: 1
     },
     fallbackHome,

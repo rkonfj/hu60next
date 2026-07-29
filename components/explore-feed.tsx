@@ -5,6 +5,7 @@ import {
   Sparkles
 } from "lucide-react";
 import Link from "next/link";
+import { ActiveTopicFeed } from "@/components/active-topic-feed";
 import { CommunityRail } from "@/components/left-rail";
 import { Pagination } from "@/components/pagination";
 import { TopicCard } from "@/components/topic-card";
@@ -97,17 +98,26 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
           />
         </div>
 
-        <div className="topic-list">
-          {topics.map((topic, index) => (
-            <TopicCard
-              key={topic.id}
-              topic={topic}
-              now={feed._time}
-              pageFirst={index === 0}
-              pageLast={index === topics.length - 1}
-            />
-          ))}
-        </div>
+        {activeTab === "active" ? (
+          <ActiveTopicFeed
+            key={page}
+            initialTopics={topics}
+            initialNow={feed._time}
+            page={page}
+          />
+        ) : (
+          <div className="topic-list">
+            {topics.map((topic, index) => (
+              <TopicCard
+                key={topic.id}
+                topic={topic}
+                now={feed._time}
+                pageFirst={index === 0}
+                pageLast={index === topics.length - 1}
+              />
+            ))}
+          </div>
+        )}
 
         {feed.__fallback && !topics.length ? (
           <div className="empty-state">

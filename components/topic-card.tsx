@@ -17,7 +17,8 @@ export function TopicCard({
   compact = false,
   rank,
   pageFirst = false,
-  pageLast = false
+  pageLast = false,
+  updateLabel
 }: {
   topic: Topic;
   now?: number;
@@ -25,6 +26,7 @@ export function TopicCard({
   rank?: number;
   pageFirst?: boolean;
   pageLast?: boolean;
+  updateLabel?: string;
 }) {
   const author = topic._u_name || topic.uinfo?.name || `用户 ${topic.uid}`;
   const topicId = topic.topic_id || topic.id;
@@ -50,7 +52,9 @@ export function TopicCard({
   }
 
   return (
-    <article className="topic-card">
+    <article
+      className={`topic-card${updateLabel ? " is-updated" : ""}`}
+    >
       {pageFirst ? (
         <span
           className="pagination-scroll-target"
@@ -105,7 +109,11 @@ export function TopicCard({
           <Avatar src={topic._u_avatar} name={author} size="sm" />
           <div className="topic-card-author-copy">
             <strong data-member-uid={topic.uid}>{author}</strong>
-            <span>{relativeTime(topic.mtime || topic.ctime, now)}</span>
+            {updateLabel ? (
+              <span className="topic-update-status">{updateLabel}</span>
+            ) : (
+              <span>{relativeTime(topic.mtime || topic.ctime, now)}</span>
+            )}
           </div>
         </Link>
         <Link
