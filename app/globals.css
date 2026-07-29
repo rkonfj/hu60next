@@ -1697,9 +1697,11 @@ a.topic-card-stat:hover {
 }
 
 .pagination .pagination-pages > .current {
-  color: #fff;
-  border-color: var(--green);
-  background: var(--green);
+  color: var(--ink);
+  border-color: transparent;
+  background: transparent;
+  cursor: default;
+  user-select: none;
 }
 
 .pagination .pagination-pages > .pagination-ellipsis {
