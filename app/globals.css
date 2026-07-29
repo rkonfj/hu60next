@@ -2556,15 +2556,37 @@ a.topic-card-stat:hover {
   gap: 9px;
 }
 
-.reply-author > div strong,
-.reply-author > div span {
+.reply-author-name {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.reply-author-name strong,
+.reply-author-time {
   display: block;
 }
 
-.reply-author > div span {
+.reply-author-time {
   margin-top: 3px;
   color: var(--faint);
   font-size: 9px;
+}
+
+.reply-op-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  color: var(--green-strong);
+  border: 1px solid color-mix(in srgb, var(--green) 32%, var(--line));
+  border-radius: 999px;
+  background: var(--green-soft);
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  white-space: nowrap;
 }
 
 .floor-number {

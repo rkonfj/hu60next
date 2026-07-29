@@ -302,13 +302,28 @@ export default async function TopicPage({
                         size="md"
                       />
                     </Link>
-                    <div>
-                      <Link href={`/user/${floor.uid}`} prefetch={false}>
-                        <strong data-member-uid={floor.uid}>
-                          {floor._u_name || `用户 ${floor.uid}`}
-                        </strong>
-                      </Link>
-                      <span title={fullDate(floor.ctime)}>
+                    <div className="reply-author-details">
+                      <div className="reply-author-name">
+                        <Link href={`/user/${floor.uid}`} prefetch={false}>
+                          <strong data-member-uid={floor.uid}>
+                            {floor._u_name || `用户 ${floor.uid}`}
+                          </strong>
+                        </Link>
+                        {Number(meta.uid) > 0 &&
+                        Number(floor.uid) === Number(meta.uid) ? (
+                          <span
+                            className="reply-op-badge"
+                            title="楼主（原帖作者）"
+                            aria-label="楼主"
+                          >
+                            OP
+                          </span>
+                        ) : null}
+                      </div>
+                      <span
+                        className="reply-author-time"
+                        title={fullDate(floor.ctime)}
+                      >
                         {relativeTime(floor.ctime)}
                       </span>
                     </div>
