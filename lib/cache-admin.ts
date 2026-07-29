@@ -12,7 +12,6 @@ import {
   refreshPersonalWeeklyReportCache,
   refreshWeeklyCache
 } from "@/lib/weekly-report";
-import { getRecentVisitors } from "@/lib/recent-visitors";
 import { withUpstreamRequestLog } from "@/lib/upstream-request-log";
 
 const refreshHistory: CacheRefreshHistory[] = [];
@@ -23,11 +22,21 @@ const HU60_CACHE_KEYS = new Set([
   "honor-roll"
 ]);
 
+function isPersonalWeeklyReportKey(key: string) {
+  return key === "personal-weekly-report" ||
+    key.startsWith("personal-weekly-report:");
+}
+
 export function getCacheDashboardData(): CacheDashboardData {
   return {
-    caches: [...getHu60CacheStatuses(), ...getWeeklyCacheStatuses()],
-    history: refreshHistory.slice(0, 30),
-    visitors: getRecentVisitors()
+    caches: [
+      ...getHu60CacheStatuses(),
+      ...getWeeklyCacheStatuses()
+    ].filter((cache) => !isPersonalWeeklyReportKey(cache.key)),
+    history: refreshHistory
+      .filter((entry) => !isPersonalWeeklyReportKey(entry.cacheKey))
+      .slice(0, 30),
+    visitors: []
   };
 }
 

@@ -877,7 +877,7 @@ export function getWeeklyCacheStatuses(): CacheStatus[] {
     weeklyCacheStatus(
       "weekly-reply-source",
       "周统计回复数据源",
-      "MVP和个人足迹共享的最近两周回复",
+      "MVP统计使用的最近两周回复",
       SOURCE_CACHE_MS,
       replySourceMemoryCache,
       Boolean(replySourceBuildPromise),

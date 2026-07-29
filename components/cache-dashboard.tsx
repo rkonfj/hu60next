@@ -5,10 +5,8 @@ import {
   Clock3,
   Database,
   RefreshCw,
-  Users,
   XCircle
 } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 import type {
   CacheDashboardData,
@@ -47,25 +45,15 @@ export function CacheDashboard({
   const [data, setData] = useState(initialData);
   const [refreshing, setRefreshing] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
-  const [personalUid, setPersonalUid] = useState("");
 
-  const refresh = async (
-    cache: Pick<CacheStatus, "key" | "label">,
-    targetUid?: number
-  ) => {
-    const refreshKey = targetUid
-      ? `${cache.key}:${targetUid}`
-      : cache.key;
-    setRefreshing(refreshKey);
+  const refresh = async (cache: Pick<CacheStatus, "key" | "label">) => {
+    setRefreshing(cache.key);
     setNotice("");
     try {
       const response = await fetch("/api/cache/refresh", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          key: cache.key,
-          ...(targetUid ? { uid: targetUid } : {})
-        })
+        body: JSON.stringify({ key: cache.key })
       });
       const payload = (await response.json()) as {
         error?: string;
@@ -90,53 +78,9 @@ export function CacheDashboard({
     <>
       {notice ? <div className="cache-notice">{notice}</div> : null}
 
-      <form
-        className="cache-personal-refresh"
-        onSubmit={(event) => {
-          event.preventDefault();
-          const uid = Number(personalUid);
-          if (!Number.isInteger(uid) || uid <= 0) {
-            setNotice("请输入有效的UID");
-            return;
-          }
-          void refresh(
-            { key: "personal-weekly-report", label: `个人足迹 #${uid}` },
-            uid
-          );
-        }}
-      >
-        <div>
-          <strong>刷新指定用户的个人足迹</strong>
-          <span>输入UID后读取用户名并重新生成15分钟缓存。</span>
-        </div>
-        <input
-          type="number"
-          min="1"
-          inputMode="numeric"
-          value={personalUid}
-          onChange={(event) => setPersonalUid(event.target.value)}
-          placeholder="用户 UID"
-          aria-label="用户 UID"
-        />
-        <button type="submit" disabled={refreshing !== null}>
-          <RefreshCw
-            size={15}
-            className={
-              refreshing?.startsWith("personal-weekly-report:")
-                ? "is-spinning"
-                : undefined
-            }
-          />
-          立即刷新
-        </button>
-      </form>
-
       <section className="cache-list" aria-label="缓存列表">
         {data.caches.map((cache) => {
-          const refreshKey = cache.targetUid
-            ? `personal-weekly-report:${cache.targetUid}`
-            : cache.key;
-          const isRefreshing = refreshing === refreshKey;
+          const isRefreshing = refreshing === cache.key;
           return (
             <article className="cache-card" key={cache.key}>
               <div className="cache-card-icon" aria-hidden="true">
@@ -167,17 +111,7 @@ export function CacheDashboard({
               </div>
               <button
                 type="button"
-                onClick={() =>
-                  refresh(
-                    {
-                      key: cache.targetUid
-                        ? "personal-weekly-report"
-                        : cache.key,
-                      label: cache.label
-                    },
-                    cache.targetUid
-                  )
-                }
+                onClick={() => refresh(cache)}
                 disabled={
                   refreshing !== null ||
                   cache.state === "building"
@@ -192,39 +126,6 @@ export function CacheDashboard({
             </article>
           );
         })}
-      </section>
-
-      <section className="cache-visitors">
-        <header>
-          <div>
-            <span className="eyebrow">
-              <Users size={14} />
-              最近访问
-            </span>
-            <h2>最近一周访问用户</h2>
-          </div>
-          <small>{data.visitors.length} 位登录用户</small>
-        </header>
-
-        {data.visitors.length ? (
-          <div className="cache-visitor-list">
-            {data.visitors.map((visitor) => (
-              <Link href={`/user/${visitor.uid}`} key={visitor.uid}>
-                <strong>{visitor.name}</strong>
-                <span>UID {visitor.uid}</span>
-                <span>访问 {visitor.visitCount} 次</span>
-                <time dateTime={new Date(visitor.lastVisitedAt).toISOString()}>
-                  {displayTime(visitor.lastVisitedAt)}
-                </time>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="empty-state cache-empty-state">
-            <Users size={24} />
-            <p>当前实例还没有记录到登录用户访问。</p>
-          </div>
-        )}
       </section>
 
       <section className="cache-history">
