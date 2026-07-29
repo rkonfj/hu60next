@@ -27,6 +27,7 @@ import {
   getMemberTitle,
   getMemberTitleByUid
 } from "@/lib/member";
+import { hasModeratorPermission } from "@/lib/moderator";
 import {
   sanitizeHu60Content,
   sanitizeHu60ReviewContent
@@ -109,7 +110,18 @@ export default async function TopicPage({
   const sessionUid = Number(topic._myself?.uid);
   const canReview =
     topic._myself?.isLogin === true &&
-    topic._myself.permissions?.includes("PERMISSION_REVIEW_POST");
+    hasModeratorPermission(topic._myself.permissions);
+  const canEditFloor = (
+    floor: (typeof topic.tContents)[number] | undefined
+  ) =>
+    Boolean(
+      floor &&
+        (floor.canEdit === true ||
+          canReview ||
+          (sessionUid > 0 &&
+            sessionUid === Number(floor.uid) &&
+            !floor.locked))
+    );
   const publishedAt = Number(mainFloor?.ctime ?? meta.ctime);
   const editedAt = Number(mainFloor?.mtime ?? publishedAt);
   const mainFloorEdited = editedAt !== publishedAt;
@@ -212,10 +224,7 @@ export default async function TopicPage({
                   topic.favorite === true
                 }
               />
-              {mainFloor &&
-              sessionUid > 0 &&
-              sessionUid === Number(mainFloor.uid) &&
-              !mainFloor.locked ? (
+              {mainFloor && canEditFloor(mainFloor) ? (
                 <Link
                   href={`/topic/${topicId}/edit/${mainFloor.id}${
                     page > 1 ? `?page=${page}` : ""
@@ -322,9 +331,7 @@ export default async function TopicPage({
                     }}
                   />
                   <div className="reply-actions">
-                    {sessionUid > 0 &&
-                    sessionUid === Number(floor.uid) &&
-                    !floor.locked ? (
+                    {canEditFloor(floor) ? (
                       <Link
                         href={`/topic/${topicId}/edit/${floor.id}${
                           page > 1 ? `?page=${page}` : ""

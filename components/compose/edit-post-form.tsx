@@ -282,7 +282,9 @@ export function EditPostForm({
 
   return (
     <form
-      className="composer-card edit-composer"
+      className={`composer-card edit-composer${
+        editTitle ? "" : " edit-reply-composer"
+      }`}
       action={`/api/topics/${topicId}/content/${contentId}`}
       method="post"
       onSubmit={saveChanges}
@@ -476,7 +478,11 @@ export function EditPostForm({
           <span>{content.length} 字</span>
         )}
         <div>
-          <Link className="save-draft" href={returnPath} prefetch={false}>
+          <Link
+            className="save-draft edit-cancel"
+            href={returnPath}
+            prefetch={false}
+          >
             <X size={16} /> 取消
           </Link>
           <button

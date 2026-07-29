@@ -3293,6 +3293,10 @@ body:has(> .auth-page) > .site-header {
   color: var(--green);
 }
 
+.edit-reply-composer .editor-shell {
+  margin-block: 12px;
+}
+
 .edit-reason {
   display: grid;
   padding: 12px;
@@ -3789,6 +3793,10 @@ body:has(> .auth-page) > .site-header {
   border: 1px solid var(--line);
   background: var(--surface-soft);
   font-size: 10px;
+}
+
+.edit-cancel {
+  font-size: 12px;
 }
 
 .publish-draft {
