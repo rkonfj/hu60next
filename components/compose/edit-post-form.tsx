@@ -46,6 +46,11 @@ type EditPostFormProps = {
   faces: ForumFace[];
 };
 
+type EditorSelection = {
+  start: number;
+  end: number;
+};
+
 function topicPath(topicId: number, page: number, floor: number) {
   const query = page > 1 ? `?page=${page}` : "";
   const hash = floor > 0 ? `#floor-${floor}` : "";
@@ -73,7 +78,10 @@ export function EditPostForm({
   const [notice, setNotice] = useState("");
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const selectionRef = useRef({ start: 0, end: 0 });
+  const selectionRef = useRef({
+    start: initialContent.length,
+    end: initialContent.length
+  });
   const returnPath = topicPath(topicId, page, floor);
 
   function rememberEditorSelection() {
@@ -91,23 +99,32 @@ export function EditPostForm({
     );
   }
 
-  function insertText(text: string, inline = false) {
+  function insertText(
+    text: string,
+    inline = false,
+    insertionPoint?: EditorSelection
+  ) {
     const textarea = textAreaRef.current;
     let cursor = 0;
 
     setContent((value) => {
       const selection =
-        textarea && document.activeElement === textarea
+        insertionPoint ??
+        (textarea && document.activeElement === textarea
           ? {
               start: textarea.selectionStart,
               end: textarea.selectionEnd
             }
-          : selectionRef.current;
+          : selectionRef.current);
       const start = Math.min(selection.start, value.length);
       const end = Math.min(Math.max(selection.end, start), value.length);
       const prefix = value.slice(0, start);
       const spacer = inline || !prefix || prefix.endsWith("\n") ? "" : "\n";
       cursor = start + spacer.length + text.length;
+      if (insertionPoint) {
+        insertionPoint.start = cursor;
+        insertionPoint.end = cursor;
+      }
       selectionRef.current = { start: cursor, end: cursor };
       return `${prefix}${spacer}${text}${value.slice(end)}`;
     });
@@ -136,7 +153,11 @@ export function EditPostForm({
     });
   }
 
-  async function uploadAttachment(file: File, id: string) {
+  async function uploadAttachment(
+    file: File,
+    id: string,
+    insertionPoint: EditorSelection
+  ) {
     try {
       const md5 = await checksumFile(file, (progress) => {
         updateAttachment(id, { status: "hashing", progress });
@@ -166,7 +187,7 @@ export function EditPostForm({
         });
       }
 
-      insertText(form.contentUbb);
+      insertText(form.contentUbb, false, insertionPoint);
       updateAttachment(id, {
         status: "done",
         progress: 100,
@@ -182,7 +203,12 @@ export function EditPostForm({
     }
   }
 
-  async function addAttachments(files: File[]) {
+  async function addAttachments(
+    files: File[],
+    selection: EditorSelection = selectionRef.current
+  ) {
+    const insertionPoint = { ...selection };
+
     for (const [index, file] of files.entries()) {
       const id = `${Date.now()}-${index}-${file.name}`;
       setAttachments((current) => [
@@ -195,14 +221,14 @@ export function EditPostForm({
           progress: 0
         }
       ]);
-      await uploadAttachment(file, id);
+      await uploadAttachment(file, id, insertionPoint);
     }
   }
 
   async function selectAttachments(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
     event.target.value = "";
-    await addAttachments(files);
+    await addAttachments(files, selectionRef.current);
   }
 
   async function pasteAttachments(event: ClipboardEvent<HTMLTextAreaElement>) {
@@ -210,11 +236,12 @@ export function EditPostForm({
     if (!files.length) return;
 
     event.preventDefault();
-    selectionRef.current = {
+    const selection = {
       start: event.currentTarget.selectionStart,
       end: event.currentTarget.selectionEnd
     };
-    await addAttachments(files);
+    selectionRef.current = selection;
+    await addAttachments(files, selection);
   }
 
   async function saveChanges(event: FormEvent<HTMLFormElement>) {

@@ -50,6 +50,11 @@ export type AttachmentState = {
   contentUbb?: string;
 };
 
+type EditorSelection = {
+  start: number;
+  end: number;
+};
+
 export function filesFromClipboard(data: DataTransfer) {
   const itemFiles = Array.from(data.items)
     .filter((item) => item.kind === "file")
@@ -542,7 +547,12 @@ export function Composer({
       if (raw) {
         draft = JSON.parse(raw) as SavedDraft;
         setTitle(draft.title ?? "");
-        setContent(draft.content ?? "");
+        const draftContent = draft.content ?? "";
+        setContent(draftContent);
+        selectionRef.current = {
+          start: draftContent.length,
+          end: draftContent.length
+        };
       }
       const restored =
         restoreForumPicker(rootForums, initialForumId) ??
@@ -599,24 +609,29 @@ export function Composer({
     }
   }
 
-  function insertText(text: string) {
+  function insertText(text: string, insertionPoint?: EditorSelection) {
     const textarea = textAreaRef.current;
     let cursor = 0;
 
     setContent((value) => {
       const selection =
-        textarea && document.activeElement === textarea
+        insertionPoint ??
+        (textarea && document.activeElement === textarea
           ? {
               start: textarea.selectionStart,
               end: textarea.selectionEnd
             }
-          : selectionRef.current;
+          : selectionRef.current);
       const start = Math.min(selection.start, value.length);
       const end = Math.min(Math.max(selection.end, start), value.length);
       const prefix = value.slice(0, start);
       const suffix = value.slice(end);
       const spacer = prefix && !prefix.endsWith("\n") ? "\n" : "";
       cursor = start + spacer.length + text.length;
+      if (insertionPoint) {
+        insertionPoint.start = cursor;
+        insertionPoint.end = cursor;
+      }
       selectionRef.current = { start: cursor, end: cursor };
       return `${prefix}${spacer}${text}${suffix}`;
     });
@@ -706,7 +721,11 @@ export function Composer({
     );
   }
 
-  async function uploadAttachment(file: File, id: string) {
+  async function uploadAttachment(
+    file: File,
+    id: string,
+    insertionPoint: EditorSelection
+  ) {
     try {
       const md5 = await checksumFile(file, (progress) => {
         updateAttachment(id, { status: "hashing", progress });
@@ -736,7 +755,7 @@ export function Composer({
         });
       }
 
-      insertText(form.contentUbb);
+      insertText(form.contentUbb, insertionPoint);
       updateAttachment(id, {
         status: "done",
         progress: 100,
@@ -752,7 +771,12 @@ export function Composer({
     }
   }
 
-  async function addAttachments(files: File[]) {
+  async function addAttachments(
+    files: File[],
+    selection: EditorSelection = selectionRef.current
+  ) {
+    const insertionPoint = { ...selection };
+
     for (const [index, file] of files.entries()) {
       const id = `${Date.now()}-${index}-${file.name}`;
       setAttachments((current) => [
@@ -765,14 +789,14 @@ export function Composer({
           progress: 0
         }
       ]);
-      await uploadAttachment(file, id);
+      await uploadAttachment(file, id, insertionPoint);
     }
   }
 
   async function selectAttachments(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
     event.target.value = "";
-    await addAttachments(files);
+    await addAttachments(files, selectionRef.current);
   }
 
   async function pasteAttachments(event: ClipboardEvent<HTMLTextAreaElement>) {
@@ -780,11 +804,12 @@ export function Composer({
     if (!files.length) return;
 
     event.preventDefault();
-    selectionRef.current = {
+    const selection = {
       start: event.currentTarget.selectionStart,
       end: event.currentTarget.selectionEnd
     };
-    await addAttachments(files);
+    selectionRef.current = selection;
+    await addAttachments(files, selection);
   }
 
   const canPostToTarget = Boolean(

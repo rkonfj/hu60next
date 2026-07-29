@@ -45,9 +45,9 @@ export function ReviewActions({
   const canReview = Number(reviewState || 0) !== 0;
   const isPendingReview = Number(reviewState) === 1;
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!decision || (decision === "reject" && !reason.trim())) {
+  async function submitDecision(nextDecision: ReviewDecision) {
+    if (submitting) return;
+    if (nextDecision === "reject" && !reason.trim()) {
       setNotice("审核不通过时必须填写理由。");
       return;
     }
@@ -63,7 +63,7 @@ export function ReviewActions({
           items: [
             {
               contentId,
-              decision,
+              decision: nextDecision,
               reason: reason.trim()
             }
           ]
@@ -92,6 +92,12 @@ export function ReviewActions({
     }
   }
 
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!decision) return;
+    void submitDecision(decision);
+  }
+
   return (
     <div
       className={`review-actions-shell${
@@ -104,14 +110,20 @@ export function ReviewActions({
             <button
               type="button"
               className="review-pass-button"
+              aria-pressed={decision === "pass"}
+              disabled={submitting}
               onClick={() => {
+                if (decision === "pass") {
+                  void submitDecision("pass");
+                  return;
+                }
                 setShowLogs(false);
                 setDecision("pass");
                 setNotice("");
               }}
             >
               <Check size={14} />
-              通过
+              {decision === "pass" ? "确认通过" : "通过"}
             </button>
             <button
               type="button"
