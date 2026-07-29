@@ -147,6 +147,12 @@ export default async function HonorsPage() {
           评论数据暂时不可用，当前活跃与资历荣誉仅根据近期主题计算。
         </p>
       ) : null}
+      <footer className="honor-badge-rule">
+        <strong>资历徽章</strong>
+        <span>创世 · 未记录注册时间</span>
+        <span>传奇 · 2012 年及以前注册</span>
+        <span>骨灰 · 2013—2016 年注册</span>
+      </footer>
     </main>
   );
 }

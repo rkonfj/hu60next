@@ -7116,6 +7116,30 @@ body :is(
   font-size: 10px;
 }
 
+.honor-badge-rule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  margin: 14px 2px 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+  gap: 6px 16px;
+}
+
+.honor-badge-rule strong {
+  padding: 2px 7px;
+  color: var(--green);
+  background: var(--green-soft);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.honor-badge-rule span {
+  white-space: nowrap;
+}
+
 .honor-board {
   overflow: hidden;
   border: 1px solid var(--line);
