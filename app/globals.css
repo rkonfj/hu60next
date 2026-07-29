@@ -14,6 +14,7 @@
   --orange: #ea8b3e;
   --orange-soft: #fff0e3;
   --red: #d95c4f;
+  --content-image-max-height: 600px;
   --mvp-name: color-mix(in srgb, var(--orange) 80%, var(--muted));
   --shadow: none;
   --shadow-soft: none;
@@ -1937,6 +1938,7 @@ a.topic-card-stat:hover {
   display: block;
   max-width: 100%;
   height: auto;
+  max-height: var(--content-image-max-height);
   margin: 20px auto;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -7854,7 +7856,7 @@ body :is(
   .message-content img:not(.hu60_face),
   .user-reply-content img {
     max-width: 800px;
-    max-height: 600px;
+    max-height: var(--content-image-max-height);
   }
 }
 

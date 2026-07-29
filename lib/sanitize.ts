@@ -143,6 +143,9 @@ function normalizeDivClass(value = "") {
   return [...new Set(classes)].join(" ");
 }
 
+const safeImageDimensionPattern =
+  /^(?:auto|0|(?:\d+(?:\.\d+)?)(?:px|%|em|rem|vw|vh|vmin|vmax))$/i;
+
 function stripLeadingReviewNotice(content: string) {
   const opening = content.match(
     /<div\b[^>]*class=(?:"[^"]*\binfo-box\b[^"]*"|'[^']*\binfo-box\b[^']*')[^>]*>/i
@@ -229,7 +232,15 @@ export function sanitizeHu60Content(content: string) {
         "preload",
         "poster"
       ],
-      img: ["src", "alt", "title", "class", "width", "height"],
+      img: [
+        "src",
+        "alt",
+        "title",
+        "class",
+        "style",
+        "width",
+        "height"
+      ],
       iframe: [
         "src",
         "title",
@@ -315,6 +326,10 @@ export function sanitizeHu60Content(content: string) {
       ]
     },
     allowedStyles: {
+      img: {
+        width: [safeImageDimensionPattern],
+        height: [safeImageDimensionPattern]
+      },
       span: {
         color: [
           /^(?:#[\da-f]{3,8}|rgba?\([\d\s,.%]+\)|hsla?\([\d\s,.%]+\))$/i
