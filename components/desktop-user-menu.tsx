@@ -9,6 +9,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { ReviewNotificationBadge } from "@/components/unread-badge";
 
 type DesktopUserMenuProps = {
   userId: number | string;
@@ -65,6 +66,7 @@ export function DesktopUserMenu({
         <span data-member-uid={userId}>{userName}</span>
         <ChevronDown size={13} />
       </summary>
+      {canReview ? <ReviewNotificationBadge floating /> : null}
       <nav className="desktop-user-popover" aria-label="用户菜单">
         <Link
           href={`/user/${userId}`}
@@ -83,6 +85,7 @@ export function DesktopUserMenu({
             <Link href="/reviews" onClick={closeMenu}>
               <ShieldCheck size={16} />
               审核中心
+              <ReviewNotificationBadge />
             </Link>
           </>
         ) : null}

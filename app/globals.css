@@ -366,7 +366,32 @@ select:focus-visible {
   line-height: 13px;
 }
 
+.review-notification-badge {
+  display: inline-flex;
+  min-width: 18px;
+  height: 18px;
+  margin-left: auto;
+  padding: 0 5px;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: var(--red);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.review-notification-badge.floating {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  margin: 0;
+  border: 2px solid var(--surface);
+  pointer-events: none;
+}
+
 .session-user {
+  position: relative;
   display: flex;
   min-width: 0;
   max-width: 180px;
@@ -4337,6 +4362,10 @@ body:has(> .auth-page) > .site-header {
 .account-links strong,
 .account-links small {
   display: block;
+}
+
+.account-links .review-notification-badge {
+  display: inline-flex;
 }
 
 .account-links strong {

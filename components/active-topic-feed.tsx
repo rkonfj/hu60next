@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TopicCard } from "@/components/topic-card";
-import { SESSION_UPDATE_EVENT } from "@/components/unread-badge";
+import {
+  publishSessionUpdate,
+  type SessionUpdate
+} from "@/components/unread-badge";
 import type { HomeResponse, Topic } from "@/lib/types";
 
 const POLL_INTERVAL_MS = 15_000;
@@ -50,10 +53,12 @@ function updateLabel(previous: Topic | undefined, current: Topic) {
 export function ActiveTopicFeed({
   initialTopics,
   initialNow,
+  initialSessionUpdate,
   page
 }: {
   initialTopics: Topic[];
   initialNow?: number;
+  initialSessionUpdate: SessionUpdate;
   page: number;
 }) {
   const [topics, setTopics] = useState(initialTopics);
@@ -91,16 +96,18 @@ export function ActiveTopicFeed({
     });
 
     if (feed._myself) {
-      window.dispatchEvent(
-        new CustomEvent(SESSION_UPDATE_EVENT, {
-          detail: {
-            newMsg: Number(feed._myself.newMsg || 0),
-            newAtInfo: Number(feed._myself.newAtInfo || 0)
-          }
-        })
-      );
+      publishSessionUpdate({
+        newMsg: Number(feed._myself.newMsg || 0),
+        newAtInfo: Number(feed._myself.newAtInfo || 0),
+        countReview: Number(feed.countReview || 0),
+        chatCountReview: Number(feed.chatCountReview || 0)
+      });
     }
   }, []);
+
+  useEffect(() => {
+    publishSessionUpdate(initialSessionUpdate);
+  }, [initialSessionUpdate]);
 
   useEffect(() => {
     if (page !== 1) return;

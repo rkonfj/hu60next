@@ -18,6 +18,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ReviewNotificationBadge } from "@/components/unread-badge";
 import { getUserStatus } from "@/lib/hu60";
 import { relativeTime } from "@/lib/format";
 import {
@@ -244,6 +245,7 @@ export default async function MePage() {
               <strong>审核中心</strong>
               <small>审核帖子、回复并查看完整记录</small>
             </span>
+            <ReviewNotificationBadge />
           </Link>
         ) : null}
         <Link href="/messages">

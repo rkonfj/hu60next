@@ -53,6 +53,19 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
   const hasNextPage = isHomeFeed
     ? feed.hasNextPage
     : currentPage < (maxPage ?? currentPage);
+  const initialSessionUpdate = isHomeFeed
+    ? {
+        newMsg: Number(feed._myself?.newMsg || 0),
+        newAtInfo: Number(feed._myself?.newAtInfo || 0),
+        countReview: Number(feed.countReview || 0),
+        chatCountReview: Number(feed.chatCountReview || 0)
+      }
+    : {
+        newMsg: 0,
+        newAtInfo: 0,
+        countReview: 0,
+        chatCountReview: 0
+      };
 
   if (activeTab === "hot") {
     topics.sort(
@@ -103,6 +116,7 @@ export async function ExploreFeed({ activeTab, page }: ExploreFeedProps) {
             key={page}
             initialTopics={topics}
             initialNow={feed._time}
+            initialSessionUpdate={initialSessionUpdate}
             page={page}
           />
         ) : (

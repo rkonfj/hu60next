@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { ReviewNotificationBadge } from "@/components/unread-badge";
 
 type MobileNavClientProps = {
   isLoggedIn: boolean;
@@ -86,6 +87,7 @@ export function MobileNavClient({
       >
         <Menu className="mobile-menu-open-icon" size={20} />
         <X className="mobile-menu-close-icon" size={19} />
+        {canReview ? <ReviewNotificationBadge floating /> : null}
       </summary>
       <nav className="mobile-menu-popover" aria-label="移动端导航">
         {links.map(({ href, label, icon: Icon }) => {
@@ -110,6 +112,7 @@ export function MobileNavClient({
             >
               <Icon size={18} />
               <span>{label}</span>
+              {href === "/reviews" ? <ReviewNotificationBadge /> : null}
             </Link>
           );
         })}

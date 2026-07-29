@@ -67,6 +67,8 @@ export type HomeResponse = {
     newMsg?: number;
     newAtInfo?: number;
   };
+  countReview?: number;
+  chatCountReview?: number;
   currPage: number;
   hasNextPage: boolean;
   newTopicList: Topic[];
