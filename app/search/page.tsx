@@ -24,17 +24,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           全站检索
         </span>
         <h1>搜索社区</h1>
-        <form className="large-search" action="/search" method="get">
-          <Search size={20} />
-          <input
-            autoFocus
-            type="search"
-            name="q"
-            defaultValue={query}
-            placeholder="输入帖子标题、内容或作者"
-          />
-          <button type="submit">搜索</button>
-        </form>
       </header>
 
       {result?.__fallback ? (
