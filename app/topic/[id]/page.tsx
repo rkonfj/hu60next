@@ -23,7 +23,10 @@ import {
   getTopicMain
 } from "@/lib/hu60";
 import { isHu60MarkdownContent } from "@/lib/markdown";
-import { getMemberTitleByUid } from "@/lib/member";
+import {
+  getMemberTitle,
+  getMemberTitleByUid
+} from "@/lib/member";
 import {
   sanitizeHu60Content,
   sanitizeHu60ReviewContent
@@ -92,7 +95,10 @@ export default async function TopicPage({
       ? Promise.resolve(topic)
       : getTopicMain(topicId, sid)
   );
-  const authorMemberTitle = getMemberTitleByUid(topic.tMeta.uid);
+  const authorMemberTitle =
+    topic.tMeta._u_regtime !== undefined
+      ? getMemberTitle(topic.tMeta._u_regtime ?? undefined)
+      : getMemberTitleByUid(topic.tMeta.uid);
   const mainFloor = firstPageTopic.tContents.find(
     (floor) => Number(floor.floor) === 0
   );

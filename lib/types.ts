@@ -132,6 +132,7 @@ export type Floor = {
   _u_name?: string | null;
   _u_avatar?: string | null;
   _u_signature?: string | null;
+  _u_regtime?: number | null;
 };
 
 export type TopicMeta = {
@@ -148,6 +149,7 @@ export type TopicMeta = {
   _u_name?: string | null;
   _u_avatar?: string | null;
   _u_signature?: string | null;
+  _u_regtime?: number | null;
 };
 
 export type TopicResponse = {

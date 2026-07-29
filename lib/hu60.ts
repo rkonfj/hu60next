@@ -905,7 +905,7 @@ async function getTopicUncached(
     {
       pageSize: TOPICS_PER_PAGE,
       floorReverse: 0,
-      _uinfo: "name,avatar,sign",
+      _uinfo: "name,avatar,sign,regtime",
       _content: "html",
       _myself: "newMsg,newAtInfo,permissions",
       _time: 1
@@ -939,7 +939,7 @@ export async function getTopicMain(
     {
       pageSize: 1,
       floorReverse: 0,
-      _uinfo: "name,avatar,sign",
+      _uinfo: "name,avatar,sign,regtime",
       _content: "html",
       _time: 1
     },
