@@ -53,6 +53,7 @@ const HONOR_REPLY_SAMPLE_SIZE = 300;
 const HONOR_REPLY_FETCH_SIZE = 500;
 const HONOR_REPLY_WEIGHT = 0.5;
 const HONOR_ACTIVE_MINIMUM = 10;
+const HONOR_LIST_LIMIT = 100;
 const HONOR_CACHE_SECONDS = 600;
 const FACE_CACHE_SECONDS = 3600;
 const DAILY_FORUM_TOPIC_CACHE_MS = 5 * 60 * 1000;
@@ -666,7 +667,8 @@ async function buildHonorRoll(): Promise<HonorRoll> {
           left.candidate.latestActivityTime ||
         left.candidate.uid - right.candidate.uid
     )
-    .map(({ member }) => member);
+    .map(({ member }) => member)
+    .slice(0, HONOR_LIST_LIMIT);
 
   const active = rankedCandidates
     .filter(({ activityScore }) => activityScore >= HONOR_ACTIVE_MINIMUM)
@@ -677,7 +679,8 @@ async function buildHonorRoll(): Promise<HonorRoll> {
           left.candidate.latestActivityTime ||
         left.candidate.uid - right.candidate.uid
     )
-    .map(({ member }) => member);
+    .map(({ member }) => member)
+    .slice(0, HONOR_LIST_LIMIT);
 
   return {
     legacy,

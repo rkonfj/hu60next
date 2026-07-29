@@ -44,10 +44,6 @@ function updateLabel(previous: Topic | undefined, current: Topic) {
     return "内容有更新";
   }
 
-  if (current.read_count !== previous.read_count) {
-    return "热度有更新";
-  }
-
   return null;
 }
 
