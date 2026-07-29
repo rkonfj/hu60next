@@ -1674,9 +1674,65 @@ a.topic-card-stat:hover {
   font-size: 10px;
 }
 
+.pagination-pages {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.pagination .pagination-pages > :is(a, span) {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.pagination .pagination-pages > .current {
+  color: #fff;
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.pagination .pagination-pages > .pagination-ellipsis {
+  color: var(--faint);
+  border-color: transparent;
+  background: transparent;
+}
+
+.pagination .pagination-pages > :is(a, span):first-child,
+.pagination .pagination-pages > :is(a, span):last-child {
+  font-weight: 850;
+}
+
 .pagination .disabled {
   color: #b0b7b2;
   background: transparent;
+}
+
+@media (max-width: 700px) {
+  .pagination {
+    gap: 6px;
+  }
+
+  .pagination > :is(a, span) {
+    width: 34px;
+    height: 34px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .pagination > :is(a, span) .pagination-label {
+    display: none;
+  }
 }
 
 .feed-pagination-top {
