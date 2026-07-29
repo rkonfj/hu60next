@@ -6,6 +6,7 @@ import {
   ImageUp,
   LoaderCircle,
   LockKeyhole,
+  PencilLine,
   Save
 } from "lucide-react";
 import { FormEvent, useState } from "react";
@@ -43,14 +44,42 @@ export function AccountSettings({
   contact?: string | null;
 }) {
   const currentAvatar = avatarSource(avatar);
+  const [nameBusy, setNameBusy] = useState(false);
   const [profileBusy, setProfileBusy] = useState(false);
   const [passwordBusy, setPasswordBusy] = useState(false);
   const [avatarBusy, setAvatarBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [nameNotice, setNameNotice] = useState<Notice>(null);
   const [profileNotice, setProfileNotice] = useState<Notice>(null);
   const [passwordNotice, setPasswordNotice] = useState<Notice>(null);
   const [avatarNotice, setAvatarNotice] = useState<Notice>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+  async function changeName(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setNameBusy(true);
+    setNameNotice(null);
+    const form = new FormData(event.currentTarget);
+    if (String(form.get("newName") ?? "").trim() === name) {
+      setNameNotice({ kind: "error", text: "新用户名与当前用户名相同。" });
+      setNameBusy(false);
+      return;
+    }
+    try {
+      const result = await submitForm("/api/account/name", form);
+      setNameNotice({
+        kind: result.ok ? "success" : "error",
+        text: result.notice
+      });
+      if (result.ok) {
+        setTimeout(() => window.location.reload(), 700);
+      }
+    } catch {
+      setNameNotice({ kind: "error", text: "用户名服务暂时不可用。" });
+    } finally {
+      setNameBusy(false);
+    }
+  }
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -125,6 +154,47 @@ export function AccountSettings({
 
   return (
     <div className="settings-sections">
+      <section className="settings-card">
+        <header>
+          <PencilLine size={18} />
+          <div>
+            <h2>修改用户名</h2>
+            <p>最多 16 个英文字母或 8 个汉字，不可与其他用户重复。</p>
+          </div>
+        </header>
+        <form onSubmit={changeName} className="settings-form">
+          <label>
+            <span>新用户名</span>
+            <input
+              name="newName"
+              type="text"
+              defaultValue={name}
+              autoComplete="username"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              required
+              maxLength={16}
+              pattern="[\p{Script=Han}A-Za-z0-9_\-]+"
+              title="只允许汉字、英文字母、数字、下划线和减号"
+            />
+          </label>
+          {nameNotice ? (
+            <p className={`settings-notice ${nameNotice.kind}`}>
+              {nameNotice.text}
+            </p>
+          ) : null}
+          <button type="submit" disabled={nameBusy}>
+            {nameBusy ? (
+              <LoaderCircle className="spin" size={16} />
+            ) : (
+              <PencilLine size={16} />
+            )}
+            修改用户名
+          </button>
+        </form>
+      </section>
+
       <section className="settings-card">
         <header>
           <ImageUp size={18} />
