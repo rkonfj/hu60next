@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
+import { withHu60MarkdownMarker } from "@/lib/markdown";
 import {
   topicFloorHref,
   topicPageForFloor
@@ -68,7 +69,8 @@ export async function POST(request: Request, { params }: RouteContext) {
   const { id } = await params;
   const topicId = Number(id);
   const form = await request.formData();
-  const content = String(form.get("content") ?? "").trim();
+  const rawContent = String(form.get("content") ?? "").trim();
+  const content = withHu60MarkdownMarker(rawContent);
   const token = String(form.get("token") ?? "");
   const cookieStore = await cookies();
   const sid = cookieStore.get("hulvlin_sid")?.value;
@@ -92,7 +94,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     );
   }
 
-  if (!content || content.length > 20000 || !token) {
+  if (!rawContent || content.length > 20000 || !token) {
     return failure(request, topicId, "请输入有效的回复内容。", 400);
   }
 
@@ -112,7 +114,6 @@ export async function POST(request: Request, { params }: RouteContext) {
         body: new URLSearchParams({
           content,
           token,
-          useMarkdown: "1",
           go: "1"
         }),
         cache: "no-store"
