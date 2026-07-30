@@ -7401,19 +7401,29 @@ body :is(
   box-shadow: var(--shadow);
 }
 
-.desktop-user-popover a {
+.desktop-user-popover :is(a, button) {
   display: flex;
+  width: 100%;
   align-items: center;
   padding: 8px 9px;
   color: var(--muted);
+  border: 0;
+  background: transparent;
   font-size: 12px;
   font-weight: 700;
+  text-align: left;
   gap: 8px;
 }
 
-.desktop-user-popover a:hover {
+.desktop-user-popover :is(a, button):hover {
   color: var(--green);
   background: var(--green-soft);
+}
+
+.desktop-user-popover form {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
 }
 
 .honors-page {
