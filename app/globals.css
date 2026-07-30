@@ -5949,6 +5949,34 @@ body:has(> .auth-page) > .site-header {
   min-width: 0;
 }
 
+.webplug-enable-row {
+  display: grid;
+  gap: 6px;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+}
+
+.webplug-enable-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.webplug-enable-toggle input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+}
+
+.webplug-enable-hint {
+  color: var(--muted);
+  font-size: 10px;
+}
+
 .webplug-editor-form .webplug-byte-count {
   margin-left: 8px;
   color: var(--muted);

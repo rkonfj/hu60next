@@ -30,6 +30,8 @@ export function WebPlugManager({
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [togglingEnabled, setTogglingEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(true);
   const [notice, setNotice] = useState<Notice>(null);
 
   const contentBytes = useMemo(
@@ -46,7 +48,7 @@ export function WebPlugManager({
       });
       const result = (await response.json()) as {
         success?: boolean;
-        data?: { name: string; content: string };
+        data?: { name: string; content: string; enabled?: boolean | number };
         notice?: string;
       };
       if (!response.ok || !result.success || !result.data) {
@@ -58,6 +60,7 @@ export function WebPlugManager({
       }
       setName(result.data.name);
       setContent(result.data.content);
+      setEnabled(isEnabled(result.data.enabled ?? true));
     } catch {
       setNotice({ kind: "error", text: "读取插件失败。" });
     } finally {
@@ -69,6 +72,7 @@ export function WebPlugManager({
     if (selectedId === "new") {
       setName("");
       setContent("");
+      setEnabled(true);
       setNotice(null);
       return;
     }
@@ -138,6 +142,44 @@ export function WebPlugManager({
     }
   }
 
+  async function toggleEnabled() {
+    if (typeof selectedId !== "number") return;
+
+    const nextEnabled = !enabled;
+    setTogglingEnabled(true);
+    setNotice(null);
+    try {
+      const response = await fetch(`/api/webplugs/${selectedId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ enabled: nextEnabled })
+      });
+      const result = (await response.json()) as {
+        success?: boolean;
+        notice?: string;
+      };
+      if (!response.ok || !result.success) {
+        setNotice({
+          kind: "error",
+          text: result.notice || "更新状态失败。"
+        });
+        return;
+      }
+
+      setEnabled(nextEnabled);
+      setNotice({
+        kind: "success",
+        text: result.notice || (nextEnabled ? "插件已启用。" : "插件已停用。")
+      });
+      window.dispatchEvent(new Event("hu60-webplug-reload"));
+      await refreshList(selectedId);
+    } catch {
+      setNotice({ kind: "error", text: "更新状态失败，请稍后重试。" });
+    } finally {
+      setTogglingEnabled(false);
+    }
+  }
+
   return (
     <div className="webplug-manager">
       <aside className="webplug-list-panel">
@@ -190,6 +232,22 @@ export function WebPlugManager({
 
         {selectedId ? (
           <form onSubmit={savePlugin} className="settings-form webplug-editor-form">
+            {typeof selectedId === "number" ? (
+              <div className="webplug-enable-row">
+                <label className="webplug-enable-toggle">
+                  <input
+                    type="checkbox"
+                    checked={enabled}
+                    onChange={() => void toggleEnabled()}
+                    disabled={loading || saving || togglingEnabled}
+                  />
+                  <span>启用此插件</span>
+                </label>
+                <span className="webplug-enable-hint">
+                  {enabled ? "停用后不会在页面中加载运行。" : "当前已停用，启用后才会注入页面。"}
+                </span>
+              </div>
+            ) : null}
             <label>
               <span>插件名称</span>
               <input
@@ -224,7 +282,7 @@ export function WebPlugManager({
               <p className={`settings-notice ${notice.kind}`}>{notice.text}</p>
             ) : null}
             <div className="webplug-editor-actions">
-              <button type="submit" disabled={loading || saving}>
+              <button type="submit" disabled={loading || saving || togglingEnabled}>
                 {saving ? (
                   <LoaderCircle className="spin" size={16} />
                 ) : (

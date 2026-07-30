@@ -206,3 +206,45 @@ export async function updateWebPlug(
 
   return { success: true, notice: "网页插件已保存。" };
 }
+
+export async function setWebPlugEnabled(
+  id: number,
+  enabled: boolean,
+  sid?: string
+): Promise<WebPlugMutationResponse> {
+  const session = await resolveSid(sid);
+  if (!session) {
+    return { success: false, notice: "请先登录。" };
+  }
+
+  const headers = await webplugHeaders(session, {
+    "content-type": "application/x-www-form-urlencoded;charset=UTF-8"
+  });
+  const body = new URLSearchParams({
+    id: String(id),
+    enabled: enabled ? "1" : "0"
+  });
+
+  const response = await fetch(`${API_BASE}/api.webplug.enable.json`, {
+    method: "POST",
+    headers,
+    body,
+    cache: "no-store"
+  });
+  const data = await parseJsonResponse<WebPlugMutationResponse & {
+    updated?: number;
+    errmsg?: string;
+  }>(response);
+
+  if (!response.ok || !data.success) {
+    return {
+      success: false,
+      notice: data.errmsg || data.notice || "更新插件状态失败。"
+    };
+  }
+
+  return {
+    success: true,
+    notice: enabled ? "插件已启用。" : "插件已停用。"
+  };
+}

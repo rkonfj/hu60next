@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import {
   getWebPlug,
+  setWebPlugEnabled,
   updateWebPlug,
   validateWebPlugContent
 } from "@/lib/webplug";
@@ -90,5 +91,46 @@ export async function PUT(request: Request, context: RouteContext) {
   return NextResponse.json({
     success: true,
     notice: result.notice || "网页插件已保存。"
+  });
+}
+
+export async function PATCH(request: Request, context: RouteContext) {
+  const cookieStore = await cookies();
+  const sid = cookieStore.get("hulvlin_sid")?.value;
+  if (!sid) {
+    return NextResponse.json(
+      { success: false, notice: "请先登录。" },
+      { status: 401 }
+    );
+  }
+
+  const { id } = await context.params;
+  const pluginId = Number(id);
+  if (!Number.isSafeInteger(pluginId) || pluginId <= 0) {
+    return NextResponse.json(
+      { success: false, notice: "无效的插件 ID。" },
+      { status: 400 }
+    );
+  }
+
+  const body = (await request.json()) as { enabled?: boolean };
+  if (typeof body.enabled !== "boolean") {
+    return NextResponse.json(
+      { success: false, notice: "请指定启用或停用状态。" },
+      { status: 400 }
+    );
+  }
+
+  const result = await setWebPlugEnabled(pluginId, body.enabled, sid);
+  if (!result.success) {
+    return NextResponse.json(
+      { success: false, notice: result.notice || "更新插件状态失败。" },
+      { status: 400 }
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    notice: result.notice || (body.enabled ? "插件已启用。" : "插件已停用。")
   });
 }
