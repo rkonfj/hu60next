@@ -6,6 +6,7 @@ import { ContextualComposeLink } from "@/components/contextual-compose-link";
 import { HeaderSearch } from "@/components/header-search";
 import { MobileNav } from "@/components/mobile-nav";
 import { SessionMenu } from "@/components/session-menu";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export function Header() {
   return (
@@ -42,6 +43,7 @@ export function Header() {
           <ContextualComposeLink />
           <SessionMenu />
           <MobileNav />
+          <ThemeSwitcher />
         </div>
       </div>
     </header>
