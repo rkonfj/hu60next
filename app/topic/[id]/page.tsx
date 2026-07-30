@@ -16,7 +16,9 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { Pagination } from "@/components/pagination";
 import { ReplyForm } from "@/components/reply-form";
 import { ReviewActions } from "@/components/reviews/review-actions";
+import { TopicAtTaLink } from "@/components/topic-at-ta-link";
 import { TopicFloorOrder } from "@/components/topic-floor-order";
+import { TopicReplyComposerProvider } from "@/components/topic-reply-composer-context";
 import { compactNumber, fullDate, relativeTime } from "@/lib/format";
 import {
   floorReverseFlag,
@@ -34,6 +36,7 @@ import {
   getMemberTitle,
   getMemberTitleByUid
 } from "@/lib/member";
+import { topicAuthorName } from "@/lib/topic-at";
 import { hasModeratorPermission } from "@/lib/moderator";
 import {
   sanitizeHu60Content,
@@ -166,9 +169,31 @@ export default async function TopicPage({
   const publishedAt = Number(mainFloor?.ctime ?? meta.ctime);
   const editedAt = Number(mainFloor?.mtime ?? publishedAt);
   const mainFloorEdited = editedAt !== publishedAt;
+  const mainAuthorName = topicAuthorName(meta._u_name, Number(meta.uid));
+  const canUseComposer = Boolean(topic.canReply && topic.token);
+  const topicUbb = canUseComposer
+    ? await getTopic(topicId, currentPage, sid, {
+        ...topicOptions,
+        contentFormat: "ubb"
+      })
+    : null;
+  const floorUbbById = Object.fromEntries(
+    (topicUbb?.tContents ?? [])
+      .filter(
+        (floor): floor is typeof floor & { id: number; content: string } =>
+          Number(floor.id) > 0 && typeof floor.content === "string"
+      )
+      .map((floor) => [floor.id, floor.content])
+  );
 
   return (
     <main className="page-shell topic-page">
+      <TopicReplyComposerProvider
+        topicId={topicId}
+        currentPage={currentPage}
+        floorReverse={floorReverse}
+        floorUbbById={floorUbbById}
+      >
       <div className="topic-layout">
         <div className="topic-content-column">
           <article
@@ -204,11 +229,16 @@ export default async function TopicPage({
                 <Avatar src={meta._u_avatar} name={meta._u_name} size="lg" />
               </Link>
               <div>
-                <Link href={`/user/${meta.uid}`} prefetch={false}>
-                  <strong data-member-uid={meta.uid}>
-                    {meta._u_name || `用户 ${meta.uid}`}
-                  </strong>
-                </Link>
+                <div className="article-author-identity">
+                  <Link href={`/user/${meta.uid}`} prefetch={false}>
+                    <strong data-member-uid={meta.uid}>
+                      {mainAuthorName}
+                    </strong>
+                  </Link>
+                  {canUseComposer ? (
+                    <TopicAtTaLink authorName={mainAuthorName} />
+                  ) : null}
+                </div>
                 <div className="article-author-subline">
                   <span
                     className="article-author-time"
@@ -320,7 +350,13 @@ export default async function TopicPage({
               />
             ) : null}
             <div className="reply-list">
-              {replies.map((floor, index) => (
+              {replies.map((floor, index) => {
+                const floorAuthorName = topicAuthorName(
+                  floor._u_name,
+                  Number(floor.uid)
+                );
+
+                return (
                 <article
                   className={`reply-card${
                     canReview && Number(floor.review) === 1
@@ -356,7 +392,7 @@ export default async function TopicPage({
                       <div className="reply-author-name">
                         <Link href={`/user/${floor.uid}`} prefetch={false}>
                           <strong data-member-uid={floor.uid}>
-                            {floor._u_name || `用户 ${floor.uid}`}
+                            {floorAuthorName}
                           </strong>
                         </Link>
                         {Number(meta.uid) > 0 &&
@@ -412,15 +448,19 @@ export default async function TopicPage({
                         <PencilLine size={14} /> 修改
                       </Link>
                     ) : null}
-                    {topic.canReply ? (
-                      <a
-                        href="#quick-reply"
-                        data-reply-author={floor._u_name || String(floor.uid)}
-                        data-reply-floor={floor.floor}
-                        aria-label={`回复${floor._u_name || `用户 ${floor.uid}`}`}
-                      >
-                        <Reply size={14} /> 回复
-                      </a>
+                    {canUseComposer ? (
+                      <>
+                        <TopicAtTaLink authorName={floorAuthorName} />
+                        <a
+                          href="#quick-reply"
+                          data-reply-author={floorAuthorName}
+                          data-reply-floor={floor.floor}
+                          data-reply-content-id={floor.id}
+                          aria-label={`回复${floorAuthorName}`}
+                        >
+                          <Reply size={14} /> 回复
+                        </a>
+                      </>
                     ) : null}
                   </div>
                   {canReview &&
@@ -434,7 +474,8 @@ export default async function TopicPage({
                     />
                   ) : null}
                 </article>
-              ))}
+                );
+              })}
             </div>
             {!replies.length && (
               <div className="empty-replies">
@@ -532,6 +573,7 @@ export default async function TopicPage({
           </section>
         </aside>
       </div>
+      </TopicReplyComposerProvider>
     </main>
   );
 }

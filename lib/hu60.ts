@@ -898,9 +898,12 @@ export async function getForum(
   );
 }
 
+type TopicContentFormat = "html" | "ubb";
+
 type TopicRequestOptions = {
   floorReverse?: boolean | number;
   floor?: number;
+  contentFormat?: TopicContentFormat;
 };
 
 async function getTopicUncached(
@@ -908,7 +911,8 @@ async function getTopicUncached(
   page: number,
   sid: string | undefined,
   floorReverse: number,
-  floor: number
+  floor: number,
+  contentFormat: TopicContentFormat
 ): Promise<TopicResponse> {
   return requestJson(
     `bbs.topic.${id}.${Math.max(1, page)}.json`,
@@ -917,7 +921,7 @@ async function getTopicUncached(
       floorReverse,
       ...(floor > 0 ? { floor } : {}),
       _uinfo: "name,avatar,sign,regtime",
-      _content: "html",
+      _content: contentFormat,
       _myself: "newMsg,newAtInfo,permissions",
       _time: 1
     },
@@ -937,7 +941,9 @@ function topicRequestKey(options: TopicRequestOptions = {}) {
   const floor = Number(options.floor);
   return {
     floorReverse: options.floorReverse ? 1 : 0,
-    floor: Number.isInteger(floor) && floor > 0 ? floor : 0
+    floor: Number.isInteger(floor) && floor > 0 ? floor : 0,
+    contentFormat:
+      options.contentFormat === "ubb" ? ("ubb" as const) : ("html" as const)
   };
 }
 
@@ -947,13 +953,14 @@ export function getTopic(
   sid?: string,
   options: TopicRequestOptions = {}
 ): Promise<TopicResponse> {
-  const { floorReverse, floor } = topicRequestKey(options);
+  const { floorReverse, floor, contentFormat } = topicRequestKey(options);
   return getTopicCached(
     id,
     Math.max(1, page),
     sid,
     floorReverse,
-    floor
+    floor,
+    contentFormat
   );
 }
 
