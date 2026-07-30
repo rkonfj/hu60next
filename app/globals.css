@@ -385,8 +385,13 @@ select:focus-visible {
   position: absolute;
   top: -5px;
   right: -5px;
+  min-width: 17px;
+  height: 17px;
   margin: 0;
+  padding: 0 4px;
   border: 2px solid var(--surface);
+  border-radius: 999px;
+  line-height: 13px;
   pointer-events: none;
 }
 
