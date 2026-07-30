@@ -840,7 +840,8 @@ select:focus-visible {
   background: rgba(255, 255, 255, 0.65);
 }
 
-.feed-tabs a {
+.feed-tabs a,
+.feed-tabs button {
   display: flex;
   align-items: center;
   padding: 7px 12px;
@@ -849,9 +850,13 @@ select:focus-visible {
   font-size: 11px;
   font-weight: 700;
   gap: 5px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
-.feed-tabs a.active {
+.feed-tabs a.active,
+.feed-tabs button.active {
   color: var(--green-strong);
   background: var(--surface);
   box-shadow: 0 3px 10px rgba(23, 55, 38, 0.08);
@@ -2692,6 +2697,14 @@ a.topic-card-stat:hover {
 .reply-heading > span {
   color: var(--faint);
   font-size: 9px;
+}
+
+.topic-floor-order {
+  flex-shrink: 0;
+}
+
+.topic-floor-order-icon-reverse {
+  transform: scaleY(-1);
 }
 
 .topic-pagination-top {
@@ -5623,6 +5636,10 @@ body:has(> .auth-page) > .site-header {
   font-size: 10px;
 }
 
+.settings-page > .settings-notice {
+  margin: 0 0 14px;
+}
+
 .settings-sections {
   display: flex;
   flex-direction: column;
@@ -5773,6 +5790,22 @@ body:has(> .auth-page) > .site-header {
   height: 1px;
   overflow: hidden;
   opacity: 0;
+}
+
+.settings-floor-order {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 11px;
+}
+
+.settings-inline-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .settings-notice {
@@ -7021,7 +7054,8 @@ body :is(
   padding: 2px;
 }
 
-.feed-tabs a {
+.feed-tabs a,
+.feed-tabs button {
   padding: 5px 9px;
 }
 
