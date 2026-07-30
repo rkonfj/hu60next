@@ -265,16 +265,10 @@ export default async function TopicPage({
               />
               {mainFloor && canEditFloor(mainFloor) ? (
                 <Link
-                  href={`/topic/${topicId}/edit/${mainFloor.id}${
-                    currentPage > 1 || floorReverse
-                      ? `?${new URLSearchParams({
-                          ...(currentPage > 1
-                            ? { page: String(currentPage) }
-                            : {}),
-                          ...(floorReverse ? { reverse: "1" } : {})
-                        }).toString()}`
-                      : ""
-                  }`}
+                  href={`/topic/${topicId}/edit/${mainFloor.id}?${new URLSearchParams({
+                    ...paginationQuery,
+                    ...(currentPage > 1 ? { page: String(currentPage) } : {})
+                  }).toString()}`}
                 >
                   <PencilLine size={14} /> 修改
                 </Link>
@@ -404,16 +398,12 @@ export default async function TopicPage({
                   <div className="reply-actions">
                     {canEditFloor(floor) ? (
                       <Link
-                        href={`/topic/${topicId}/edit/${floor.id}${
-                          currentPage > 1 || floorReverse
-                            ? `?${new URLSearchParams({
-                                ...(currentPage > 1
-                                  ? { page: String(currentPage) }
-                                  : {}),
-                                ...(floorReverse ? { reverse: "1" } : {})
-                              }).toString()}`
-                            : ""
-                        }`}
+                        href={`/topic/${topicId}/edit/${floor.id}?${new URLSearchParams({
+                          ...paginationQuery,
+                          ...(currentPage > 1
+                            ? { page: String(currentPage) }
+                            : {})
+                        }).toString()}`}
                       >
                         <PencilLine size={14} /> 修改
                       </Link>

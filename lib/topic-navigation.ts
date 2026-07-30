@@ -1,3 +1,5 @@
+import { appendReverseParam } from "@/lib/floor-order";
+
 export const TOPIC_PAGE_SIZE = 30;
 
 export function topicPageForFloor(floor: number) {
@@ -13,7 +15,7 @@ export function topicFloorHref(
   if (safeFloor < 1) return topicHref(topicId, { floorReverse });
 
   const params = new URLSearchParams({ floor: String(safeFloor) });
-  if (floorReverse) params.set("reverse", "1");
+  appendReverseParam(params, floorReverse);
   return `/topic/${topicId}?${params.toString()}#floor-${safeFloor}`;
 }
 
@@ -31,9 +33,9 @@ export function topicHref(
 
   if (floor > 0) params.set("floor", String(floor));
   else if (page > 1) params.set("page", String(page));
-  if (options?.floorReverse) params.set("reverse", "1");
+  appendReverseParam(params, options?.floorReverse === true);
 
-  const query = params.size ? `?${params.toString()}` : "";
+  const query = `?${params.toString()}`;
   const hash = floor > 0 ? `#floor-${floor}` : "";
   return `/topic/${topicId}${query}${hash}`;
 }

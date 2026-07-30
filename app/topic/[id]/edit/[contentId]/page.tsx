@@ -41,12 +41,9 @@ export default async function EditPostPage({
   const cookieStore = await cookies();
   const sid = cookieStore.get("hulvlin_sid")?.value;
   const orderQuery = topicOrderQuery(floorReverse);
-  const orderSuffix = orderQuery.reverse
-    ? `&reverse=${orderQuery.reverse}`
-    : "";
-  const nextPath =
-    `/topic/${topicId}/edit/${postContentId}` +
-    (page > 1 ? `?page=${page}${orderSuffix}` : orderQuery.reverse ? `?reverse=1` : "");
+  const editQuery = new URLSearchParams({ reverse: orderQuery.reverse });
+  if (page > 1) editQuery.set("page", String(page));
+  const nextPath = `/topic/${topicId}/edit/${postContentId}?${editQuery.toString()}`;
 
   if (!sid) {
     redirect(`/login?next=${encodeURIComponent(nextPath)}`);
