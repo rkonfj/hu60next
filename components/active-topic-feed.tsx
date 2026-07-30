@@ -99,8 +99,8 @@ export function ActiveTopicFeed({
       publishSessionUpdate({
         newMsg: Number(feed._myself.newMsg || 0),
         newAtInfo: Number(feed._myself.newAtInfo || 0),
-        countReview: Number(feed.countReview || 0),
-        chatCountReview: Number(feed.chatCountReview || 0)
+        countReview: Number(feed._myself.countReview || 0),
+        chatCountReview: Number(feed._myself.chatCountReview || 0)
       });
     }
   }, []);

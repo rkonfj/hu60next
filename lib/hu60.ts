@@ -325,7 +325,7 @@ export async function getActiveTopics(
       pageSize: TOPICS_PER_PAGE,
       _topic_summary: 180,
       _uinfo: "name,avatar",
-      _myself: "newMsg,newAtInfo",
+      _myself: "newMsg,newAtInfo,countReview,chatCountReview",
       _time: 1
     },
     fallbackHome,
@@ -917,7 +917,8 @@ async function getTopicUncached(
       floorReverse: 0,
       _uinfo: "name,avatar,sign,regtime",
       _content: contentFormat,
-      _myself: "newMsg,newAtInfo,permissions",
+      _myself:
+        "newMsg,newAtInfo,countReview,chatCountReview,permissions",
       _time: 1
     },
     fallbackTopic,

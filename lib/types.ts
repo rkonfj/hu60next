@@ -66,9 +66,9 @@ export type HomeResponse = {
   _myself?: {
     newMsg?: number;
     newAtInfo?: number;
+    countReview?: number;
+    chatCountReview?: number;
   };
-  countReview?: number;
-  chatCountReview?: number;
   currPage: number;
   hasNextPage: boolean;
   newTopicList: Topic[];
@@ -174,6 +174,8 @@ export type TopicResponse = {
     uid?: number | null;
     newMsg?: number;
     newAtInfo?: number;
+    countReview?: number;
+    chatCountReview?: number;
     permissions?: string[];
   };
   tContents: Floor[];

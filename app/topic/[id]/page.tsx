@@ -18,6 +18,7 @@ import { ReplyForm } from "@/components/reply-form";
 import { ReviewActions } from "@/components/reviews/review-actions";
 import { TopicAtTaLink } from "@/components/topic-at-ta-link";
 import { TopicReplyComposerProvider } from "@/components/topic-reply-composer-context";
+import { SessionUpdatePublisher } from "@/components/unread-badge";
 import { compactNumber, fullDate, relativeTime } from "@/lib/format";
 import {
   getFaces,
@@ -145,6 +146,16 @@ export default async function TopicPage({
 
   return (
     <main className="page-shell topic-page">
+      {topic._myself ? (
+        <SessionUpdatePublisher
+          update={{
+            newMsg: Number(topic._myself.newMsg || 0),
+            newAtInfo: Number(topic._myself.newAtInfo || 0),
+            countReview: Number(topic._myself.countReview || 0),
+            chatCountReview: Number(topic._myself.chatCountReview || 0)
+          }}
+        />
+      ) : null}
       <TopicReplyComposerProvider
         topicId={topicId}
         currentPage={currentPage}

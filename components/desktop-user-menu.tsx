@@ -65,8 +65,8 @@ export function DesktopUserMenu({
         <UserRound size={17} />
         <span data-member-uid={userId}>{userName}</span>
         <ChevronDown size={13} />
+        {canReview ? <ReviewNotificationBadge floating /> : null}
       </summary>
-      {canReview ? <ReviewNotificationBadge floating /> : null}
       <nav className="desktop-user-popover" aria-label="用户菜单">
         <Link
           href={`/user/${userId}`}

@@ -29,6 +29,23 @@ export function publishSessionUpdate(update: SessionUpdate) {
   );
 }
 
+export function SessionUpdatePublisher({
+  update
+}: {
+  update: SessionUpdate;
+}) {
+  useEffect(() => {
+    publishSessionUpdate(update);
+  }, [
+    update.chatCountReview,
+    update.countReview,
+    update.newAtInfo,
+    update.newMsg
+  ]);
+
+  return null;
+}
+
 export function ReviewNotificationBadge({
   floating = false
 }: {
