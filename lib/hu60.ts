@@ -898,10 +898,17 @@ export async function getForum(
   );
 }
 
+type TopicContentFormat = "html" | "ubb";
+
+type TopicRequestOptions = {
+  contentFormat?: TopicContentFormat;
+};
+
 async function getTopicUncached(
   id: number,
   page: number,
-  sid?: string
+  sid: string | undefined,
+  contentFormat: TopicContentFormat
 ): Promise<TopicResponse> {
   return requestJson(
     `bbs.topic.${id}.${Math.max(1, page)}.json`,
@@ -909,7 +916,7 @@ async function getTopicUncached(
       pageSize: TOPICS_PER_PAGE,
       floorReverse: 0,
       _uinfo: "name,avatar,sign,regtime",
-      _content: "html",
+      _content: contentFormat,
       _myself: "newMsg,newAtInfo,permissions",
       _time: 1
     },
@@ -925,12 +932,21 @@ async function getTopicUncached(
 
 const getTopicCached = cache(getTopicUncached);
 
+function topicRequestKey(options: TopicRequestOptions = {}) {
+  return {
+    contentFormat:
+      options.contentFormat === "ubb" ? ("ubb" as const) : ("html" as const)
+  };
+}
+
 export function getTopic(
   id: number,
   page = 1,
-  sid?: string
+  sid?: string,
+  options: TopicRequestOptions = {}
 ): Promise<TopicResponse> {
-  return getTopicCached(id, Math.max(1, page), sid);
+  const { contentFormat } = topicRequestKey(options);
+  return getTopicCached(id, Math.max(1, page), sid, contentFormat);
 }
 
 export async function getTopicMain(

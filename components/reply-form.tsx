@@ -27,6 +27,7 @@ import {
   uploadToObjectStorage
 } from "@/components/compose/composer";
 import { FacePicker } from "@/components/face-picker";
+import { useTopicReplyComposer } from "@/components/topic-reply-composer-context";
 import type { ForumFace } from "@/lib/types";
 
 type ReplyFormProps = {
@@ -52,6 +53,7 @@ export function ReplyForm({
   initialNotice = ""
 }: ReplyFormProps) {
   const router = useRouter();
+  const { registerComposer } = useTopicReplyComposer();
   const draftKey = `hulvlin-reply-draft:${userId}:${topicId}`;
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState(initialNotice);
@@ -108,12 +110,14 @@ export function ReplyForm({
         editor?.focus();
         editor?.setSelectionRange(cursor, cursor);
         if (scrollToEditor) {
-          editor?.scrollIntoView({ behavior: "smooth", block: "center" });
+          editor?.scrollIntoView({ behavior: "instant", block: "nearest" });
         }
       });
     },
     []
   );
+
+  useEffect(() => registerComposer(insertText), [insertText, registerComposer]);
 
   function insertFace(face: ForumFace) {
     insertText(`{${face.name}}`);
@@ -246,28 +250,12 @@ export function ReplyForm({
   }, [content, draftKey, loadedDraftKey]);
 
   useEffect(() => {
-    function handleFloorReply(event: MouseEvent) {
-      if (!(event.target instanceof Element)) return;
-      const trigger = event.target.closest<HTMLElement>("[data-reply-author]");
-      const author = trigger?.dataset.replyAuthor?.trim();
-      const floor = trigger?.dataset.replyFloor?.trim();
-      if (!author) return;
-
-      event.preventDefault();
-      insertText(`@${author}${floor ? ` #${floor}` : ""} `, true);
-    }
-
-    document.addEventListener("click", handleFloorReply);
-    return () => document.removeEventListener("click", handleFloorReply);
-  }, [insertText]);
-
-  useEffect(() => {
     if (updatingReplies || pendingFloor === null) return;
 
     const target = document.getElementById(`floor-${pendingFloor}`);
     if (!target) return;
 
-    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    target.scrollIntoView({ behavior: "instant", block: "nearest" });
     setPendingFloor(null);
   }, [pendingFloor, updatingReplies]);
 

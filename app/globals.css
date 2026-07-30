@@ -1975,6 +1975,13 @@ a.topic-card-stat:hover {
   flex: 0 0 auto;
 }
 
+.article-author-identity {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .article-meta > div:nth-child(2) strong,
 .article-meta > div:nth-child(2) span {
   display: block;
@@ -2792,7 +2799,26 @@ a.topic-card-stat:hover {
   gap: 12px;
 }
 
-.reply-actions a {
+.topic-at-ta-link {
+  padding: 0;
+  color: var(--faint);
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.topic-at-ta-link:hover,
+.topic-at-ta-link.is-used,
+.rich-content a.userat.is-used {
+  color: #ffa500;
+}
+
+.reply-actions a,
+.reply-actions .topic-at-ta-link {
   display: flex;
   align-items: center;
   color: var(--faint);
