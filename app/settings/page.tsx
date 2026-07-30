@@ -1,6 +1,7 @@
 import { Settings } from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccountSettings } from "@/components/account/account-settings";
 import {
@@ -36,12 +37,26 @@ export default async function SettingsPage() {
           ，在这里管理头像、资料和密码。
         </p>
       </header>
-      <AccountSettings
-        name={status.name || account.name || "虎绿林用户"}
-        avatar={profile._u_avatar}
-        signature={account.signature}
-        contact={account.contact}
-      />
+      <div className="settings-sections">
+        <section className="settings-card">
+          <header>
+            <Settings size={18} />
+            <div>
+              <h2>网页插件</h2>
+              <p>管理账号下的 HTML / CSS / JavaScript 插件，与虎绿林原版数据同步。</p>
+            </div>
+          </header>
+          <Link href="/settings/webplugs" className="settings-inline-link">
+            打开网页插件管理
+          </Link>
+        </section>
+        <AccountSettings
+          name={status.name || account.name || "虎绿林用户"}
+          avatar={profile._u_avatar}
+          signature={account.signature}
+          contact={account.contact}
+        />
+      </div>
     </main>
   );
 }
