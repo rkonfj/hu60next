@@ -10,7 +10,7 @@ import {
   Save,
   ArrowDownUp
 } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import {
   FLOOR_ORDER_COOKIE
 } from "@/lib/floor-order";
@@ -64,13 +64,25 @@ export function AccountSettings({
   const [floorOrderNotice, setFloorOrderNotice] = useState<Notice>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
+  useEffect(() => {
+    setFloorReverse(initialFloorReverse);
+  }, [initialFloorReverse]);
+
   function rememberFloorOrder(nextReverse: boolean) {
     const value = nextReverse ? "1" : "0";
     document.cookie = `${FLOOR_ORDER_COOKIE}=${value};path=/;max-age=31536000;SameSite=Lax`;
   }
 
   async function saveFloorOrder(nextReverse: boolean) {
-    if (nextReverse === floorReverse || floorOrderBusy) return;
+    if (floorOrderBusy) return;
+
+    if (nextReverse === floorReverse) {
+      setFloorOrderNotice({
+        kind: "success",
+        text: nextReverse ? "当前已是倒序。" : "当前已是正序。"
+      });
+      return;
+    }
 
     setFloorOrderBusy(true);
     setFloorOrderNotice(null);

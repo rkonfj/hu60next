@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AccountSettings } from "@/components/account/account-settings";
+import { isFloorReverseEnabled } from "@/lib/floor-order";
 import {
   getAccountProfile,
   getUserProfile,
@@ -41,7 +42,7 @@ export default async function SettingsPage() {
         avatar={profile._u_avatar}
         signature={account.signature}
         contact={account.contact}
-        floorReverse={account.floorReverse === true}
+        floorReverse={isFloorReverseEnabled(account.floorReverse)}
       />
     </main>
   );

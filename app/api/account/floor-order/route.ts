@@ -4,7 +4,10 @@ import {
   FLOOR_ORDER_COOKIE,
   isFloorReverseEnabled
 } from "@/lib/floor-order";
-import { setAccountFloorReverse } from "@/lib/hu60";
+import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
+
+const API_BASE =
+  process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
@@ -20,23 +23,49 @@ export async function POST(request: Request) {
   const floorReverse = isFloorReverseEnabled(form.get("floorReverse"));
 
   try {
-    const account = await setAccountFloorReverse(floorReverse, sid);
-    if (account.__fallback) {
+    const { headers } = createHu60UpstreamHeaders(request.headers, {
+      accept: "application/json",
+      "user-agent": "Hulvlin-Next/0.1",
+      "x-sid": sid
+    });
+    const upstream = await fetch(
+      `${API_BASE}/user.index.json?${new URLSearchParams({
+        floorReverse: floorReverse ? "1" : "0",
+        _time: String(Math.floor(Date.now() / 1000))
+      }).toString()}`,
+      {
+        headers,
+        cache: "no-store"
+      }
+    );
+    const data = (await upstream.json()) as {
+      uid?: number;
+      floorReverse?: boolean | number | string;
+      error?: string | boolean;
+      notice?: string;
+      message?: string;
+    };
+
+    if (!upstream.ok || data.error || !data.uid) {
       return NextResponse.json(
         {
           success: false,
-          notice: account.__error?.message || "楼层排序偏好保存失败，请稍后重试。"
+          notice:
+            data.notice ||
+            data.message ||
+            (typeof data.error === "string" ? data.error : "楼层排序偏好保存失败，请稍后重试。")
         },
-        { status: 502 }
+        { status: upstream.ok ? 400 : 502 }
       );
     }
 
+    const savedFloorReverse = isFloorReverseEnabled(data.floorReverse);
     const response = NextResponse.json({
       success: true,
-      notice: "默认楼层排序已保存。",
-      floorReverse: isFloorReverseEnabled(account.floorReverse)
+      notice: savedFloorReverse ? "默认排序已设为倒序。" : "默认排序已设为正序。",
+      floorReverse: savedFloorReverse
     });
-    response.cookies.set(FLOOR_ORDER_COOKIE, floorReverse ? "1" : "0", {
+    response.cookies.set(FLOOR_ORDER_COOKIE, savedFloorReverse ? "1" : "0", {
       path: "/",
       maxAge: 60 * 60 * 24 * 365,
       sameSite: "lax"
