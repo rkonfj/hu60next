@@ -7,13 +7,9 @@ import {
   LoaderCircle,
   LockKeyhole,
   PencilLine,
-  Save,
-  ArrowDownUp
+  Save
 } from "lucide-react";
-import { FormEvent, useEffect, useState } from "react";
-import {
-  FLOOR_ORDER_COOKIE
-} from "@/lib/floor-order";
+import { FormEvent, useState } from "react";
 
 type Notice = { kind: "success" | "error"; text: string } | null;
 
@@ -40,69 +36,24 @@ export function AccountSettings({
   name,
   avatar,
   signature,
-  contact,
-  floorReverse: initialFloorReverse = false
+  contact
 }: {
   name: string;
   avatar?: string | null;
   signature?: string | null;
   contact?: string | null;
-  floorReverse?: boolean;
 }) {
   const currentAvatar = avatarSource(avatar);
   const [nameBusy, setNameBusy] = useState(false);
   const [profileBusy, setProfileBusy] = useState(false);
   const [passwordBusy, setPasswordBusy] = useState(false);
   const [avatarBusy, setAvatarBusy] = useState(false);
-  const [floorOrderBusy, setFloorOrderBusy] = useState(false);
-  const [floorReverse, setFloorReverse] = useState(initialFloorReverse);
   const [showPassword, setShowPassword] = useState(false);
   const [nameNotice, setNameNotice] = useState<Notice>(null);
   const [profileNotice, setProfileNotice] = useState<Notice>(null);
   const [passwordNotice, setPasswordNotice] = useState<Notice>(null);
   const [avatarNotice, setAvatarNotice] = useState<Notice>(null);
-  const [floorOrderNotice, setFloorOrderNotice] = useState<Notice>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-
-  useEffect(() => {
-    setFloorReverse(initialFloorReverse);
-  }, [initialFloorReverse]);
-
-  function rememberFloorOrder(nextReverse: boolean) {
-    const value = nextReverse ? "1" : "0";
-    document.cookie = `${FLOOR_ORDER_COOKIE}=${value};path=/;max-age=31536000;SameSite=Lax`;
-  }
-
-  async function saveFloorOrder(nextReverse: boolean) {
-    if (floorOrderBusy) return;
-
-    if (nextReverse === floorReverse) {
-      setFloorOrderNotice({
-        kind: "success",
-        text: nextReverse ? "当前已是倒序。" : "当前已是正序。"
-      });
-      return;
-    }
-
-    setFloorOrderBusy(true);
-    setFloorOrderNotice(null);
-    try {
-      const form = new FormData();
-      form.set("floorReverse", nextReverse ? "1" : "0");
-      const result = await submitForm("/api/account/floor-order", form);
-      if (!result.ok) {
-        setFloorOrderNotice({ kind: "error", text: result.notice });
-        return;
-      }
-      rememberFloorOrder(nextReverse);
-      setFloorReverse(nextReverse);
-      setFloorOrderNotice({ kind: "success", text: result.notice });
-    } catch {
-      setFloorOrderNotice({ kind: "error", text: "楼层排序服务暂时不可用。" });
-    } finally {
-      setFloorOrderBusy(false);
-    }
-  }
 
   async function changeName(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -202,7 +153,7 @@ export function AccountSettings({
   }
 
   return (
-    <div className="settings-sections">
+    <>
       <section className="settings-card">
         <header>
           <PencilLine size={18} />
@@ -297,55 +248,6 @@ export function AccountSettings({
             {avatarNotice.text}
           </p>
         ) : null}
-      </section>
-
-      <section className="settings-card">
-        <header>
-          <ArrowDownUp size={18} />
-          <div>
-            <h2>默认楼层排序</h2>
-            <p>设置打开帖子时回复楼层的默认排序，与虎绿林账号偏好同步。</p>
-          </div>
-        </header>
-        <div className="settings-floor-order">
-          <div
-            className="feed-tabs topic-floor-order"
-            role="group"
-            aria-label="默认楼层排序"
-          >
-            <button
-              type="button"
-              className={floorReverse ? "" : "active"}
-              aria-current={floorReverse ? undefined : "true"}
-              disabled={floorOrderBusy}
-              onClick={() => saveFloorOrder(false)}
-            >
-              <ArrowDownUp size={14} />
-              正序
-            </button>
-            <button
-              type="button"
-              className={floorReverse ? "active" : ""}
-              aria-current={floorReverse ? "true" : undefined}
-              disabled={floorOrderBusy}
-              onClick={() => saveFloorOrder(true)}
-            >
-              <ArrowDownUp size={14} className="topic-floor-order-icon-reverse" />
-              倒序
-            </button>
-          </div>
-          {floorOrderBusy ? (
-            <p className="settings-inline-status">
-              <LoaderCircle className="spin" size={14} />
-              正在保存…
-            </p>
-          ) : null}
-          {floorOrderNotice ? (
-            <p className={`settings-notice ${floorOrderNotice.kind}`}>
-              {floorOrderNotice.text}
-            </p>
-          ) : null}
-        </div>
       </section>
 
       <section className="settings-card">
@@ -472,6 +374,6 @@ export function AccountSettings({
           </button>
         </form>
       </section>
-    </div>
+    </>
   );
 }

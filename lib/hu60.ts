@@ -1384,28 +1384,3 @@ export async function getAccountProfile(
     }
   );
 }
-
-export async function setAccountFloorReverse(
-  floorReverse: boolean,
-  sid?: string
-): Promise<AccountProfile> {
-  return requestJson(
-    "user.index.json",
-    {
-      floorReverse: floorReverse ? 1 : 0,
-      _time: 1
-    },
-    {
-      uid: 0,
-      name: "",
-      signature: "",
-      contact: "",
-      hasRegPhone: false,
-      __fallback: true
-    },
-    {
-      ...(sid ? { headers: { "x-sid": sid } } : {}),
-      cache: "no-store"
-    }
-  );
-}
