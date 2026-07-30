@@ -502,85 +502,99 @@ export function parseVoteUbb(content: string): VoteDraft | null {
   };
 }
 
-export async function createTopicVote(
-  topicId: number,
-  draft: VoteDraft,
-  ownerUid?: number
-) {
-  return withTopicLock(topicId, async () => {
-    const existing = (await readTopicDocument(topicId)) ?? {};
-    const now = Math.floor(Date.now() / 1000);
-    const votes: StoredVotes = {
-      question: draft.question,
-      multiple: draft.multiple,
-      closed: false,
-      totalVoters: 0,
-      options: draft.options.map((label, index) => ({
-        id: String(index + 1),
-        label,
-        count: 0
-      })),
-      voters: {},
-      ownerUid,
-      closesAt: draft.closesAt,
-      createdAt: now,
-      updatedAt: now
-    };
-    await writeTopicDocument(topicId, { ...existing, votes });
-    return publicPoll(topicId, votes);
-  });
+function hasVoteResponses(votes: StoredVotes) {
+  return (
+    votes.totalVoters > 0 ||
+    Object.keys(votes.voters).length > 0 ||
+    votes.options.some((option) => option.count > 0)
+  );
 }
 
-export async function ensureTopicVote(
-  topicId: number,
+function mergeVoteDefinition(
+  votes: StoredVotes,
   draft: VoteDraft,
   ownerUid?: number
 ) {
-  return withTopicLock(topicId, async () => {
-    const existing = await readTopicDocument(topicId);
-    if (existing?.votes !== undefined) {
-      const votes = normalizeStoredVotes(existing.votes);
-      let changed = false;
-      if (!votes.ownerUid && ownerUid) {
-        votes.ownerUid = ownerUid;
-        changed = true;
-      }
-      if (!votes.closesAt && draft.closesAt) {
-        votes.closesAt = draft.closesAt;
-        changed = true;
-      }
-      if (changed) {
-        votes.updatedAt = Math.floor(Date.now() / 1000);
-        await writeTopicDocument(topicId, { ...existing, votes });
-      }
-      return {
-        created: false,
-        poll: publicPoll(topicId, votes)
-      };
+  const hasResponses = hasVoteResponses(votes);
+  let options: StoredVoteOption[];
+
+  if (!hasResponses) {
+    options = draft.options.map((label, index) => ({
+      id: String(index + 1),
+      label,
+      count: 0
+    }));
+  } else {
+    if (votes.options.length !== draft.options.length) {
+      throw new VoteStoreError(
+        "投票已经有人参与，不能增加或删除选项。",
+        "INVALID_DATA"
+      );
     }
 
-    const now = Math.floor(Date.now() / 1000);
-    const votes: StoredVotes = {
-      question: draft.question,
-      multiple: draft.multiple,
-      closed: false,
-      totalVoters: 0,
-      options: draft.options.map((label, index) => ({
-        id: String(index + 1),
-        label,
-        count: 0
-      })),
-      voters: {},
-      ownerUid,
-      closesAt: draft.closesAt,
-      createdAt: now,
-      updatedAt: now
-    };
-    await writeTopicDocument(topicId, { ...(existing ?? {}), votes });
-    return {
-      created: true,
-      poll: publicPoll(topicId, votes)
-    };
+    const oldLabels = votes.options.map((option) =>
+      option.label.toLocaleLowerCase("zh-CN")
+    );
+    const newLabels = draft.options.map((label) =>
+      label.toLocaleLowerCase("zh-CN")
+    );
+    const sameLabels =
+      [...oldLabels].sort().join("\u0000") ===
+      [...newLabels].sort().join("\u0000");
+    const reordered =
+      sameLabels &&
+      oldLabels.some((label, index) => label !== newLabels[index]);
+    if (reordered) {
+      throw new VoteStoreError(
+        "投票已经有人参与，不能调整选项顺序。",
+        "INVALID_DATA"
+      );
+    }
+
+    options = votes.options.map((option, index) => ({
+      ...option,
+      label: draft.options[index]
+    }));
+  }
+
+  return {
+    ...votes,
+    question: draft.question,
+    options,
+    ownerUid: votes.ownerUid ?? ownerUid,
+    closesAt: draft.closesAt,
+    updatedAt: Math.floor(Date.now() / 1000)
+  };
+}
+
+export async function validateTopicVoteEdit(
+  topicId: number,
+  draft: VoteDraft | null
+) {
+  if (!draft) return;
+  const document = await readTopicDocument(topicId);
+  if (document?.votes === undefined) return;
+  mergeVoteDefinition(normalizeStoredVotes(document.votes), draft);
+}
+
+export async function syncTopicVoteEdit(
+  topicId: number,
+  draft: VoteDraft | null,
+  ownerUid?: number
+) {
+  if (!draft) return { updated: false };
+
+  return withTopicLock(topicId, async () => {
+    const document = await readTopicDocument(topicId);
+    if (document?.votes === undefined) return { updated: false };
+    const votes = mergeVoteDefinition(
+      normalizeStoredVotes(document.votes),
+      draft,
+      ownerUid
+    );
+
+    await writeTopicDocument(topicId, { ...document, votes });
+    return { updated: true };
   });
 }
 
@@ -596,23 +610,76 @@ export async function getTopicVote(topicId: number, voterId?: number) {
   );
 }
 
+export function previewTopicVote(
+  topicId: number,
+  draft: VoteDraft,
+  ownerUid?: number,
+  voterId?: number
+) {
+  const now = Math.floor(Date.now() / 1000);
+  return publicPoll(
+    topicId,
+    {
+      question: draft.question,
+      multiple: draft.multiple,
+      closed: false,
+      totalVoters: 0,
+      options: draft.options.map((label, index) => ({
+        id: String(index + 1),
+        label,
+        count: 0
+      })),
+      voters: {},
+      ownerUid,
+      closesAt: draft.closesAt,
+      createdAt: now,
+      updatedAt: now
+    },
+    voterId
+  );
+}
+
 export async function castTopicVote(
   topicId: number,
   voterId: number,
-  optionIds: string[]
+  optionIds: string[],
+  fallbackDraft?: VoteDraft,
+  ownerUid?: number
 ) {
   return withTopicLock(topicId, async () => {
-    const document = await readTopicDocument(topicId);
-    if (!document || document.votes === undefined) {
+    const existingDocument = await readTopicDocument(topicId);
+    if (
+      existingDocument?.votes === undefined &&
+      fallbackDraft === undefined
+    ) {
       throw new VoteStoreError("这个投票不存在。", "NOT_FOUND");
     }
 
-    const votes = normalizeStoredVotes(document.votes);
+    const now = Math.floor(Date.now() / 1000);
+    const votes =
+      existingDocument?.votes === undefined
+        ? {
+            question: fallbackDraft!.question,
+            multiple: fallbackDraft!.multiple,
+            closed: false,
+            totalVoters: 0,
+            options: fallbackDraft!.options.map((label, index) => ({
+              id: String(index + 1),
+              label,
+              count: 0
+            })),
+            voters: {},
+            ownerUid,
+            closesAt: fallbackDraft!.closesAt,
+            createdAt: now,
+            updatedAt: now
+          }
+        : normalizeStoredVotes(existingDocument.votes);
     if (
       votes.closed ||
       Boolean(
         votes.closesAt &&
-          Math.floor(Date.now() / 1000) >= votes.closesAt
+          now >= votes.closesAt
       )
     ) {
       throw new VoteStoreError("这个投票已经结束。", "CLOSED");
@@ -642,9 +709,12 @@ export async function castTopicVote(
     );
     votes.voters[voterKey] = selected;
     votes.totalVoters += 1;
-    votes.updatedAt = Math.floor(Date.now() / 1000);
+    votes.updatedAt = now;
 
-    await writeTopicDocument(topicId, { ...document, votes });
+    await writeTopicDocument(topicId, {
+      ...(existingDocument ?? {}),
+      votes
+    });
     return publicPoll(topicId, votes, voterId);
   });
 }

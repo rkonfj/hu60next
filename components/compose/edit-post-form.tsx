@@ -11,6 +11,7 @@ import {
   Paperclip,
   Send,
   TriangleAlert,
+  Vote,
   X
 } from "lucide-react";
 import Link from "next/link";
@@ -28,8 +29,15 @@ import {
   ComposerPreview,
   filesFromClipboard,
   formatFileSize,
+  formatVoteUbb,
+  isDraftVoteValid,
+  parseVoteUbbForEditor,
+  removeVoteUbb,
+  replaceVoteUbb,
   uploadToObjectStorage,
+  VoteDraftFields,
   type AttachmentState,
+  type DraftVote,
   type UploadFormResult
 } from "@/components/compose/composer";
 import type { ForumFace } from "@/lib/types";
@@ -72,6 +80,9 @@ export function EditPostForm({
   const [mode, setMode] = useState<"write" | "preview">("write");
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
+  const [voteDraft, setVoteDraft] = useState<DraftVote | null>(() =>
+    editTitle ? parseVoteUbbForEditor(initialContent) : null
+  );
   const [editReason, setEditReason] = useState("");
   const [attachments, setAttachments] = useState<AttachmentState[]>([]);
   const [saving, setSaving] = useState(false);
@@ -151,6 +162,27 @@ export function EditPostForm({
       textAreaRef.current?.focus();
       textAreaRef.current?.setSelectionRange(cursor, cursor);
     });
+  }
+
+  function toggleVoteDraft() {
+    if (voteDraft) {
+      setVoteDraft(null);
+      setContent((value) => removeVoteUbb(value));
+      return;
+    }
+
+    const nextVote: DraftVote = {
+      question: title.trim() || "投票标题",
+      options: ["选项 1", "选项 2"],
+      until: ""
+    };
+    setVoteDraft(nextVote);
+    insertText(formatVoteUbb(nextVote));
+  }
+
+  function applyVoteDraft(nextVote: DraftVote) {
+    setVoteDraft(nextVote);
+    setContent((value) => replaceVoteUbb(value, nextVote));
   }
 
   async function uploadAttachment(
@@ -278,7 +310,8 @@ export function EditPostForm({
   const canSubmit =
     content.length <= 20000 &&
     (!editTitle || Boolean(title.trim())) &&
-    (!needReason || Boolean(editReason.trim()));
+    (!needReason || Boolean(editReason.trim())) &&
+    isDraftVoteValid(voteDraft);
 
   return (
     <form
@@ -359,6 +392,18 @@ export function EditPostForm({
               >
                 <Code2 size={16} />
               </button>
+              {editTitle ? (
+                <button
+                  className={voteDraft ? "active" : ""}
+                  type="button"
+                  onClick={toggleVoteDraft}
+                  aria-label={voteDraft ? "移除投票" : "插入投票"}
+                  title={voteDraft ? "移除投票" : "插入投票"}
+                  aria-pressed={Boolean(voteDraft)}
+                >
+                  <Vote size={16} />
+                </button>
+              ) : null}
               <button
                 type="button"
                 onPointerDown={rememberEditorSelection}
@@ -380,6 +425,12 @@ export function EditPostForm({
                 onChange={selectAttachments}
               />
             </div>
+            {voteDraft ? (
+              <VoteDraftFields
+                vote={voteDraft}
+                onChange={applyVoteDraft}
+              />
+            ) : null}
             {attachments.length > 0 ? (
               <div className="attachment-list" aria-live="polite">
                 {attachments.map((attachment) => (

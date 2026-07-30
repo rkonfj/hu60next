@@ -32,7 +32,6 @@ import {
   sanitizeHu60Content,
   sanitizeHu60ReviewContent
 } from "@/lib/sanitize";
-import { ensureTopicVote, parseVoteUbb } from "@/lib/votes";
 
 type TopicPageProps = {
   params: Promise<{ id: string }>;
@@ -104,16 +103,6 @@ export default async function TopicPage({
   const mainFloor = firstPageTopic.tContents.find(
     (floor) => Number(floor.floor) === 0
   );
-  if (mainFloor) {
-    try {
-      const voteDraft = parseVoteUbb(mainFloor.content);
-      if (voteDraft) {
-        await ensureTopicVote(topicId, voteDraft, Number(topic.tMeta.uid));
-      }
-    } catch {
-      // Rendering remains available when local vote recovery fails.
-    }
-  }
   const replies = topic.tContents.filter(
     (floor) => Number(floor.floor) > 0
   );

@@ -2,7 +2,12 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
 import type { EditPostFormResponse } from "@/lib/types";
-import { parseVoteUbb, VoteStoreError } from "@/lib/votes";
+import {
+  parseVoteUbb,
+  syncTopicVoteEdit,
+  validateTopicVoteEdit,
+  VoteStoreError
+} from "@/lib/votes";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
@@ -50,8 +55,9 @@ export async function POST(request: Request, { params }: RouteContext) {
   if (title.length > 120 || content.length > 20000) {
     return jsonFailure("标题或正文超过长度限制。", 400);
   }
+  let voteDraft: ReturnType<typeof parseVoteUbb>;
   try {
-    parseVoteUbb(content);
+    voteDraft = parseVoteUbb(content);
   } catch (error) {
     return jsonFailure(
       error instanceof VoteStoreError
@@ -107,6 +113,23 @@ export async function POST(request: Request, { params }: RouteContext) {
       return jsonFailure("请填写编辑理由。", 400);
     }
 
+    const floor = Number(tokenData.floorMeta?.floor ?? 0);
+    if (!tokenData.editTitle && voteDraft) {
+      return jsonFailure("投票只能放在主题正文中。", 400);
+    }
+    if (tokenData.editTitle) {
+      try {
+        await validateTopicVoteEdit(topicId, voteDraft);
+      } catch (error) {
+        return jsonFailure(
+          error instanceof VoteStoreError
+            ? error.message
+            : "暂时无法校验投票数据。",
+          error instanceof VoteStoreError ? 409 : 500
+        );
+      }
+    }
+
     const body = new URLSearchParams({
       content,
       token,
@@ -141,13 +164,26 @@ export async function POST(request: Request, { params }: RouteContext) {
       );
     }
 
-    const floor = Number(tokenData.floorMeta?.floor ?? 0);
+    let voteNotice: string | undefined;
+    if (tokenData.editTitle && voteDraft) {
+      try {
+        await syncTopicVoteEdit(
+          topicId,
+          voteDraft,
+          Number(tokenData.tMeta?.uid) || undefined
+        );
+      } catch {
+        voteNotice =
+          "正文已保存，但本机投票数据同步失败，请稍后再次保存。";
+      }
+    }
     const query = requestedPage > 1 ? `?page=${requestedPage}` : "";
     const hash = floor > 0 ? `#floor-${floor}` : "";
 
     return NextResponse.json({
       success: true,
-      nextPath: `/topic/${topicId}${query}${hash}`
+      nextPath: `/topic/${topicId}${query}${hash}`,
+      ...(voteNotice ? { notice: voteNotice } : {})
     });
   } catch {
     return jsonFailure("暂时无法保存修改，请稍后重试。", 502);

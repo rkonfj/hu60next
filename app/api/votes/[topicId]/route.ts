@@ -1,9 +1,11 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { getUserStatus } from "@/lib/hu60";
+import { getTopicMain, getUserStatus } from "@/lib/hu60";
 import {
   castTopicVote,
   getTopicVote,
+  parseVoteUbb,
+  previewTopicVote,
   VoteStoreError
 } from "@/lib/votes";
 
@@ -52,6 +54,21 @@ function parseTopicId(value: string) {
   return Number.isSafeInteger(topicId) && topicId > 0 ? topicId : null;
 }
 
+async function getVoteDefinitionFromTopic(topicId: number) {
+  const topic = await getTopicMain(topicId);
+  const mainFloor = topic.tContents.find(
+    (floor) => Number(floor.floor) === 0
+  );
+  const draft = mainFloor ? parseVoteUbb(mainFloor.content) : null;
+  if (!draft) {
+    throw new VoteStoreError("这个投票不存在。", "NOT_FOUND");
+  }
+  return {
+    draft,
+    ownerUid: Number(topic.tMeta.uid) || undefined
+  };
+}
+
 export async function GET(_request: Request, { params }: RouteContext) {
   const topicId = parseTopicId((await params).topicId);
   if (!topicId) {
@@ -63,7 +80,24 @@ export async function GET(_request: Request, { params }: RouteContext) {
 
   try {
     const user = await sessionUser();
-    const poll = await getTopicVote(topicId, user?.uid);
+    let poll;
+    try {
+      poll = await getTopicVote(topicId, user?.uid);
+    } catch (error) {
+      if (
+        !(error instanceof VoteStoreError) ||
+        error.code !== "NOT_FOUND"
+      ) {
+        throw error;
+      }
+      const definition = await getVoteDefinitionFromTopic(topicId);
+      poll = previewTopicVote(
+        topicId,
+        definition.draft,
+        definition.ownerUid,
+        user?.uid
+      );
+    }
     return NextResponse.json(
       { success: true, poll, isLogin: Boolean(user) },
       { headers: { "cache-control": "private, no-store" } }
@@ -104,7 +138,25 @@ export async function POST(request: Request, { params }: RouteContext) {
     : [];
 
   try {
-    const poll = await castTopicVote(topicId, user.uid, optionIds);
+    let poll;
+    try {
+      poll = await castTopicVote(topicId, user.uid, optionIds);
+    } catch (error) {
+      if (
+        !(error instanceof VoteStoreError) ||
+        error.code !== "NOT_FOUND"
+      ) {
+        throw error;
+      }
+      const definition = await getVoteDefinitionFromTopic(topicId);
+      poll = await castTopicVote(
+        topicId,
+        user.uid,
+        optionIds,
+        definition.draft,
+        definition.ownerUid
+      );
+    }
     return NextResponse.json(
       { success: true, poll, isLogin: true },
       { headers: { "cache-control": "private, no-store" } }

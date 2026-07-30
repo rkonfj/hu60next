@@ -1,9 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
-import { getUserStatus } from "@/lib/hu60";
 import {
-  createTopicVote,
   parseVoteUbb,
   VoteStoreError,
   type VoteDraft
@@ -193,25 +191,6 @@ export async function POST(request: Request) {
 
     const topicId = findTopicId(data);
     const nextPath = topicId ? `/topic/${topicId}` : `/forum/${forumId}`;
-    let voteNotice: string | undefined;
-
-    if (voteDraft) {
-      if (!topicId) {
-        voteNotice = "主题已发布，但未能取得主题 ID，投票没有初始化。";
-      } else {
-        try {
-          const status = await getUserStatus(sid);
-          const ownerUid =
-            status.isLogin === true && Number(status.uid) > 0
-              ? Number(status.uid)
-              : undefined;
-          await createTopicVote(topicId, voteDraft, ownerUid);
-        } catch {
-          voteNotice =
-            "主题已发布，但本机投票数据写入失败；请检查 data/topic 目录权限。";
-        }
-      }
-    }
 
     if (isDocumentSubmission(request)) {
       return NextResponse.redirect(
@@ -223,8 +202,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       topicId,
-      forumId,
-      ...(voteNotice ? { notice: voteNotice } : {})
+      forumId
     });
   } catch {
     return failure(request, "暂时无法提交主题，请稍后再试。", 502);
