@@ -239,6 +239,60 @@ Codex Sites 要求保存版本时提供的提交 SHA、已推送的源码和构�
 5. `/api/session` 是否返回有效用户信息；
 6. 虎绿林上游会话是否已经失效。
 
+## 本机投票 UBB
+
+本站额外支持投票 UBB：
+
+```text
+[vote]123[/vote]
+```
+
+主题正文和回复还支持隐藏注释 UBB：
+
+```text
+[comment]使用 Hu60Next 投票[/comment]
+```
+
+`comment` 标签及其中内容不会出现在正文和编辑器预览中，代码块内的同名
+文本不受影响。该标签是手工彩蛋语法，不在编辑器工具栏中显示。
+
+上游无需支持或解析这个标签。帖子正文取回本站后，页面会把标签中的
+主题 ID 映射到本机 `data/topic/123.json` 的 `votes` 字段。发帖编辑器
+中的投票按钮会使用 `[vote]0[/vote]` 作为“当前新主题”的临时自引用；
+主题发布并取得 ID 后，投票数据会写入对应的主题文件，渲染时 `0` 会解析
+为当前帖子 ID。
+
+一个可手工维护的投票文件示例：
+
+```json
+{
+  "votes": {
+    "question": "你更喜欢哪一种方案？",
+    "multiple": false,
+    "closed": false,
+    "totalVoters": 0,
+    "options": [
+      { "id": "1", "label": "方案 A", "count": 0 },
+      { "id": "2", "label": "方案 B", "count": 0 }
+    ],
+    "voters": {}
+  }
+}
+```
+
+- `multiple` 为 `true` 时允许多选；
+- `closed` 为 `true` 时只展示结果，不再接受投票；
+- 投票默认要求用户已登录，用户只能提交一次；
+- API 使用锁文件和同目录原子替换，适用于单机 Node.js 部署；
+- 实际投票 JSON 已加入 `.gitignore`，升级代码时不会把用户投票记录提交
+  到 Git；
+- 可用绝对路径 `VOTE_DATA_DIR=/持久化磁盘/topic` 把数据目录移到其他本机
+  路径。
+
+该功能依赖本机文件系统，生产环境请使用 `npm run build:next` 后通过
+`npm run start` 运行，并确保 Node.js 进程对数据目录有写权限；Cloudflare
+Workers 等无持久本地磁盘的运行环境不适合保存这类投票数据。
+
 ## 更新部署
 
 日常更新建议执行：

@@ -207,8 +207,12 @@ export default async function TopicPage({
                 dangerouslySetInnerHTML={{
                   __html:
                     canReview && Number(mainFloor.review || 0) !== 0
-                      ? sanitizeHu60ReviewContent(mainFloor.content)
-                      : sanitizeHu60Content(mainFloor.content)
+                      ? sanitizeHu60ReviewContent(
+                          mainFloor.content,
+                          true,
+                          topicId
+                        )
+                      : sanitizeHu60Content(mainFloor.content, topicId)
                 }}
               />
             ) : (
@@ -341,8 +345,12 @@ export default async function TopicPage({
                     dangerouslySetInnerHTML={{
                       __html:
                         canReview && Number(floor.review || 0) !== 0
-                          ? sanitizeHu60ReviewContent(floor.content)
-                          : sanitizeHu60Content(floor.content)
+                          ? sanitizeHu60ReviewContent(
+                              floor.content,
+                              true,
+                              topicId
+                            )
+                          : sanitizeHu60Content(floor.content, topicId)
                     }}
                   />
                   <div className="reply-actions">

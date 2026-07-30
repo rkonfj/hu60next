@@ -1,6 +1,14 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
+import {
+  createTopicVote,
+  parseVoteDraft,
+  VoteStoreError,
+  type VoteDraft
+} from "@/lib/votes";
+
+export const runtime = "nodejs";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
@@ -70,6 +78,18 @@ export async function POST(request: Request) {
   const forumId = Number(form.get("forumId"));
   const title = String(form.get("title") ?? "").trim();
   const content = String(form.get("content") ?? "").trim();
+  let voteDraft: VoteDraft | null;
+  try {
+    voteDraft = parseVoteDraft(form.get("vote"));
+  } catch (error) {
+    return failure(
+      request,
+      error instanceof VoteStoreError
+        ? error.message
+        : "投票设置格式不正确。",
+      400
+    );
+  }
   const cookieStore = await cookies();
   const sid = cookieStore.get("hulvlin_sid")?.value;
 
@@ -94,6 +114,9 @@ export async function POST(request: Request) {
     content.length > 20000
   ) {
     return failure(request, "请选择板块并填写有效的标题和正文。", 400);
+  }
+  if (voteDraft && !/\[vote\]\s*0\s*\[\/vote\]/i.test(content)) {
+    return failure(request, "正文中缺少新投票占位符。", 400);
   }
 
   try {
@@ -173,6 +196,20 @@ export async function POST(request: Request) {
 
     const topicId = findTopicId(data);
     const nextPath = topicId ? `/topic/${topicId}` : `/forum/${forumId}`;
+    let voteNotice: string | undefined;
+
+    if (voteDraft) {
+      if (!topicId) {
+        voteNotice = "主题已发布，但未能取得主题 ID，投票没有初始化。";
+      } else {
+        try {
+          await createTopicVote(topicId, voteDraft);
+        } catch {
+          voteNotice =
+            "主题已发布，但本机投票数据写入失败；请检查 data/topic 目录权限。";
+        }
+      }
+    }
 
     if (isDocumentSubmission(request)) {
       return NextResponse.redirect(
@@ -184,7 +221,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       topicId,
-      forumId
+      forumId,
+      ...(voteNotice ? { notice: voteNotice } : {})
     });
   } catch {
     return failure(request, "暂时无法提交主题，请稍后再试。", 502);

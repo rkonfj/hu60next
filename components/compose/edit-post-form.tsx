@@ -11,6 +11,7 @@ import {
   Paperclip,
   Send,
   TriangleAlert,
+  Vote,
   X
 } from "lucide-react";
 import Link from "next/link";
@@ -358,6 +359,16 @@ export function EditPostForm({
                 title="代码"
               >
                 <Code2 size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  insertText(`[vote]${topicId}[/vote]`)
+                }
+                aria-label="插入当前主题投票"
+                title="插入当前主题投票"
+              >
+                <Vote size={16} />
               </button>
               <button
                 type="button"

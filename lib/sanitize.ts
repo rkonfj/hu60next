@@ -175,8 +175,58 @@ function stripLeadingReviewNotice(content: string) {
   return content;
 }
 
-export function sanitizeHu60Content(content: string) {
-  const sanitized = sanitizeHtml(content, {
+function expandVoteUbb(content: string, currentTopicId?: number) {
+  const protectedCode: string[] = [];
+  const codeProtectedContent = content.replace(
+    /<(pre|code)\b[^>]*>[\s\S]*?<\/\1>/gi,
+    (source) => {
+      const index = protectedCode.push(source) - 1;
+      return `\uE000HU60_CODE_${index}\uE001`;
+    }
+  );
+  const normalizedBrackets = codeProtectedContent
+    .replace(/(?:&#0*91;|&#x0*5b;|&lbrack;)/gi, "[")
+    .replace(/(?:&#0*93;|&#x0*5d;|&rbrack;)/gi, "]");
+  const commentsRemoved =
+    Number.isSafeInteger(currentTopicId) && Number(currentTopicId) > 0
+      ? normalizedBrackets
+          .replace(
+            /<p\b[^>]*>\s*\[comment\][\s\S]*?\[\/comment\]\s*<\/p>/gi,
+            ""
+          )
+          .replace(/\[comment\][\s\S]*?\[\/comment\]/gi, "")
+      : normalizedBrackets;
+  const votePattern = /\[vote\]\s*(\d+)\s*\[\/vote\]/gi;
+  const placeholder = (_source: string, rawTopicId: string) => {
+    const referencedTopicId = Number(rawTopicId);
+    const topicId =
+      referencedTopicId === 0 ? Number(currentTopicId) : referencedTopicId;
+    if (!Number.isSafeInteger(topicId) || topicId < 1) return _source;
+
+    return `<div class="hu60-vote" data-vote-topic-id="${topicId}" role="status" aria-live="polite"><span class="hu60-vote-loading">正在载入投票…</span></div>`;
+  };
+  const expanded = commentsRemoved
+    .replace(
+      new RegExp(
+        `<p\\b[^>]*>\\s*${votePattern.source}\\s*</p>`,
+        "gi"
+      ),
+      placeholder
+    )
+    .replace(votePattern, placeholder);
+
+  return expanded.replace(
+    /\uE000HU60_CODE_(\d+)\uE001/g,
+    (source, rawIndex: string) =>
+      protectedCode[Number(rawIndex)] ?? source
+  );
+}
+
+export function sanitizeHu60Content(
+  content: string,
+  currentTopicId?: number
+) {
+  const sanitized = sanitizeHtml(expandVoteUbb(content, currentTopicId), {
     allowedTags: [
       "a",
       "abbr",
@@ -254,7 +304,12 @@ export function sanitizeHu60Content(content: string) {
         "height"
       ],
       code: ["class"],
-      div: ["class"],
+      div: [
+        "class",
+        "data-vote-topic-id",
+        "role",
+        "aria-live"
+      ],
       span: ["class", "style"],
       p: ["class"],
       pre: ["class"],
@@ -274,6 +329,8 @@ export function sanitizeHu60Content(content: string) {
         "hu60_face",
         "hu60-post-tail",
         "hu60-system-notice",
+        "hu60-vote",
+        "hu60-vote-loading",
         "info-box",
         "tp",
         "userblocked",
@@ -478,11 +535,13 @@ export function sanitizeHu60Content(content: string) {
 
 export function sanitizeHu60ReviewContent(
   content: string,
-  hasEmbeddedReviewNotice = true
+  hasEmbeddedReviewNotice = true,
+  currentTopicId?: number
 ) {
   return sanitizeHu60Content(
     hasEmbeddedReviewNotice
       ? stripLeadingReviewNotice(content)
-      : content
+      : content,
+    currentTopicId
   );
 }

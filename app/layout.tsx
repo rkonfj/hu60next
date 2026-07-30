@@ -5,6 +5,7 @@ import { ContentImageEnhancer } from "@/components/content-image-enhancer";
 import { Header } from "@/components/header";
 import { MathContentEnhancer } from "@/components/math-content-enhancer";
 import { NavigationProgress } from "@/components/navigation-progress";
+import { VoteContentEnhancer } from "@/components/vote-content-enhancer";
 import { WeeklyMvpIdentityStyles } from "@/components/weekly-mvp-identity-styles";
 import "katex/dist/katex.min.css";
 import "./globals.css";
@@ -63,6 +64,7 @@ export default function RootLayout({
         <CodeCopyEnhancer />
         <ContentImageEnhancer />
         <MathContentEnhancer />
+        <VoteContentEnhancer />
         <Suspense fallback={null}>
           <WeeklyMvpIdentityStyles />
         </Suspense>

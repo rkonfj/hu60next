@@ -11,8 +11,11 @@ import {
   Link2,
   LoaderCircle,
   Paperclip,
+  Plus,
   Save,
   Send,
+  Trash2,
+  Vote,
   TriangleAlert
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -81,6 +84,13 @@ type SavedDraft = {
   content?: string;
   forumId?: number | null;
   forumPath?: string[];
+  vote?: DraftVote | null;
+};
+
+type DraftVote = {
+  question: string;
+  multiple: boolean;
+  options: string[];
 };
 
 function restoreForumPicker(
@@ -234,6 +244,30 @@ function renderInline(
   });
 }
 
+function stripPreviewComments(content: string) {
+  const protectedCode: string[] = [];
+  const protectedContent = content
+    .replace(
+      /(^|\n)(```|~~~)[^\n]*\n[\s\S]*?(?:\n\2(?=\n|$)|$)/g,
+      (source) => {
+        const index = protectedCode.push(source) - 1;
+        return `\uE000HU60_PREVIEW_CODE_${index}\uE001`;
+      }
+    )
+    .replace(/`[^`\n]*`/g, (source) => {
+      const index = protectedCode.push(source) - 1;
+      return `\uE000HU60_PREVIEW_CODE_${index}\uE001`;
+    });
+
+  return protectedContent
+    .replace(/\[comment\][\s\S]*?\[\/comment\]/gi, "")
+    .replace(
+      /\uE000HU60_PREVIEW_CODE_(\d+)\uE001/g,
+      (source, rawIndex: string) =>
+        protectedCode[Number(rawIndex)] ?? source
+    );
+}
+
 export function ComposerPreview({
   content,
   faces
@@ -246,7 +280,7 @@ export function ComposerPreview({
   }
 
   const faceMap = new Map(faces.map((face) => [face.name, face.url]));
-  const previewContent = content.replace(
+  const previewContent = stripPreviewComments(content).replace(
     /^<!--\s*markdown\s*-->\s*\n?/i,
     ""
   );
@@ -457,6 +491,23 @@ export function ComposerPreview({
       );
       continue;
     }
+    const vote = line.trim().match(/^\[vote\]\s*(\d+)\s*\[\/vote\]$/i);
+    if (vote) {
+      preview.push(
+        <section className="composer-vote-preview" key={index}>
+          <Vote size={18} />
+          <div>
+            <strong>
+              {vote[1] === "0"
+                ? "新投票（发布后绑定当前主题）"
+                : `投票主题 #${vote[1]}`}
+            </strong>
+            <span>实际选项和票数将在帖子页面中显示。</span>
+          </div>
+        </section>
+      );
+      continue;
+    }
     const image = line
       .trim()
       .match(/^!\[([^\]]*)\]\(((?:https?:\/\/|\/)[^)]+)\)$/);
@@ -525,6 +576,7 @@ export function Composer({
   const [targetForum, setTargetForum] = useState<ForumTree | null>(null);
   const [forumPath, setForumPath] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<AttachmentState[]>([]);
+  const [voteDraft, setVoteDraft] = useState<DraftVote | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [publishNotice, setPublishNotice] = useState("");
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -549,6 +601,19 @@ export function Composer({
         setTitle(draft.title ?? "");
         const draftContent = draft.content ?? "";
         setContent(draftContent);
+        if (
+          draft.vote &&
+          typeof draft.vote.question === "string" &&
+          Array.isArray(draft.vote.options)
+        ) {
+          setVoteDraft({
+            question: draft.vote.question,
+            multiple: draft.vote.multiple === true,
+            options: draft.vote.options
+              .map(String)
+              .slice(0, 12)
+          });
+        }
         selectionRef.current = {
           start: draftContent.length,
           end: draftContent.length
@@ -588,7 +653,8 @@ export function Composer({
           title,
           content,
           forumId: targetForum?.id ?? null,
-          forumPath
+          forumPath,
+          vote: voteDraft
         })
       );
       setSaved(true);
@@ -685,6 +751,62 @@ export function Composer({
       textAreaRef.current?.focus();
       textAreaRef.current?.setSelectionRange(cursor, cursor);
     });
+  }
+
+  function toggleVoteDraft() {
+    if (voteDraft) {
+      setVoteDraft(null);
+      setContent((value) =>
+        value
+          .replace(
+            /(?:^|\n)\s*\[vote\]\s*0\s*\[\/vote\]\s*(?=\n|$)/i,
+            ""
+          )
+          .replace(/^\n+|\n+$/g, "")
+      );
+      return;
+    }
+
+    setVoteDraft({
+      question: title.trim(),
+      multiple: false,
+      options: ["", ""]
+    });
+    insertText("[vote]0[/vote]");
+  }
+
+  function updateVoteOption(index: number, value: string) {
+    setVoteDraft((current) =>
+      current
+        ? {
+            ...current,
+            options: current.options.map((option, optionIndex) =>
+              optionIndex === index ? value : option
+            )
+          }
+        : current
+    );
+  }
+
+  function addVoteOption() {
+    setVoteDraft((current) =>
+      current && current.options.length < 12
+        ? { ...current, options: [...current.options, ""] }
+        : current
+    );
+  }
+
+  function removeVoteOption(index: number) {
+    setVoteDraft((current) =>
+      current && current.options.length > 2
+        ? {
+            ...current,
+            options: current.options.filter(
+              (_option, optionIndex) => optionIndex !== index
+            )
+          }
+        : current
+    );
   }
 
   function selectForum(levelIndex: number, value: string) {
@@ -815,8 +937,24 @@ export function Composer({
   const canPostToTarget = Boolean(
     targetForum && Number(targetForum.notopic) !== 1
   );
+  const voteIsValid =
+    !voteDraft ||
+    (Boolean(voteDraft.question.trim()) &&
+      voteDraft.question.trim().length <= 120 &&
+      voteDraft.options.length >= 2 &&
+      voteDraft.options.every(
+        (option) => Boolean(option.trim()) && option.trim().length <= 120
+      ) &&
+      new Set(
+        voteDraft.options.map((option) =>
+          option.trim().toLocaleLowerCase("zh-CN")
+        )
+      ).size === voteDraft.options.length);
   const canSubmit =
-    canPostToTarget && Boolean(title.trim()) && Boolean(content.trim());
+    canPostToTarget &&
+    Boolean(title.trim()) &&
+    Boolean(content.trim()) &&
+    voteIsValid;
 
   async function publishTopic(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -874,6 +1012,13 @@ export function Composer({
         value={canPostToTarget ? targetForum?.id : ""}
       />
       <input type="hidden" name="content" value={content} />
+      {voteDraft ? (
+        <input
+          type="hidden"
+          name="vote"
+          value={JSON.stringify(voteDraft)}
+        />
+      ) : null}
       <div className="composer-top">
         <div className="composer-forum-picker" id="forum-picker">
           <span>发布到</span>
@@ -964,6 +1109,16 @@ export function Composer({
               <Code2 size={16} />
             </button>
             <button
+              className={voteDraft ? "active" : ""}
+              type="button"
+              onClick={toggleVoteDraft}
+              aria-label={voteDraft ? "移除投票" : "插入投票"}
+              title={voteDraft ? "移除投票" : "插入投票"}
+              aria-pressed={Boolean(voteDraft)}
+            >
+              <Vote size={16} />
+            </button>
+            <button
               type="button"
               onPointerDown={rememberEditorSelection}
               onClick={() => fileInputRef.current?.click()}
@@ -985,6 +1140,76 @@ export function Composer({
             />
           </div>
         )}
+        {mode === "write" && voteDraft ? (
+          <section className="vote-draft-editor">
+            <div className="vote-draft-heading">
+              <div>
+                <strong>设置投票</strong>
+              </div>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={voteDraft.multiple}
+                  onChange={(event) =>
+                    setVoteDraft((current) =>
+                      current
+                        ? { ...current, multiple: event.target.checked }
+                        : current
+                    )
+                  }
+                />
+                允许多选
+              </label>
+            </div>
+            <input
+              className="vote-draft-question"
+              value={voteDraft.question}
+              onChange={(event) =>
+                setVoteDraft((current) =>
+                  current
+                    ? { ...current, question: event.target.value }
+                    : current
+                )
+              }
+              placeholder="投票题目"
+              maxLength={120}
+              aria-label="投票题目"
+            />
+            <div className="vote-draft-options">
+              {voteDraft.options.map((option, index) => (
+                <div className="vote-draft-option" key={index}>
+                  <span>{index + 1}</span>
+                  <input
+                    value={option}
+                    onChange={(event) =>
+                      updateVoteOption(index, event.target.value)
+                    }
+                    placeholder={`选项 ${index + 1}`}
+                    maxLength={120}
+                    aria-label={`投票选项 ${index + 1}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeVoteOption(index)}
+                    disabled={voteDraft.options.length <= 2}
+                    aria-label={`删除选项 ${index + 1}`}
+                    title="删除选项"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              className="vote-draft-add"
+              type="button"
+              onClick={addVoteOption}
+              disabled={voteDraft.options.length >= 12}
+            >
+              <Plus size={15} /> 添加选项
+            </button>
+          </section>
+        ) : null}
         {attachments.length > 0 && (
           <div className="attachment-list" aria-live="polite">
             {attachments.map((attachment) => (
