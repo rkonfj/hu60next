@@ -16,6 +16,7 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { Pagination } from "@/components/pagination";
 import { ReplyForm } from "@/components/reply-form";
 import { ReviewActions } from "@/components/reviews/review-actions";
+import { SessionUpdatePublisher } from "@/components/unread-badge";
 import { compactNumber, fullDate, relativeTime } from "@/lib/format";
 import {
   getFaces,
@@ -128,6 +129,16 @@ export default async function TopicPage({
 
   return (
     <main className="page-shell topic-page">
+      {topic._myself ? (
+        <SessionUpdatePublisher
+          update={{
+            newMsg: Number(topic._myself.newMsg || 0),
+            newAtInfo: Number(topic._myself.newAtInfo || 0),
+            countReview: Number(topic._myself.countReview || 0),
+            chatCountReview: Number(topic._myself.chatCountReview || 0)
+          }}
+        />
+      ) : null}
       <div className="topic-layout">
         <div className="topic-content-column">
           <article

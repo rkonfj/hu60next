@@ -6859,6 +6859,7 @@ body :is(
     .avatar,
     .avatar img,
     .notification-dot,
+    .review-notification-badge,
     .message-count,
     .brand-mark svg:last-child,
     .auth-pattern i
