@@ -40,6 +40,8 @@ import {
   sanitizeHu60ReviewContent
 } from "@/lib/sanitize";
 
+export const dynamic = "force-dynamic";
+
 type TopicPageProps = {
   params: Promise<{ id: string }>;
   searchParams: Promise<{
@@ -299,12 +301,6 @@ export default async function TopicPage({
               <TopicFloorOrder
                 topicId={topicId}
                 floorReverse={floorReverse}
-                page={currentPage}
-                floor={
-                  Number.isInteger(targetFloor) && targetFloor > 0
-                    ? targetFloor
-                    : undefined
-                }
               />
             </div>
             {replies.length > 10 ? (

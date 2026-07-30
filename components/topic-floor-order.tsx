@@ -1,17 +1,15 @@
 "use client";
 
 import { ArrowDownUp } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
-  appendReverseParam,
-  FLOOR_ORDER_COOKIE
+  FLOOR_ORDER_COOKIE,
+  reverseSearchParam
 } from "@/lib/floor-order";
 
 type TopicFloorOrderProps = {
   topicId: number;
   floorReverse: boolean;
-  page: number;
-  floor?: number;
 };
 
 function rememberFloorOrder(floorReverse: boolean) {
@@ -19,33 +17,19 @@ function rememberFloorOrder(floorReverse: boolean) {
   document.cookie = `${FLOOR_ORDER_COOKIE}=${value};path=/;max-age=31536000;SameSite=Lax`;
 }
 
-function topicOrderHref(
-  topicId: number,
-  floorReverse: boolean,
-  page: number,
-  floor?: number
-) {
-  const params = new URLSearchParams();
-  appendReverseParam(params, floorReverse);
-  if (floor && floor > 0) params.set("floor", String(floor));
-  else if (page > 1) params.set("page", String(page));
-
+function topicOrderHref(topicId: number, floorReverse: boolean) {
+  const params = new URLSearchParams({
+    reverse: reverseSearchParam(floorReverse)
+  });
   return `/topic/${topicId}?${params.toString()}#replies`;
 }
 
 export function TopicFloorOrder({
   topicId,
-  floorReverse,
-  page,
-  floor
+  floorReverse
 }: TopicFloorOrderProps) {
-  const router = useRouter();
-
-  function selectOrder(nextReverse: boolean) {
-    rememberFloorOrder(nextReverse);
-    router.push(topicOrderHref(topicId, nextReverse, page, floor));
-    router.refresh();
-  }
+  const ascendingHref = topicOrderHref(topicId, false);
+  const descendingHref = topicOrderHref(topicId, true);
 
   return (
     <div
@@ -53,24 +37,28 @@ export function TopicFloorOrder({
       role="group"
       aria-label="楼层排序"
     >
-      <button
-        type="button"
+      <Link
+        href={ascendingHref}
         className={floorReverse ? "" : "active"}
         aria-current={floorReverse ? undefined : "true"}
-        onClick={() => selectOrder(false)}
+        onClick={() => rememberFloorOrder(false)}
+        prefetch={false}
+        scroll={false}
       >
         <ArrowDownUp size={14} />
         正序
-      </button>
-      <button
-        type="button"
+      </Link>
+      <Link
+        href={descendingHref}
         className={floorReverse ? "active" : ""}
         aria-current={floorReverse ? "true" : undefined}
-        onClick={() => selectOrder(true)}
+        onClick={() => rememberFloorOrder(true)}
+        prefetch={false}
+        scroll={false}
       >
         <ArrowDownUp size={14} className="topic-floor-order-icon-reverse" />
         倒序
-      </button>
+      </Link>
     </div>
   );
 }
