@@ -92,6 +92,7 @@ export function TopicCard({
             href={`/forum/${topic.forum_id}`}
             className="forum-pill topic-title-forum"
             aria-label={`进入${topic.forum_name}版块`}
+            prefetch={false}
           >
             {topic.forum_name}
           </Link>

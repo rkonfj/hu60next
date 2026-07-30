@@ -86,7 +86,9 @@ export default async function TopicPage({
           <MessageCircle size={30} />
           <h1>帖子暂时不可用</h1>
           <p>没有使用离线正文或模拟回复代替真实内容。</p>
-          <Link href="/explore/active">返回发现页</Link>
+          <Link href="/explore/active" prefetch={false}>
+            返回发现页
+          </Link>
         </div>
       </main>
     );
@@ -193,6 +195,7 @@ export default async function TopicPage({
                   <Link
                     href={`/forum/${topic.fIndex.at(-1)?.id ?? 0}`}
                     className="forum-pill article-forum-pill"
+                    prefetch={false}
                   >
                     {topic.fName}
                   </Link>
@@ -244,6 +247,7 @@ export default async function TopicPage({
                   href={`/topic/${topicId}/edit/${mainFloor.id}${
                     page > 1 ? `?page=${page}` : ""
                   }`}
+                  prefetch={false}
                 >
                   <PencilLine size={14} /> 修改
                 </Link>
@@ -376,6 +380,7 @@ export default async function TopicPage({
                         href={`/topic/${topicId}/edit/${floor.id}${
                           page > 1 ? `?page=${page}` : ""
                         }`}
+                        prefetch={false}
                       >
                         <PencilLine size={14} /> 修改
                       </Link>
@@ -445,7 +450,7 @@ export default async function TopicPage({
                 <strong>加入这场讨论</strong>
                 <span>登录后即可参与讨论</span>
               </div>
-              <Link href={`/login?next=/topic/${topicId}`}>
+              <Link href={`/login?next=/topic/${topicId}`} prefetch={false}>
                 登录并回复 <Reply size={16} />
               </Link>
             </div>
