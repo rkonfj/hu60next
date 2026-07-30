@@ -6,7 +6,7 @@ import { notFound, redirect } from "next/navigation";
 import { EditPostForm } from "@/components/compose/edit-post-form";
 import { topicOrderQuery } from "@/lib/floor-order";
 import { resolveFloorReverse } from "@/lib/floor-order.server";
-import { getEditPostForm, getFaces } from "@/lib/hu60";
+import { getAccountProfile, getEditPostForm, getFaces } from "@/lib/hu60";
 import { topicFloorHref, topicHref } from "@/lib/topic-navigation";
 
 export const metadata: Metadata = { title: "修改帖子" };
@@ -27,7 +27,14 @@ export default async function EditPostPage({
   const topicId = Number(id);
   const postContentId = Number(contentId);
   const page = Math.max(1, Number(query.page) || 1);
-  const floorReverse = await resolveFloorReverse({ reverse: query.reverse });
+
+  const cookieStore = await cookies();
+  const sid = cookieStore.get("hulvlin_sid")?.value;
+  const account = sid ? await getAccountProfile(sid) : null;
+  const floorReverse = await resolveFloorReverse({
+    reverse: query.reverse,
+    accountFloorReverse: account?.floorReverse
+  });
 
   if (
     !Number.isInteger(topicId) ||
@@ -38,8 +45,6 @@ export default async function EditPostPage({
     notFound();
   }
 
-  const cookieStore = await cookies();
-  const sid = cookieStore.get("hulvlin_sid")?.value;
   const orderQuery = topicOrderQuery(floorReverse);
   const editQuery = new URLSearchParams({ reverse: orderQuery.reverse });
   if (page > 1) editQuery.set("page", String(page));
