@@ -2,6 +2,7 @@
 
 import {
   ChevronDown,
+  Puzzle,
   ShieldCheck,
   Trophy,
   UserRound
@@ -79,6 +80,10 @@ export function DesktopUserMenu({
         <Link href="/honors" onClick={closeMenu}>
           <Trophy size={16} />
           社区荣誉
+        </Link>
+        <Link href="/settings/webplugs" onClick={closeMenu}>
+          <Puzzle size={16} />
+          网页插件
         </Link>
         {canReview ? (
           <>

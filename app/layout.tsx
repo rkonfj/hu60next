@@ -6,6 +6,7 @@ import { Header } from "@/components/header";
 import { MathContentEnhancer } from "@/components/math-content-enhancer";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { VoteContentEnhancer } from "@/components/vote-content-enhancer";
+import { WebPlugRuntime } from "@/components/webplug/webplug-runtime";
 import { WeeklyMvpIdentityStyles } from "@/components/weekly-mvp-identity-styles";
 import "katex/dist/katex.min.css";
 import "./globals.css";
@@ -98,6 +99,9 @@ export default function RootLayout({
             京ICP备18041936号-1
           </a>
         </footer>
+        <Suspense fallback={null}>
+          <WebPlugRuntime />
+        </Suspense>
       </body>
     </html>
   );

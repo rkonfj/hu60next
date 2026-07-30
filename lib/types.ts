@@ -448,3 +448,32 @@ export type FavoriteTopicsResponse = {
   _time?: number;
   __fallback?: boolean;
 };
+
+export type WebPlugSummary = {
+  id: number;
+  load_order: number;
+  enabled: boolean | number;
+  name: string;
+  size: number;
+  author_uid?: number;
+  webplug_id?: string;
+};
+
+export type WebPlugItem = WebPlugSummary & {
+  content: string;
+};
+
+export type WebPlugListResponse = {
+  success?: boolean;
+  islogin?: boolean;
+  errmsg?: string;
+  data?: WebPlugSummary[];
+  __fallback?: boolean;
+};
+
+export type WebPlugMutationResponse = {
+  success?: boolean;
+  notice?: string;
+  newId?: number;
+  updated?: number;
+};
