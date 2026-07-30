@@ -153,7 +153,7 @@ export function AccountSettings({
   }
 
   return (
-    <div className="settings-sections">
+    <>
       <section className="settings-card">
         <header>
           <PencilLine size={18} />
@@ -374,6 +374,6 @@ export function AccountSettings({
           </button>
         </form>
       </section>
-    </div>
+    </>
   );
 }

@@ -432,6 +432,10 @@ export type AccountProfile = {
   siteAdmin?: boolean;
   permissions?: string[];
   __fallback?: boolean;
+  __error?: {
+    name: string;
+    message: string;
+  };
 };
 
 export type FavoriteTopicsResponse = {

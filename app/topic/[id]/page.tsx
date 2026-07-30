@@ -16,8 +16,15 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { Pagination } from "@/components/pagination";
 import { ReplyForm } from "@/components/reply-form";
 import { ReviewActions } from "@/components/reviews/review-actions";
+import { TopicFloorOrder } from "@/components/topic-floor-order";
 import { compactNumber, fullDate, relativeTime } from "@/lib/format";
 import {
+  floorReverseFlag,
+  topicOrderQuery
+} from "@/lib/floor-order";
+import { resolveFloorReverse } from "@/lib/floor-order.server";
+import {
+  getAccountProfile,
   getFaces,
   getTopic,
   getTopicMain
@@ -33,9 +40,16 @@ import {
   sanitizeHu60ReviewContent
 } from "@/lib/sanitize";
 
+export const dynamic = "force-dynamic";
+
 type TopicPageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ page?: string; replyError?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    floor?: string;
+    reverse?: string;
+    replyError?: string;
+  }>;
 };
 
 export async function generateMetadata({
@@ -47,10 +61,23 @@ export async function generateMetadata({
     searchParams,
     cookies()
   ]);
+  const sid = cookieStore.get("hulvlin_sid")?.value;
+  const account = sid ? await getAccountProfile(sid) : null;
+  const floorReverse = await resolveFloorReverse({
+    reverse: query.reverse,
+    accountFloorReverse: account?.floorReverse
+  });
+  const targetFloor = Number(query.floor);
   const topic = await getTopic(
     Number(id),
     Math.max(1, Number(query.page) || 1),
-    cookieStore.get("hulvlin_sid")?.value
+    sid,
+    {
+      floorReverse: floorReverseFlag(floorReverse),
+      ...(Number.isInteger(targetFloor) && targetFloor > 0
+        ? { floor: targetFloor }
+        : {})
+    }
   );
   return {
     title: topic.tMeta.title,
@@ -65,12 +92,26 @@ export default async function TopicPage({
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const topicId = Number(id);
   const page = Math.max(1, Number(query.page) || 1);
+  const targetFloor = Number(query.floor);
   const cookieStore = await cookies();
   const sid = cookieStore.get("hulvlin_sid")?.value;
+  const account = sid ? await getAccountProfile(sid) : null;
+  const floorReverse = await resolveFloorReverse({
+    reverse: query.reverse,
+    accountFloorReverse: account?.floorReverse
+  });
+  const topicOptions = {
+    floorReverse: floorReverseFlag(floorReverse),
+    ...(Number.isInteger(targetFloor) && targetFloor > 0
+      ? { floor: targetFloor }
+      : {})
+  };
   const [topic, faces] = await Promise.all([
-    getTopic(topicId, page, sid),
+    getTopic(topicId, page, sid, topicOptions),
     getFaces()
   ]);
+  const currentPage = Math.max(1, topic.currPage || page);
+  const paginationQuery = topicOrderQuery(floorReverse);
 
   if (topic.__fallback) {
     return (
@@ -92,9 +133,9 @@ export default async function TopicPage({
   }
 
   const firstPageTopic = await (
-    page === 1
+    currentPage === 1
       ? Promise.resolve(topic)
-      : getTopicMain(topicId, sid)
+      : getTopicMain(topicId, sid, topicOptions)
   );
   const authorMemberTitle =
     topic.tMeta._u_regtime !== undefined
@@ -230,9 +271,10 @@ export default async function TopicPage({
               />
               {mainFloor && canEditFloor(mainFloor) ? (
                 <Link
-                  href={`/topic/${topicId}/edit/${mainFloor.id}${
-                    page > 1 ? `?page=${page}` : ""
-                  }`}
+                  href={`/topic/${topicId}/edit/${mainFloor.id}?${new URLSearchParams({
+                    ...paginationQuery,
+                    ...(currentPage > 1 ? { page: String(currentPage) } : {})
+                  }).toString()}`}
                 >
                   <PencilLine size={14} /> 修改
                 </Link>
@@ -260,13 +302,17 @@ export default async function TopicPage({
                 </span>
                 <h2>{topic.floorCount - 1} 条回复</h2>
               </div>
-              <span>默认正序</span>
+              <TopicFloorOrder
+                topicId={topicId}
+                floorReverse={floorReverse}
+              />
             </div>
             {replies.length > 10 ? (
               <Pagination
-                current={topic.currPage}
+                current={currentPage}
                 max={topic.maxPage}
                 path={`/topic/${topicId}`}
+                query={paginationQuery}
                 className="topic-pagination-top"
                 previousPageTarget="last-reply"
                 nextPageTarget="first-reply"
@@ -356,9 +402,12 @@ export default async function TopicPage({
                   <div className="reply-actions">
                     {canEditFloor(floor) ? (
                       <Link
-                        href={`/topic/${topicId}/edit/${floor.id}${
-                          page > 1 ? `?page=${page}` : ""
-                        }`}
+                        href={`/topic/${topicId}/edit/${floor.id}?${new URLSearchParams({
+                          ...paginationQuery,
+                          ...(currentPage > 1
+                            ? { page: String(currentPage) }
+                            : {})
+                        }).toString()}`}
                       >
                         <PencilLine size={14} /> 修改
                       </Link>
@@ -396,9 +445,10 @@ export default async function TopicPage({
           </section>
 
           <Pagination
-            current={topic.currPage}
+            current={currentPage}
             max={topic.maxPage}
             path={`/topic/${topicId}`}
+            query={paginationQuery}
             previousPageTarget="last-reply"
             nextPageTarget="first-reply"
             prefetch={false}
@@ -407,7 +457,8 @@ export default async function TopicPage({
           {topic.canReply && topic.token ? (
             <ReplyForm
               topicId={topicId}
-              currentPage={topic.currPage}
+              currentPage={currentPage}
+              floorReverse={floorReverse}
               userId={sessionUid}
               token={topic.token}
               faces={faces}
