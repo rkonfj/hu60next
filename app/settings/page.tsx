@@ -41,6 +41,7 @@ export default async function SettingsPage() {
         avatar={profile._u_avatar}
         signature={account.signature}
         contact={account.contact}
+        floorReverse={account.floorReverse === true}
       />
     </main>
   );

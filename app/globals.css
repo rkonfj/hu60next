@@ -5451,6 +5451,22 @@ body:has(> .auth-page) > .site-header {
   opacity: 0;
 }
 
+.settings-floor-order {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 11px;
+}
+
+.settings-inline-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .settings-notice {
   margin: 10px 0 0;
   padding: 8px 9px;
