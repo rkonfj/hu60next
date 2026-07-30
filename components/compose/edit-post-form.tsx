@@ -40,6 +40,11 @@ import {
   type DraftVote,
   type UploadFormResult
 } from "@/components/compose/composer";
+import {
+  hasHu60MarkdownSourceMarker,
+  withoutHu60MarkdownMarker,
+  withHu60MarkdownMarker
+} from "@/lib/markdown";
 import type { ForumFace } from "@/lib/types";
 import { topicFloorHref, topicHref } from "@/lib/topic-navigation";
 
@@ -74,11 +79,16 @@ export function EditPostForm({
   faces
 }: EditPostFormProps) {
   const router = useRouter();
+  const initialUsesMarkdown =
+    hasHu60MarkdownSourceMarker(initialContent);
+  const editableInitialContent = initialUsesMarkdown
+    ? withoutHu60MarkdownMarker(initialContent)
+    : initialContent;
   const [mode, setMode] = useState<"write" | "preview">("write");
   const [title, setTitle] = useState(initialTitle);
-  const [content, setContent] = useState(initialContent);
+  const [content, setContent] = useState(editableInitialContent);
   const [voteDraft, setVoteDraft] = useState<DraftVote | null>(() =>
-    editTitle ? parseVoteUbbForEditor(initialContent) : null
+    editTitle ? parseVoteUbbForEditor(editableInitialContent) : null
   );
   const [editReason, setEditReason] = useState("");
   const [attachments, setAttachments] = useState<AttachmentState[]>([]);
@@ -87,8 +97,8 @@ export function EditPostForm({
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const selectionRef = useRef({
-    start: initialContent.length,
-    end: initialContent.length
+    start: editableInitialContent.length,
+    end: editableInitialContent.length
   });
   const returnPath =
     floor > 0
@@ -307,8 +317,11 @@ export function EditPostForm({
     }
   }
 
+  const submittedContent = initialUsesMarkdown
+    ? withHu60MarkdownMarker(content)
+    : content;
   const canSubmit =
-    content.length <= 20000 &&
+    submittedContent.length <= 20000 &&
     (!editTitle || Boolean(title.trim())) &&
     (!needReason || Boolean(editReason.trim())) &&
     isDraftVoteValid(voteDraft);
@@ -324,7 +337,11 @@ export function EditPostForm({
     >
       <input type="hidden" name="page" value={page} />
       <input type="hidden" name="floor" value={floor} />
-      <input type="hidden" name="content" value={content} />
+      <input
+        type="hidden"
+        name="content"
+        value={submittedContent}
+      />
       <div className="edit-composer-top">
         <span>{editTitle ? "修改主题" : `修改第 ${floor} 楼`}</span>
         <Link href={returnPath} prefetch={false}>

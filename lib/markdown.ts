@@ -11,6 +11,16 @@ export function withHu60MarkdownMarker(content: string) {
     : `${markdownMarker}\n${normalizedContent}`;
 }
 
+export function hasHu60MarkdownSourceMarker(content: string) {
+  return markdownSourcePattern.test(content);
+}
+
+export function withoutHu60MarkdownMarker(content: string) {
+  return content
+    .replace(markdownSourcePattern, "")
+    .replace(/^\r?\n/, "");
+}
+
 export function isHu60MarkdownContent(content: string) {
   return (
     markdownSourcePattern.test(content) ||
