@@ -17,6 +17,7 @@ export type ReviewActionContext =
       type: "topic";
       topicId: number;
       page: number;
+      floorReverse?: boolean;
     };
 
 type ReviewDecision = "pass" | "reject";

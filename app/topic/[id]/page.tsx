@@ -318,7 +318,12 @@ export default async function TopicPage({
                 contentId={mainFloor.id}
                 reviewState={mainFloor.review}
                 logs={mainFloor.review_log}
-                context={{ type: "topic", topicId, page }}
+                context={{
+                  type: "topic",
+                  topicId,
+                  page: currentPage,
+                  floorReverse
+                }}
               />
             ) : null}
           </article>
@@ -470,7 +475,12 @@ export default async function TopicPage({
                       contentId={floor.id}
                       reviewState={floor.review}
                       logs={floor.review_log}
-                      context={{ type: "topic", topicId, page }}
+                      context={{
+                        type: "topic",
+                        topicId,
+                        page: currentPage,
+                        floorReverse
+                      }}
                     />
                   ) : null}
                 </article>
