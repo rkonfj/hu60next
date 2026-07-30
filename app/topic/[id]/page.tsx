@@ -450,6 +450,7 @@ export default async function TopicPage({
             <ReplyForm
               topicId={topicId}
               currentPage={currentPage}
+              floorReverse={floorReverse}
               userId={sessionUid}
               token={topic.token}
               faces={faces}

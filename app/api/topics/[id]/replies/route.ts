@@ -136,7 +136,12 @@ export async function POST(request: Request, { params }: RouteContext) {
       );
     }
 
-    const floorReverse = await resolveFloorReverse();
+    const reverseParam = String(form.get("reverse") ?? "");
+    const floorReverse = await resolveFloorReverse(
+      reverseParam === "1" || reverseParam === "0"
+        ? { reverse: reverseParam }
+        : undefined
+    );
     const destination = replyDestination(topicId, data.url, floorReverse);
 
     if (isDocumentSubmission(request)) {

@@ -9,6 +9,10 @@ import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
 
+function isDocumentSubmission(request: Request) {
+  return request.headers.get("accept")?.includes("text/html") ?? false;
+}
+
 function getPublicOrigin(request: Request) {
   const forwardedHost = request.headers
     .get("x-forwarded-host")
@@ -92,47 +96,35 @@ async function persistFloorOrder(request: Request, floorReverse: boolean) {
   };
 }
 
-export async function GET(request: Request) {
-  const floorReverse = isFloorReverseEnabled(
-    new URL(request.url).searchParams.get("floorReverse")
-  );
+export async function POST(request: Request) {
+  const form = await request.formData();
+  const floorReverse = isFloorReverseEnabled(form.get("floorReverse"));
+  const origin = getPublicOrigin(request);
 
   try {
     const result = await persistFloorOrder(request, floorReverse);
-    const origin = getPublicOrigin(request);
 
-    if (!result.ok) {
-      return NextResponse.redirect(
+    if (isDocumentSubmission(request)) {
+      if (!result.ok) {
+        return NextResponse.redirect(
+          new URL(
+            `/settings?floorOrderError=${encodeURIComponent(result.notice)}`,
+            origin
+          ),
+          303
+        );
+      }
+
+      const response = NextResponse.redirect(
         new URL(
-          `/settings?floorOrderError=${encodeURIComponent(result.notice)}`,
+          `/settings?floorOrder=${result.savedFloorReverse ? "desc" : "asc"}`,
           origin
         ),
         303
       );
+      return applyFloorOrderCookie(response, result.savedFloorReverse);
     }
 
-    const response = NextResponse.redirect(
-      new URL(
-        `/settings?floorOrder=${result.savedFloorReverse ? "desc" : "asc"}`,
-        origin
-      ),
-      303
-    );
-    return applyFloorOrderCookie(response, result.savedFloorReverse);
-  } catch {
-    return NextResponse.redirect(
-      new URL("/settings?floorOrderError=1", getPublicOrigin(request)),
-      303
-    );
-  }
-}
-
-export async function POST(request: Request) {
-  const form = await request.formData();
-  const floorReverse = isFloorReverseEnabled(form.get("floorReverse"));
-
-  try {
-    const result = await persistFloorOrder(request, floorReverse);
     if (!result.ok) {
       return NextResponse.json(
         { success: false, notice: result.notice },
@@ -147,6 +139,13 @@ export async function POST(request: Request) {
     });
     return applyFloorOrderCookie(response, result.savedFloorReverse);
   } catch {
+    if (isDocumentSubmission(request)) {
+      return NextResponse.redirect(
+        new URL("/settings?floorOrderError=1", origin),
+        303
+      );
+    }
+
     return NextResponse.json(
       { success: false, notice: "暂时无法连接账号服务。" },
       { status: 502 }

@@ -9,7 +9,7 @@ export function topicPageForFloor(floor: number) {
 export function topicFloorHref(
   topicId: number,
   floor: number,
-  floorReverse = false
+  floorReverse?: boolean
 ) {
   const safeFloor = Math.max(0, Math.trunc(floor));
   if (safeFloor < 1) return topicHref(topicId, { floorReverse });
@@ -33,7 +33,7 @@ export function topicHref(
 
   if (floor > 0) params.set("floor", String(floor));
   else if (page > 1) params.set("page", String(page));
-  appendReverseParam(params, options?.floorReverse === true);
+  appendReverseParam(params, options?.floorReverse);
 
   const query = `?${params.toString()}`;
   const hash = floor > 0 ? `#floor-${floor}` : "";

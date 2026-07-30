@@ -24,7 +24,8 @@ export function topicOrderQuery(
 
 export function appendReverseParam(
   params: URLSearchParams,
-  floorReverse: boolean
+  floorReverse?: boolean
 ) {
+  if (floorReverse === undefined) return;
   params.set("reverse", reverseSearchParam(floorReverse));
 }

@@ -46,7 +46,7 @@ export default async function SettingsPage({
               text:
                 query.floorOrderError === "1"
                   ? "楼层排序偏好保存失败，请稍后重试。"
-                  : decodeURIComponent(query.floorOrderError)
+                  : query.floorOrderError
             }
           : null;
 

@@ -1,5 +1,4 @@
 import { ArrowDownUp } from "lucide-react";
-import Link from "next/link";
 
 export function AccountFloorOrderSetting({
   floorReverse
@@ -21,24 +20,28 @@ export function AccountFloorOrderSetting({
           role="group"
           aria-label="默认楼层排序"
         >
-          <Link
-            href="/api/account/floor-order?floorReverse=0"
-            className={floorReverse ? "" : "active"}
-            aria-current={floorReverse ? undefined : "true"}
-            prefetch={false}
-          >
-            <ArrowDownUp size={14} />
-            正序
-          </Link>
-          <Link
-            href="/api/account/floor-order?floorReverse=1"
-            className={floorReverse ? "active" : ""}
-            aria-current={floorReverse ? "true" : undefined}
-            prefetch={false}
-          >
-            <ArrowDownUp size={14} className="topic-floor-order-icon-reverse" />
-            倒序
-          </Link>
+          <form action="/api/account/floor-order" method="post">
+            <input type="hidden" name="floorReverse" value="0" />
+            <button
+              type="submit"
+              className={floorReverse ? "" : "active"}
+              aria-current={floorReverse ? undefined : "true"}
+            >
+              <ArrowDownUp size={14} />
+              正序
+            </button>
+          </form>
+          <form action="/api/account/floor-order" method="post">
+            <input type="hidden" name="floorReverse" value="1" />
+            <button
+              type="submit"
+              className={floorReverse ? "active" : ""}
+              aria-current={floorReverse ? "true" : undefined}
+            >
+              <ArrowDownUp size={14} className="topic-floor-order-icon-reverse" />
+              倒序
+            </button>
+          </form>
         </div>
       </div>
     </section>

@@ -840,7 +840,8 @@ select:focus-visible {
   background: rgba(255, 255, 255, 0.65);
 }
 
-.feed-tabs a {
+.feed-tabs a,
+.feed-tabs button {
   display: flex;
   align-items: center;
   padding: 7px 12px;
@@ -854,7 +855,8 @@ select:focus-visible {
   cursor: pointer;
 }
 
-.feed-tabs a.active {
+.feed-tabs a.active,
+.feed-tabs button.active {
   color: var(--green-strong);
   background: var(--surface);
   box-shadow: 0 3px 10px rgba(23, 55, 38, 0.08);
@@ -6715,7 +6717,8 @@ body :is(
   padding: 2px;
 }
 
-.feed-tabs a {
+.feed-tabs a,
+.feed-tabs button {
   padding: 5px 9px;
 }
 
