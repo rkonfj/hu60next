@@ -33,12 +33,14 @@ import {
   type UploadFormResult
 } from "@/components/compose/composer";
 import type { ForumFace } from "@/lib/types";
+import { topicFloorHref, topicHref } from "@/lib/topic-navigation";
 
 type EditPostFormProps = {
   topicId: number;
   contentId: number;
   page: number;
   floor: number;
+  floorReverse?: boolean;
   initialTitle: string;
   initialContent: string;
   editTitle: boolean;
@@ -51,17 +53,12 @@ type EditorSelection = {
   end: number;
 };
 
-function topicPath(topicId: number, page: number, floor: number) {
-  const query = page > 1 ? `?page=${page}` : "";
-  const hash = floor > 0 ? `#floor-${floor}` : "";
-  return `/topic/${topicId}${query}${hash}`;
-}
-
 export function EditPostForm({
   topicId,
   contentId,
   page,
   floor,
+  floorReverse = false,
   initialTitle,
   initialContent,
   editTitle,
@@ -82,7 +79,10 @@ export function EditPostForm({
     start: initialContent.length,
     end: initialContent.length
   });
-  const returnPath = topicPath(topicId, page, floor);
+  const returnPath =
+    floor > 0
+      ? topicFloorHref(topicId, floor, floorReverse)
+      : topicHref(topicId, { page, floorReverse });
 
   function rememberEditorSelection() {
     const textarea = textAreaRef.current;

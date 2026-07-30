@@ -2510,6 +2510,14 @@ a.topic-card-stat:hover {
   font-size: 9px;
 }
 
+.topic-floor-order {
+  flex-shrink: 0;
+}
+
+.topic-floor-order-icon-reverse {
+  transform: scaleY(-1);
+}
+
 .topic-pagination-top {
   margin: 0 0 12px;
 }

@@ -4,17 +4,16 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { EditPostForm } from "@/components/compose/edit-post-form";
+import { topicOrderQuery } from "@/lib/floor-order";
+import { resolveFloorReverse } from "@/lib/floor-order.server";
 import { getEditPostForm, getFaces } from "@/lib/hu60";
-import {
-  topicFloorHref,
-  topicPageForFloor
-} from "@/lib/topic-navigation";
+import { topicFloorHref, topicHref } from "@/lib/topic-navigation";
 
 export const metadata: Metadata = { title: "修改帖子" };
 
 type EditPostPageProps = {
   params: Promise<{ id: string; contentId: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; reverse?: string }>;
 };
 
 export default async function EditPostPage({
@@ -28,6 +27,7 @@ export default async function EditPostPage({
   const topicId = Number(id);
   const postContentId = Number(contentId);
   const page = Math.max(1, Number(query.page) || 1);
+  const floorReverse = await resolveFloorReverse({ reverse: query.reverse });
 
   if (
     !Number.isInteger(topicId) ||
@@ -40,9 +40,13 @@ export default async function EditPostPage({
 
   const cookieStore = await cookies();
   const sid = cookieStore.get("hulvlin_sid")?.value;
+  const orderQuery = topicOrderQuery(floorReverse);
+  const orderSuffix = orderQuery.reverse
+    ? `&reverse=${orderQuery.reverse}`
+    : "";
   const nextPath =
     `/topic/${topicId}/edit/${postContentId}` +
-    (page > 1 ? `?page=${page}` : "");
+    (page > 1 ? `?page=${page}${orderSuffix}` : orderQuery.reverse ? `?reverse=1` : "");
 
   if (!sid) {
     redirect(`/login?next=${encodeURIComponent(nextPath)}`);
@@ -53,14 +57,10 @@ export default async function EditPostPage({
     getFaces()
   ]);
   const floor = Number(form.floorMeta?.floor ?? 0);
-  const editPage = query.page
-    ? page
-    : topicPageForFloor(floor);
-  const returnPath = query.page
-    ? `/topic/${topicId}${editPage > 1 ? `?page=${editPage}` : ""}${
-        floor > 0 ? `#floor-${floor}` : ""
-      }`
-    : topicFloorHref(topicId, floor);
+  const returnPath =
+    floor > 0
+      ? topicFloorHref(topicId, floor, floorReverse)
+      : topicHref(topicId, { page, floorReverse });
   const formReady =
     form.isLogin === true &&
     typeof form.token === "string" &&
@@ -81,8 +81,9 @@ export default async function EditPostPage({
         <EditPostForm
           topicId={topicId}
           contentId={postContentId}
-          page={editPage}
+          page={page}
           floor={floor}
+          floorReverse={floorReverse}
           initialTitle={form.title || form.tMeta?.title || ""}
           initialContent={form.content || ""}
           editTitle={form.editTitle === true}
