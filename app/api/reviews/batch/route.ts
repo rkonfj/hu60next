@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { floorReverseFlag } from "@/lib/floor-order";
 import {
   getReviewQueue,
   getTopic,
@@ -32,6 +33,7 @@ type ReviewContext =
       type: "topic";
       topicId: number;
       page: number;
+      floorReverse?: boolean;
     };
 
 type ReviewRequest = {
@@ -154,7 +156,9 @@ async function getAuthoritativeTargets(
     return queue.__fallback ? null : queue.replyList;
   }
 
-  const topic = await getTopic(context.topicId, context.page, sid);
+  const topic = await getTopic(context.topicId, context.page, sid, {
+    floorReverse: floorReverseFlag(Boolean(context.floorReverse))
+  });
   return topic.__fallback ? null : topic.tContents;
 }
 
