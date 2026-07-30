@@ -340,6 +340,12 @@ export default async function TopicPage({
                         title={fullDate(floor.ctime)}
                       >
                         {relativeTime(floor.ctime)}
+                        {Number(floor.mtime || floor.ctime) !==
+                        Number(floor.ctime)
+                          ? ` · ${relativeTime(
+                              Number(floor.mtime)
+                            )}编辑`
+                          : ""}
                       </span>
                     </div>
                     <a href={`#floor-${floor.floor}`} className="floor-number">
