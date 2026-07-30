@@ -1,9 +1,122 @@
-import sanitizeHtml from "sanitize-html";
+import sanitizeHtml, { type Attributes, type Tag } from "sanitize-html";
 import { highlightCode } from "@/lib/highlight";
 import {
   resolveSafeMediaUrl,
   resolveTrustedEmbedUrl
 } from "@/lib/media";
+import {
+  clampIframeDimension,
+  hasUserCssClass,
+  isUserHtmlIframe,
+  sanitizeUserStyle
+} from "@/lib/user-css";
+
+function sanitizeUserHtmlSrcdoc(srcdoc: string) {
+  const decoded = decodeCodeEntities(srcdoc);
+  return sanitizeHtml(decoded, {
+    allowedTags: [
+      "a",
+      "b",
+      "br",
+      "code",
+      "div",
+      "em",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "hr",
+      "i",
+      "img",
+      "li",
+      "ol",
+      "p",
+      "pre",
+      "span",
+      "strong",
+      "table",
+      "tbody",
+      "td",
+      "th",
+      "thead",
+      "tr",
+      "u",
+      "ul"
+    ],
+    allowedAttributes: {
+      a: ["href", "title", "class"],
+      div: ["class", "style"],
+      img: ["src", "alt", "title", "class", "style", "width", "height"],
+      p: ["class"],
+      span: ["class", "style"]
+    },
+    allowedSchemes: ["http", "https", "mailto", "data"],
+    parseStyleAttributes: false,
+    transformTags: {
+      div: (_tagName, attribs) => ({
+        tagName: "div",
+        attribs: {
+          ...attribs,
+          ...(attribs.style
+            ? { style: sanitizeUserStyle(attribs.style) }
+            : {})
+        }
+      }),
+      span: (_tagName, attribs) => ({
+        tagName: "span",
+        attribs: {
+          ...attribs,
+          ...(attribs.style
+            ? { style: sanitizeUserStyle(attribs.style) }
+            : {})
+        }
+      }),
+      img: (_tagName, attribs) => ({
+        tagName: "img",
+        attribs: {
+          ...attribs,
+          src: resolveSource(attribs.src)
+        }
+      }),
+      a: (_tagName, attribs) => ({
+        tagName: "a",
+        attribs: {
+          ...attribs,
+          href: resolveHref(attribs.href),
+          target: "_blank",
+          rel: "noopener noreferrer"
+        }
+      })
+    }
+  });
+}
+
+function normalizeUserCssAttribs(attribs: Record<string, string>) {
+  if (!hasUserCssClass(attribs.class)) {
+    const { style: _style, ...rest } = attribs;
+    return rest;
+  }
+
+  const style = sanitizeUserStyle(attribs.style);
+  return {
+    ...attribs,
+    ...(style ? { style } : {})
+  };
+}
+
+function normalizeImageStyle(style?: string) {
+  if (!style?.trim()) return "";
+
+  return style
+    .split(";")
+    .map((declaration) => declaration.trim())
+    .filter((declaration) =>
+      /^(?:width|height|max-width|max-height)\s*:/i.test(declaration)
+    )
+    .join("; ");
+}
 
 function decodeCodeEntities(value: string) {
   return value.replace(
@@ -143,9 +256,6 @@ function normalizeDivClass(value = "") {
   return [...new Set(classes)].join(" ");
 }
 
-const safeImageDimensionPattern =
-  /^(?:auto|0|(?:\d+(?:\.\d+)?)(?:px|%|em|rem|vw|vh|vmin|vmax))$/i;
-
 function stripLeadingReviewNotice(content: string) {
   const opening = content.match(
     /<div\b[^>]*class=(?:"[^"]*\binfo-box\b[^"]*"|'[^']*\binfo-box\b[^']*')[^>]*>/i
@@ -173,6 +283,52 @@ function stripLeadingReviewNotice(content: string) {
   }
 
   return content;
+}
+
+function transformIframeTag(_tagName: string, attribs: Attributes): Tag {
+  if (isUserHtmlIframe(attribs)) {
+    const width = clampIframeDimension(attribs.width) || "100%";
+    const height = clampIframeDimension(attribs.height) || "300";
+    const style = sanitizeUserStyle(attribs.style) || "border: none";
+    const userAttribs: Attributes = {
+      class: "useriframe hu60-user-html-frame",
+      src: "",
+      srcdoc: sanitizeUserHtmlSrcdoc(attribs.srcdoc || ""),
+      width,
+      height,
+      style,
+      seamless: "",
+      allow: "fullscreen; local-fonts",
+      sandbox:
+        "allow-forms allow-orientation-lock allow-pointer-lock allow-popups allow-presentation allow-scripts",
+      loading: "lazy",
+      referrerpolicy: "strict-origin-when-cross-origin",
+      title: attribs.title || "用户嵌入 HTML"
+    };
+    if (attribs.id) userAttribs.id = attribs.id;
+    return { tagName: "iframe", attribs: userAttribs };
+  }
+
+  const src = resolveTrustedEmbedUrl(attribs.src);
+  const isAudio =
+    src?.includes("music.163.com/outchain/player") ||
+    attribs.class?.split(/\s+/).includes("audio");
+  return {
+    tagName: "iframe",
+    attribs: {
+      src: src || "",
+      class: isAudio ? "hu60-audio-frame" : "hu60-video-frame",
+      title:
+        attribs.title ||
+        (isAudio ? "嵌入音频播放器" : "嵌入视频播放器"),
+      loading: "lazy",
+      allow: "autoplay; encrypted-media; fullscreen; picture-in-picture",
+      allowfullscreen: "",
+      referrerpolicy: "strict-origin-when-cross-origin",
+      sandbox:
+        "allow-scripts allow-forms allow-same-origin allow-popups allow-presentation"
+    }
+  };
 }
 
 function expandVoteUbb(content: string, currentTopicId?: number) {
@@ -295,19 +451,24 @@ export function sanitizeHu60Content(
       ],
       iframe: [
         "src",
+        "srcdoc",
         "title",
         "class",
+        "id",
         "allow",
         "allowfullscreen",
         "loading",
         "referrerpolicy",
         "sandbox",
+        "seamless",
+        "style",
         "width",
         "height"
       ],
       code: ["class"],
       div: [
         "class",
+        "style",
         "data-vote-topic-id",
         "role",
         "aria-live"
@@ -330,12 +491,17 @@ export function sanitizeHu60Content(
         "markdown-body",
         "hu60_face",
         "hu60-post-tail",
+        "hu60-user-html-frame",
         "hu60-system-notice",
         "hu60-vote",
         "hu60-vote-loading",
         "info-box",
         "tp",
         "userblocked",
+        "usercss",
+        "useriframe",
+        "iframe_box",
+        "useriframelink",
         "userlink",
         "userimg",
         "userinfo",
@@ -381,42 +547,11 @@ export function sanitizeHu60Content(
         "html",
         "yaml",
         "yml",
-        /^(?:language|lang)-[a-z0-9_+#.-]+$/i
+        /^(?:language|lang)-[a-z0-9_+#.-]+$/i,
+        /^uid-\d+$/i
       ]
     },
-    allowedStyles: {
-      img: {
-        width: [safeImageDimensionPattern],
-        height: [safeImageDimensionPattern]
-      },
-      span: {
-        color: [
-          /^(?:#[\da-f]{3,8}|rgba?\([\d\s,.%]+\)|hsla?\([\d\s,.%]+\))$/i
-        ],
-        background: [
-          /^(?:#[\da-f]{3,8}|rgba?\([\d\s,.%]+\)|hsla?\([\d\s,.%]+\))$/i
-        ],
-        "background-color": [
-          /^(?:#[\da-f]{3,8}|rgba?\([\d\s,.%]+\)|hsla?\([\d\s,.%]+\))$/i
-        ],
-        "font-size": [/^(?:[8-9]|1[0-8])px$/],
-        "font-weight": [/^(?:normal|bold|[4-7]00)$/],
-        "font-style": [/^(?:normal|italic)$/],
-        display: [/^(?:inline|inline-block|block)$/],
-        padding: [
-          /^(?:0|(?:[0-9]|1[0-2])px)(?:\s+(?:0|(?:[0-9]|1[0-2])px)){0,3}$/
-        ],
-        margin: [
-          /^(?:0|(?:[0-9]|1[0-2])px)(?:\s+(?:0|(?:[0-9]|1[0-2])px)){0,3}$/
-        ],
-        "margin-top": [/^(?:0|(?:[0-9]|1[0-2])px)$/],
-        "margin-right": [/^(?:0|(?:[0-9]|1[0-2])px)$/],
-        "margin-bottom": [/^(?:0|(?:[0-9]|1[0-2])px)$/],
-        "margin-left": [/^(?:0|(?:[0-9]|1[0-2])px)$/],
-        "border-radius": [/^(?:0|[0-6](?:\.\d+)?px)$/],
-        "text-align": [/^(?:left|right|center)$/]
-      }
-    },
+    parseStyleAttributes: false,
     allowedSchemes: ["http", "https", "mailto"],
     transformTags: {
       a: (_tagName, attribs) => {
@@ -438,40 +573,20 @@ export function sanitizeHu60Content(
       img: (_tagName, attribs) => {
         const src = resolveSource(attribs.src);
         const className = normalizeImageClass(attribs.class, src);
+        const style = normalizeImageStyle(attribs.style);
         return {
           tagName: "img",
           attribs: {
             ...attribs,
             src,
             ...(className ? { class: className } : {}),
+            ...(style ? { style } : {}),
             loading: "lazy",
             decoding: "async"
           }
         };
       },
-      iframe: (_tagName, attribs) => {
-        const src = resolveTrustedEmbedUrl(attribs.src);
-        const isAudio =
-          src?.includes("music.163.com/outchain/player") ||
-          attribs.class?.split(/\s+/).includes("audio");
-        return {
-          tagName: "iframe",
-          attribs: {
-            src: src || "",
-            class: isAudio ? "hu60-audio-frame" : "hu60-video-frame",
-            title:
-              attribs.title ||
-              (isAudio ? "嵌入音频播放器" : "嵌入视频播放器"),
-            loading: "lazy",
-            allow:
-              "autoplay; encrypted-media; fullscreen; picture-in-picture",
-            allowfullscreen: "",
-            referrerpolicy: "strict-origin-when-cross-origin",
-            sandbox:
-              "allow-scripts allow-forms allow-same-origin allow-popups allow-presentation"
-          }
-        };
-      },
+      iframe: transformIframeTag,
       audio: (_tagName, attribs) => {
         const src = resolveSafeMediaUrl(attribs.src);
         return {
@@ -500,33 +615,24 @@ export function sanitizeHu60Content(
           }
         };
       },
-      span: (_tagName, attribs) => {
-        const isPostTail = attribs.class
-          ?.split(/\s+/)
-          .includes("usercss");
-        return {
-          tagName: "span",
-          attribs: isPostTail
-            ? {
-                class: "hu60-post-tail",
-                ...(attribs.style ? { style: attribs.style } : {})
-              }
-            : attribs
-        };
-      },
+      span: (_tagName, attribs) => ({
+        tagName: "span",
+        attribs: normalizeUserCssAttribs(attribs)
+      }),
       div: (_tagName, attribs) => {
         const className = normalizeDivClass(attribs.class);
         return {
           tagName: "div",
-          attribs: {
+          attribs: normalizeUserCssAttribs({
             ...attribs,
             ...(className ? { class: className } : {})
-          }
+          })
         };
       }
     },
     exclusiveFilter: (frame) =>
       (frame.tag === "iframe" &&
+        !isUserHtmlIframe(frame.attribs) &&
         !resolveTrustedEmbedUrl(frame.attribs.src)) ||
       (frame.tag === "audio" && !resolveSafeMediaUrl(frame.attribs.src)) ||
       (frame.tag === "video" && !resolveSafeMediaUrl(frame.attribs.src))
