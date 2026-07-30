@@ -1,8 +1,10 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { floorReverseFlag } from "@/lib/floor-order";
 import {
   getReviewQueue,
   getTopic,
+  getTopicMain,
   getUserStatus
 } from "@/lib/hu60";
 import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
@@ -32,6 +34,7 @@ type ReviewContext =
       type: "topic";
       topicId: number;
       page: number;
+      floorReverse?: boolean;
     };
 
 type ReviewRequest = {
@@ -154,8 +157,30 @@ async function getAuthoritativeTargets(
     return queue.__fallback ? null : queue.replyList;
   }
 
-  const topic = await getTopic(context.topicId, context.page, sid);
-  return topic.__fallback ? null : topic.tContents;
+  const topicOptions = {
+    floorReverse: floorReverseFlag(Boolean(context.floorReverse))
+  };
+  const [topic, mainTopic] = await Promise.all([
+    getTopic(context.topicId, context.page, sid, topicOptions),
+    context.page > 1
+      ? getTopicMain(context.topicId, sid, topicOptions)
+      : Promise.resolve(null)
+  ]);
+  if (topic.__fallback) return null;
+
+  const targets = [...topic.tContents];
+  if (mainTopic && !mainTopic.__fallback) {
+    const mainFloor = mainTopic.tContents.find(
+      (floor) => Number(floor.floor) === 0
+    );
+    if (
+      mainFloor &&
+      !targets.some((item) => Number(item.id) === Number(mainFloor.id))
+    ) {
+      targets.push(mainFloor);
+    }
+  }
+  return targets;
 }
 
 export async function POST(request: Request) {

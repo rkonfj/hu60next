@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { resolveFloorReverse } from "@/lib/floor-order.server";
 import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
+import { getAccountProfile } from "@/lib/hu60";
 import { withHu60MarkdownMarker } from "@/lib/markdown";
 import { topicFloorHref } from "@/lib/topic-navigation";
 
@@ -137,11 +138,13 @@ export async function POST(request: Request, { params }: RouteContext) {
     }
 
     const reverseParam = String(form.get("reverse") ?? "");
-    const floorReverse = await resolveFloorReverse(
-      reverseParam === "1" || reverseParam === "0"
+    const account = await getAccountProfile(sid);
+    const floorReverse = await resolveFloorReverse({
+      ...(reverseParam === "1" || reverseParam === "0"
         ? { reverse: reverseParam }
-        : undefined
-    );
+        : {}),
+      accountFloorReverse: account?.floorReverse
+    });
     const destination = replyDestination(topicId, data.url, floorReverse);
 
     if (isDocumentSubmission(request)) {

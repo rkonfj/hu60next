@@ -1,5 +1,3 @@
-export const FLOOR_ORDER_COOKIE = "hulvlin_floor_reverse";
-
 export function isFloorReverseEnabled(value: unknown) {
   return value === true || value === 1 || value === "1";
 }

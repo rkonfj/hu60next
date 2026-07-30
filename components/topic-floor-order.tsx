@@ -2,20 +2,12 @@
 
 import { ArrowDownUp } from "lucide-react";
 import Link from "next/link";
-import {
-  FLOOR_ORDER_COOKIE,
-  reverseSearchParam
-} from "@/lib/floor-order";
+import { reverseSearchParam } from "@/lib/floor-order";
 
 type TopicFloorOrderProps = {
   topicId: number;
   floorReverse: boolean;
 };
-
-function rememberFloorOrder(floorReverse: boolean) {
-  const value = floorReverse ? "1" : "0";
-  document.cookie = `${FLOOR_ORDER_COOKIE}=${value};path=/;max-age=31536000;SameSite=Lax`;
-}
 
 function topicOrderHref(topicId: number, floorReverse: boolean) {
   const params = new URLSearchParams({
@@ -41,7 +33,6 @@ export function TopicFloorOrder({
         href={ascendingHref}
         className={floorReverse ? "" : "active"}
         aria-current={floorReverse ? undefined : "true"}
-        onClick={() => rememberFloorOrder(false)}
         prefetch={false}
         scroll={false}
       >
@@ -52,7 +43,6 @@ export function TopicFloorOrder({
         href={descendingHref}
         className={floorReverse ? "active" : ""}
         aria-current={floorReverse ? "true" : undefined}
-        onClick={() => rememberFloorOrder(true)}
         prefetch={false}
         scroll={false}
       >

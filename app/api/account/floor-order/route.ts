@@ -1,9 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import {
-  FLOOR_ORDER_COOKIE,
-  isFloorReverseEnabled
-} from "@/lib/floor-order";
+import { isFloorReverseEnabled } from "@/lib/floor-order";
 import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
 
 const API_BASE =
@@ -28,15 +25,6 @@ function getPublicOrigin(request: Request) {
     forwardedProtocol || requestUrl.protocol.replace(/:$/, "");
 
   return host ? `${protocol}://${host}` : requestUrl.origin;
-}
-
-function applyFloorOrderCookie(response: NextResponse, floorReverse: boolean) {
-  response.cookies.set(FLOOR_ORDER_COOKIE, floorReverse ? "1" : "0", {
-    path: "/",
-    maxAge: 60 * 60 * 24 * 365,
-    sameSite: "lax"
-  });
-  return response;
 }
 
 async function persistFloorOrder(request: Request, floorReverse: boolean) {
@@ -115,14 +103,13 @@ export async function POST(request: Request) {
         );
       }
 
-      const response = NextResponse.redirect(
+      return NextResponse.redirect(
         new URL(
           `/settings?floorOrder=${result.savedFloorReverse ? "desc" : "asc"}`,
           origin
         ),
         303
       );
-      return applyFloorOrderCookie(response, result.savedFloorReverse);
     }
 
     if (!result.ok) {
@@ -132,12 +119,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       notice: result.notice,
       floorReverse: result.savedFloorReverse
     });
-    return applyFloorOrderCookie(response, result.savedFloorReverse);
   } catch {
     if (isDocumentSubmission(request)) {
       return NextResponse.redirect(
