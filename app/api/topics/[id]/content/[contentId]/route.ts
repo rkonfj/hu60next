@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
 import type { EditPostFormResponse } from "@/lib/types";
+import { parseVoteUbb, VoteStoreError } from "@/lib/votes";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
@@ -48,6 +49,16 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   if (title.length > 120 || content.length > 20000) {
     return jsonFailure("标题或正文超过长度限制。", 400);
+  }
+  try {
+    parseVoteUbb(content);
+  } catch (error) {
+    return jsonFailure(
+      error instanceof VoteStoreError
+        ? error.message
+        : "投票 UBB 格式不正确。",
+      400
+    );
   }
 
   const upstreamPath =

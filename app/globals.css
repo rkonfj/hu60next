@@ -3732,17 +3732,22 @@ body:has(> .auth-page) > .site-header {
   font-size: 12px;
 }
 
-.vote-draft-heading label {
-  display: inline-flex;
-  align-items: center;
+.vote-draft-deadline {
+  display: grid;
+  margin-bottom: 8px;
   color: var(--muted);
   font-size: 10px;
-  white-space: nowrap;
   gap: 5px;
 }
 
-.vote-draft-heading input[type="checkbox"] {
-  accent-color: var(--green);
+.vote-draft-deadline input {
+  width: min(100%, 260px);
+  padding: 7px 9px;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--surface);
 }
 
 .vote-draft-question,
@@ -3790,6 +3795,7 @@ body:has(> .auth-page) > .site-header {
 }
 
 .vote-draft-question:focus,
+.vote-draft-deadline input:focus,
 .vote-draft-option input:focus {
   border-color: var(--green);
   box-shadow: 0 0 0 2px var(--green-soft);

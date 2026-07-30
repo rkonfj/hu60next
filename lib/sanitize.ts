@@ -196,12 +196,14 @@ function expandVoteUbb(content: string, currentTopicId?: number) {
           )
           .replace(/\[comment\][\s\S]*?\[\/comment\]/gi, "")
       : normalizedBrackets;
-  const votePattern = /\[vote\]\s*(\d+)\s*\[\/vote\]/gi;
-  const placeholder = (_source: string, rawTopicId: string) => {
-    const referencedTopicId = Number(rawTopicId);
-    const topicId =
-      referencedTopicId === 0 ? Number(currentTopicId) : referencedTopicId;
+  const votePattern =
+    /\[vote(?:\s+[^\]]*)?\][\s\S]*?\[\/vote\]/gi;
+  let renderedVote = false;
+  const placeholder = (_source: string) => {
+    const topicId = Number(currentTopicId);
     if (!Number.isSafeInteger(topicId) || topicId < 1) return _source;
+    if (renderedVote) return "";
+    renderedVote = true;
 
     return `<div class="hu60-vote" data-vote-topic-id="${topicId}" role="status" aria-live="polite"><span class="hu60-vote-loading">正在载入投票…</span></div>`;
   };

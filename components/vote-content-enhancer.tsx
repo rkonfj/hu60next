@@ -12,7 +12,7 @@ import { createRoot, type Root } from "react-dom/client";
 type VoteOption = {
   id: string;
   label: string;
-  count: number;
+  count: number | null;
 };
 
 type VotePoll = {
@@ -20,7 +20,9 @@ type VotePoll = {
   question: string;
   multiple: boolean;
   closed: boolean;
-  totalVoters: number;
+  closesAt: number | null;
+  resultsVisible: boolean;
+  totalVoters: number | null;
   options: VoteOption[];
   selectedOptionIds: string[];
 };
@@ -31,6 +33,17 @@ type VoteResponse = {
   isLogin?: boolean;
   poll?: VotePoll;
 };
+
+function formatDeadline(timestamp: number) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  }).format(new Date(timestamp * 1000));
+}
 
 function VoteCard({ topicId }: { topicId: number }) {
   const [poll, setPoll] = useState<VotePoll | null>(null);
@@ -69,6 +82,26 @@ function VoteCard({ topicId }: { topicId: number }) {
     void loadPoll(controller.signal);
     return () => controller.abort();
   }, [topicId]);
+
+  useEffect(() => {
+    if (!poll?.closesAt || poll.closed) return;
+    let timer = 0;
+    const schedule = () => {
+      const remaining = poll.closesAt! * 1000 - Date.now();
+      timer = window.setTimeout(
+        () => {
+          if (remaining <= 24 * 60 * 60 * 1000) {
+            void loadPoll();
+          } else {
+            schedule();
+          }
+        },
+        Math.max(250, Math.min(remaining, 24 * 60 * 60 * 1000))
+      );
+    };
+    schedule();
+    return () => window.clearTimeout(timer);
+  }, [poll?.closesAt, poll?.closed]);
 
   function toggleOption(optionId: string) {
     if (!poll || poll.closed || poll.selectedOptionIds.length) return;
@@ -144,8 +177,14 @@ function VoteCard({ topicId }: { topicId: number }) {
           <p>
             {poll.multiple ? "多选投票" : "单选投票"}
             {" · "}
-            {poll.totalVoters} 人参与
-            {poll.closed ? " · 已结束" : ""}
+            {poll.resultsVisible
+              ? `${poll.totalVoters ?? 0} 人参与`
+              : "结果截止后公布"}
+            {poll.closesAt
+              ? ` · ${poll.closed ? "已截止" : "截止"} ${formatDeadline(poll.closesAt)}`
+              : poll.closed
+                ? " · 已结束"
+                : ""}
           </p>
         </div>
       </header>
@@ -153,10 +192,11 @@ function VoteCard({ topicId }: { topicId: number }) {
         {poll.options.map((option) => {
           const checked = selected.includes(option.id);
           const chosen = poll.selectedOptionIds.includes(option.id);
+          const optionCount = option.count ?? 0;
           const percentage = poll.totalVoters
             ? Math.min(
                 100,
-                Math.round((option.count / poll.totalVoters) * 100)
+                Math.round((optionCount / poll.totalVoters) * 100)
               )
             : 0;
 
@@ -183,15 +223,17 @@ function VoteCard({ topicId }: { topicId: number }) {
                   />
                 ) : null}
               </span>
-              <span className="vote-option-result">
-                <span
-                  className="vote-option-bar"
-                  style={{ width: `${percentage}%` }}
-                />
-                <span>
-                  {option.count} 票 · {percentage}%
+              {poll.resultsVisible ? (
+                <span className="vote-option-result">
+                  <span
+                    className="vote-option-bar"
+                    style={{ width: `${percentage}%` }}
+                  />
+                  <span>
+                    {optionCount} 票 · {percentage}%
+                  </span>
                 </span>
-              </span>
+              ) : null}
             </label>
           );
         })}
@@ -204,6 +246,7 @@ function VoteCard({ topicId }: { topicId: number }) {
         ) : hasVoted ? (
           <span className="vote-complete">
             <CheckCircle2 size={15} /> 你已参与
+            {!poll.resultsVisible ? " · 结果将在截止后公布" : ""}
           </span>
         ) : poll.closed ? (
           <span>投票已结束</span>

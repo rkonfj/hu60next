@@ -1,9 +1,10 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
+import { getUserStatus } from "@/lib/hu60";
 import {
   createTopicVote,
-  parseVoteDraft,
+  parseVoteUbb,
   VoteStoreError,
   type VoteDraft
 } from "@/lib/votes";
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
   const content = String(form.get("content") ?? "").trim();
   let voteDraft: VoteDraft | null;
   try {
-    voteDraft = parseVoteDraft(form.get("vote"));
+    voteDraft = parseVoteUbb(content);
   } catch (error) {
     return failure(
       request,
@@ -115,10 +116,6 @@ export async function POST(request: Request) {
   ) {
     return failure(request, "请选择板块并填写有效的标题和正文。", 400);
   }
-  if (voteDraft && !/\[vote\]\s*0\s*\[\/vote\]/i.test(content)) {
-    return failure(request, "正文中缺少新投票占位符。", 400);
-  }
-
   try {
     const { headers: tokenHeaders } = createHu60UpstreamHeaders(
       request.headers,
@@ -203,7 +200,12 @@ export async function POST(request: Request) {
         voteNotice = "主题已发布，但未能取得主题 ID，投票没有初始化。";
       } else {
         try {
-          await createTopicVote(topicId, voteDraft);
+          const status = await getUserStatus(sid);
+          const ownerUid =
+            status.isLogin === true && Number(status.uid) > 0
+              ? Number(status.uid)
+              : undefined;
+          await createTopicVote(topicId, voteDraft, ownerUid);
         } catch {
           voteNotice =
             "主题已发布，但本机投票数据写入失败；请检查 data/topic 目录权限。";

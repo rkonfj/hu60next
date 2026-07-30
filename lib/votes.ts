@@ -19,12 +19,13 @@ export type VoteDraft = {
   question: string;
   multiple: boolean;
   options: string[];
+  closesAt?: number;
 };
 
 export type VoteOption = {
   id: string;
   label: string;
-  count: number;
+  count: number | null;
 };
 
 export type VotePoll = {
@@ -32,9 +33,15 @@ export type VotePoll = {
   question: string;
   multiple: boolean;
   closed: boolean;
-  totalVoters: number;
+  closesAt: number | null;
+  resultsVisible: boolean;
+  totalVoters: number | null;
   options: VoteOption[];
   selectedOptionIds: string[];
+};
+
+type StoredVoteOption = Omit<VoteOption, "count"> & {
+  count: number;
 };
 
 type StoredVotes = {
@@ -42,8 +49,10 @@ type StoredVotes = {
   multiple: boolean;
   closed: boolean;
   totalVoters: number;
-  options: VoteOption[];
+  options: StoredVoteOption[];
   voters: Record<string, string[]>;
+  ownerUid?: number;
+  closesAt?: number;
   createdAt?: number;
   updatedAt?: number;
 };
@@ -109,7 +118,10 @@ function nonNegativeInteger(value: unknown) {
     : 0;
 }
 
-function parseOption(value: unknown, index: number): VoteOption | null {
+function parseOption(
+  value: unknown,
+  index: number
+): StoredVoteOption | null {
   if (typeof value === "string") {
     const label = value.trim();
     return label
@@ -152,7 +164,7 @@ function normalizeStoredVotes(raw: unknown): StoredVotes {
   const options = source.options
     .slice(0, MAX_OPTIONS)
     .map(parseOption)
-    .filter((option): option is VoteOption => Boolean(option))
+    .filter((option): option is StoredVoteOption => Boolean(option))
     .map((option, index) => {
       let id = option.id;
       if (usedIds.has(id)) id = String(index + 1);
@@ -206,6 +218,10 @@ function normalizeStoredVotes(raw: unknown): StoredVotes {
     ),
     options,
     voters,
+    ownerUid:
+      nonNegativeInteger(source.ownerUid ?? source.owner_uid) || undefined,
+    closesAt:
+      nonNegativeInteger(source.closesAt ?? source.closes_at) || undefined,
     createdAt: nonNegativeInteger(source.createdAt) || undefined,
     updatedAt: nonNegativeInteger(source.updatedAt) || undefined
   };
@@ -216,13 +232,26 @@ function publicPoll(
   votes: StoredVotes,
   voterId?: number
 ): VotePoll {
+  const now = Math.floor(Date.now() / 1000);
+  const deadlineReached = Boolean(votes.closesAt && now >= votes.closesAt);
+  const resultsVisible =
+    !votes.closesAt ||
+    votes.closed ||
+    deadlineReached ||
+    Boolean(voterId && voterId === votes.ownerUid);
+
   return {
     topicId,
     question: votes.question,
     multiple: votes.multiple,
-    closed: votes.closed,
-    totalVoters: votes.totalVoters,
-    options: votes.options,
+    closed: votes.closed || deadlineReached,
+    closesAt: votes.closesAt ?? null,
+    resultsVisible,
+    totalVoters: resultsVisible ? votes.totalVoters : null,
+    options: votes.options.map((option) => ({
+      ...option,
+      count: resultsVisible ? option.count : null
+    })),
     selectedOptionIds:
       voterId && votes.voters[String(voterId)]
         ? votes.voters[String(voterId)]
@@ -339,30 +368,113 @@ async function withTopicLock<T>(
   }
 }
 
-export function parseVoteDraft(value: unknown): VoteDraft | null {
-  if (typeof value !== "string" || !value.trim()) return null;
+function contentWithoutMarkdownCode(content: string) {
+  return content
+    .replace(/<(pre|code)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
+    .replace(
+      /(^|\n)(```|~~~)[^\n]*\n[\s\S]*?(?:\n\2(?=\n|$)|$)/g,
+      ""
+    )
+    .replace(/`[^`\n]*`/g, "");
+}
 
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(value);
-  } catch {
-    throw new VoteStoreError("投票设置格式不正确。", "INVALID_DATA");
-  }
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new VoteStoreError("投票设置格式不正确。", "INVALID_DATA");
+function decodeVoteText(value: string) {
+  const named: Record<string, string> = {
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: '"',
+    apos: "'",
+    nbsp: " "
+  };
+
+  return value
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(?:p|div|li|h[1-6]|blockquote)>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(
+      /&(?:#(\d+)|#x([\da-f]+)|([a-z]+));/gi,
+      (entity, decimal, hexadecimal, name: string | undefined) => {
+        if (decimal || hexadecimal) {
+          const codePoint = decimal
+            ? Number(decimal)
+            : Number.parseInt(hexadecimal, 16);
+          return Number.isSafeInteger(codePoint) && codePoint <= 0x10ffff
+            ? String.fromCodePoint(codePoint)
+            : entity;
+        }
+        return name ? (named[name.toLowerCase()] ?? entity) : entity;
+      }
+    );
+}
+
+function parseVoteDeadline(value: string | undefined) {
+  if (!value) return undefined;
+  const normalized = value.trim();
+  const local = normalized.match(
+    /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})$/
+  );
+  let milliseconds: number;
+
+  if (local) {
+    const [, year, month, day, hour, minute] = local.map(Number);
+    milliseconds = Date.UTC(year, month - 1, day, hour - 8, minute);
+    const shanghai = new Date(milliseconds + 8 * 60 * 60 * 1000);
+    if (
+      shanghai.getUTCFullYear() !== year ||
+      shanghai.getUTCMonth() !== month - 1 ||
+      shanghai.getUTCDate() !== day ||
+      shanghai.getUTCHours() !== hour ||
+      shanghai.getUTCMinutes() !== minute
+    ) {
+      throw new VoteStoreError("投票截止时间无效。", "INVALID_DATA");
+    }
+  } else {
+    milliseconds = Date.parse(normalized);
   }
 
-  const source = parsed as Record<string, unknown>;
-  const question =
-    typeof source.question === "string" ? source.question.trim() : "";
-  const options = Array.isArray(source.options)
-    ? source.options
-        .map((option) => String(option).trim())
-        .filter(Boolean)
-    : [];
+  if (!Number.isFinite(milliseconds)) {
+    throw new VoteStoreError(
+      "投票截止时间格式应为 YYYY-MM-DD HH:mm。",
+      "INVALID_DATA"
+    );
+  }
+  return Math.floor(milliseconds / 1000);
+}
+
+export function parseVoteUbb(content: string): VoteDraft | null {
+  const searchable = contentWithoutMarkdownCode(content)
+    .replace(/(?:&#0*91;|&#x0*5b;|&lbrack;)/gi, "[")
+    .replace(/(?:&#0*93;|&#x0*5d;|&rbrack;)/gi, "]");
+  const matches = Array.from(
+    searchable.matchAll(
+      /\[vote(?:\s+until\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\]\s]+)))?\s*\]([\s\S]*?)\[\/vote\]/gi
+    )
+  );
+
+  if (!matches.length) {
+    if (/\[\/?vote(?:\s[^\]]*)?\]/i.test(searchable)) {
+      throw new VoteStoreError("投票 UBB 标签没有完整闭合。", "INVALID_DATA");
+    }
+    return null;
+  }
+  if (matches.length > 1) {
+    throw new VoteStoreError("每个主题只能包含一个投票。", "INVALID_DATA");
+  }
+
+  const lines = decodeVoteText(matches[0][4])
+    .replace(/\r/g, "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const question = lines[0] ?? "";
+  const options = lines.slice(1);
 
   if (!question || question.length > 120) {
-    throw new VoteStoreError("请填写 1–120 字的投票题目。", "INVALID_DATA");
+    throw new VoteStoreError(
+      "vote 标签内第一行必须是 1–120 字的投票标题。",
+      "INVALID_DATA"
+    );
   }
   if (options.length < 2 || options.length > MAX_OPTIONS) {
     throw new VoteStoreError(
@@ -382,14 +494,18 @@ export function parseVoteDraft(value: unknown): VoteDraft | null {
 
   return {
     question,
-    multiple: source.multiple === true,
-    options
+    multiple: false,
+    options,
+    closesAt: parseVoteDeadline(
+      matches[0][1] ?? matches[0][2] ?? matches[0][3]
+    )
   };
 }
 
 export async function createTopicVote(
   topicId: number,
-  draft: VoteDraft
+  draft: VoteDraft,
+  ownerUid?: number
 ) {
   return withTopicLock(topicId, async () => {
     const existing = (await readTopicDocument(topicId)) ?? {};
@@ -405,11 +521,66 @@ export async function createTopicVote(
         count: 0
       })),
       voters: {},
+      ownerUid,
+      closesAt: draft.closesAt,
       createdAt: now,
       updatedAt: now
     };
     await writeTopicDocument(topicId, { ...existing, votes });
     return publicPoll(topicId, votes);
+  });
+}
+
+export async function ensureTopicVote(
+  topicId: number,
+  draft: VoteDraft,
+  ownerUid?: number
+) {
+  return withTopicLock(topicId, async () => {
+    const existing = await readTopicDocument(topicId);
+    if (existing?.votes !== undefined) {
+      const votes = normalizeStoredVotes(existing.votes);
+      let changed = false;
+      if (!votes.ownerUid && ownerUid) {
+        votes.ownerUid = ownerUid;
+        changed = true;
+      }
+      if (!votes.closesAt && draft.closesAt) {
+        votes.closesAt = draft.closesAt;
+        changed = true;
+      }
+      if (changed) {
+        votes.updatedAt = Math.floor(Date.now() / 1000);
+        await writeTopicDocument(topicId, { ...existing, votes });
+      }
+      return {
+        created: false,
+        poll: publicPoll(topicId, votes)
+      };
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const votes: StoredVotes = {
+      question: draft.question,
+      multiple: draft.multiple,
+      closed: false,
+      totalVoters: 0,
+      options: draft.options.map((label, index) => ({
+        id: String(index + 1),
+        label,
+        count: 0
+      })),
+      voters: {},
+      ownerUid,
+      closesAt: draft.closesAt,
+      createdAt: now,
+      updatedAt: now
+    };
+    await writeTopicDocument(topicId, { ...(existing ?? {}), votes });
+    return {
+      created: true,
+      poll: publicPoll(topicId, votes)
+    };
   });
 }
 
@@ -437,7 +608,13 @@ export async function castTopicVote(
     }
 
     const votes = normalizeStoredVotes(document.votes);
-    if (votes.closed) {
+    if (
+      votes.closed ||
+      Boolean(
+        votes.closesAt &&
+          Math.floor(Date.now() / 1000) >= votes.closesAt
+      )
+    ) {
       throw new VoteStoreError("这个投票已经结束。", "CLOSED");
     }
 

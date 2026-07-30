@@ -89,9 +89,26 @@ type SavedDraft = {
 
 type DraftVote = {
   question: string;
-  multiple: boolean;
   options: string[];
+  until: string;
 };
+
+const voteUbbPattern =
+  /\[vote(?:\s+[^\]]*)?\][\s\S]*?\[\/vote\]/i;
+
+function formatVoteUbb(vote: DraftVote) {
+  const deadline = vote.until
+    ? ` until="${vote.until.replace("T", " ")}"`
+    : "";
+  return `[vote${deadline}]\n${vote.question}\n\n${vote.options.join("\n")}\n[/vote]`;
+}
+
+function replaceVoteUbb(content: string, vote: DraftVote) {
+  const formatted = formatVoteUbb(vote);
+  return voteUbbPattern.test(content)
+    ? content.replace(voteUbbPattern, formatted)
+    : `${content.trimEnd()}${content.trim() ? "\n" : ""}${formatted}`;
+}
 
 function restoreForumPicker(
   rootForums: ForumTree[],
@@ -289,6 +306,40 @@ export function ComposerPreview({
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
+    if (/^\[vote(?:\s+[^\]]*)?\]\s*$/i.test(line.trim())) {
+      const closingIndex = lines.findIndex(
+        (candidate, candidateIndex) =>
+          candidateIndex > index && /^\[\/vote\]\s*$/i.test(candidate.trim())
+      );
+      if (closingIndex > index) {
+        const voteLines = lines
+          .slice(index + 1, closingIndex)
+          .map((value) => value.trim())
+          .filter(Boolean);
+        const [question, ...options] = voteLines;
+        const deadline = line.match(
+          /\buntil\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\]\s]+))/i
+        );
+        const deadlineValue =
+          deadline?.[1] ?? deadline?.[2] ?? deadline?.[3];
+        preview.push(
+          <section className="composer-vote-preview" key={`vote-${index}`}>
+            <Vote size={18} />
+            <div>
+              <strong>{question || "投票标题"}</strong>
+              <span>
+                {options.length
+                  ? `${options.length} 个选项`
+                  : "请至少填写两个选项"}
+                {deadlineValue ? ` · 截止 ${deadlineValue}` : ""}
+              </span>
+            </div>
+          </section>
+        );
+        index = closingIndex;
+        continue;
+      }
+    }
     if (line.trim() === "$$") {
       const closingIndex = lines.findIndex(
         (candidate, candidateIndex) =>
@@ -491,23 +542,6 @@ export function ComposerPreview({
       );
       continue;
     }
-    const vote = line.trim().match(/^\[vote\]\s*(\d+)\s*\[\/vote\]$/i);
-    if (vote) {
-      preview.push(
-        <section className="composer-vote-preview" key={index}>
-          <Vote size={18} />
-          <div>
-            <strong>
-              {vote[1] === "0"
-                ? "新投票（发布后绑定当前主题）"
-                : `投票主题 #${vote[1]}`}
-            </strong>
-            <span>实际选项和票数将在帖子页面中显示。</span>
-          </div>
-        </section>
-      );
-      continue;
-    }
     const image = line
       .trim()
       .match(/^!\[([^\]]*)\]\(((?:https?:\/\/|\/)[^)]+)\)$/);
@@ -599,21 +633,26 @@ export function Composer({
       if (raw) {
         draft = JSON.parse(raw) as SavedDraft;
         setTitle(draft.title ?? "");
-        const draftContent = draft.content ?? "";
-        setContent(draftContent);
+        let draftContent = draft.content ?? "";
         if (
           draft.vote &&
           typeof draft.vote.question === "string" &&
           Array.isArray(draft.vote.options)
         ) {
-          setVoteDraft({
+          const restoredVote = {
             question: draft.vote.question,
-            multiple: draft.vote.multiple === true,
             options: draft.vote.options
               .map(String)
-              .slice(0, 12)
-          });
+              .slice(0, 12),
+            until:
+              typeof draft.vote.until === "string"
+                ? draft.vote.until
+                : ""
+          };
+          setVoteDraft(restoredVote);
+          draftContent = replaceVoteUbb(draftContent, restoredVote);
         }
+        setContent(draftContent);
         selectionRef.current = {
           start: draftContent.length,
           end: draftContent.length
@@ -759,7 +798,7 @@ export function Composer({
       setContent((value) =>
         value
           .replace(
-            /(?:^|\n)\s*\[vote\]\s*0\s*\[\/vote\]\s*(?=\n|$)/i,
+            /(?:^|\n)\s*\[vote(?:\s+[^\]]*)?\][\s\S]*?\[\/vote\]\s*(?=\n|$)/i,
             ""
           )
           .replace(/^\n+|\n+$/g, "")
@@ -767,46 +806,49 @@ export function Composer({
       return;
     }
 
-    setVoteDraft({
-      question: title.trim(),
-      multiple: false,
-      options: ["", ""]
-    });
-    insertText("[vote]0[/vote]");
+    const nextVote = {
+      question: title.trim() || "投票标题",
+      options: ["选项 1", "选项 2"],
+      until: ""
+    };
+    setVoteDraft(nextVote);
+    insertText(formatVoteUbb(nextVote));
+  }
+
+  function applyVoteDraft(nextVote: DraftVote) {
+    setVoteDraft(nextVote);
+    setContent((value) => replaceVoteUbb(value, nextVote));
   }
 
   function updateVoteOption(index: number, value: string) {
-    setVoteDraft((current) =>
-      current
-        ? {
-            ...current,
-            options: current.options.map((option, optionIndex) =>
-              optionIndex === index ? value : option
-            )
-          }
-        : current
-    );
+    if (!voteDraft) return;
+    applyVoteDraft({
+      ...voteDraft,
+      options: voteDraft.options.map((option, optionIndex) =>
+        optionIndex === index ? value : option
+      )
+    });
   }
 
   function addVoteOption() {
-    setVoteDraft((current) =>
-      current && current.options.length < 12
-        ? { ...current, options: [...current.options, ""] }
-        : current
-    );
+    if (!voteDraft || voteDraft.options.length >= 12) return;
+    applyVoteDraft({
+      ...voteDraft,
+      options: [
+        ...voteDraft.options,
+        `选项 ${voteDraft.options.length + 1}`
+      ]
+    });
   }
 
   function removeVoteOption(index: number) {
-    setVoteDraft((current) =>
-      current && current.options.length > 2
-        ? {
-            ...current,
-            options: current.options.filter(
-              (_option, optionIndex) => optionIndex !== index
-            )
-          }
-        : current
-    );
+    if (!voteDraft || voteDraft.options.length <= 2) return;
+    applyVoteDraft({
+      ...voteDraft,
+      options: voteDraft.options.filter(
+        (_option, optionIndex) => optionIndex !== index
+      )
+    });
   }
 
   function selectForum(levelIndex: number, value: string) {
@@ -1012,13 +1054,6 @@ export function Composer({
         value={canPostToTarget ? targetForum?.id : ""}
       />
       <input type="hidden" name="content" value={content} />
-      {voteDraft ? (
-        <input
-          type="hidden"
-          name="vote"
-          value={JSON.stringify(voteDraft)}
-        />
-      ) : null}
       <div className="composer-top">
         <div className="composer-forum-picker" id="forum-picker">
           <span>发布到</span>
@@ -1146,30 +1181,29 @@ export function Composer({
               <div>
                 <strong>设置投票</strong>
               </div>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={voteDraft.multiple}
-                  onChange={(event) =>
-                    setVoteDraft((current) =>
-                      current
-                        ? { ...current, multiple: event.target.checked }
-                        : current
-                    )
-                  }
-                />
-                允许多选
-              </label>
             </div>
+            <label className="vote-draft-deadline">
+              <span>截止时间（可选，北京时间）</span>
+              <input
+                type="datetime-local"
+                value={voteDraft.until}
+                onChange={(event) =>
+                  applyVoteDraft({
+                    ...voteDraft,
+                    until: event.target.value
+                  })
+                }
+                aria-label="投票截止时间"
+              />
+            </label>
             <input
               className="vote-draft-question"
               value={voteDraft.question}
               onChange={(event) =>
-                setVoteDraft((current) =>
-                  current
-                    ? { ...current, question: event.target.value }
-                    : current
-                )
+                applyVoteDraft({
+                  ...voteDraft,
+                  question: event.target.value
+                })
               }
               placeholder="投票题目"
               maxLength={120}
