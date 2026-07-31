@@ -1,8 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { resolveFloorReverse } from "@/lib/floor-order.server";
+import { parseReverseOverride } from "@/lib/floor-order";
 import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
-import { getAccountProfile } from "@/lib/hu60";
 import { withHu60MarkdownMarker } from "@/lib/markdown";
 import { topicFloorHref } from "@/lib/topic-navigation";
 
@@ -37,7 +36,7 @@ function getPublicOrigin(request: Request) {
 function replyDestination(
   topicId: number,
   upstreamUrl?: string,
-  floorReverse = false
+  reverseOverride?: boolean
 ) {
   const floorMatch = upstreamUrl?.match(/[?&]floor=(\d+)/);
   const floor = Number(floorMatch?.[1]);
@@ -47,7 +46,7 @@ function replyDestination(
   return {
     floor,
     page: null,
-    nextPath: topicFloorHref(topicId, floor, floorReverse)
+    nextPath: topicFloorHref(topicId, floor, reverseOverride)
   };
 }
 
@@ -137,15 +136,10 @@ export async function POST(request: Request, { params }: RouteContext) {
       );
     }
 
-    const reverseParam = String(form.get("reverse") ?? "");
-    const account = await getAccountProfile(sid);
-    const floorReverse = await resolveFloorReverse({
-      ...(reverseParam === "1" || reverseParam === "0"
-        ? { reverse: reverseParam }
-        : {}),
-      accountFloorReverse: account?.floorReverse
-    });
-    const destination = replyDestination(topicId, data.url, floorReverse);
+    const reverseOverride = parseReverseOverride(
+      String(form.get("reverse") ?? "")
+    );
+    const destination = replyDestination(topicId, data.url, reverseOverride);
 
     if (isDocumentSubmission(request)) {
       const url = new URL(

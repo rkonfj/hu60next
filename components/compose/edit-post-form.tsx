@@ -53,7 +53,7 @@ type EditPostFormProps = {
   contentId: number;
   page: number;
   floor: number;
-  floorReverse?: boolean;
+  reverseOverride?: boolean;
   initialTitle: string;
   initialContent: string;
   editTitle: boolean;
@@ -71,7 +71,7 @@ export function EditPostForm({
   contentId,
   page,
   floor,
-  floorReverse = false,
+  reverseOverride,
   initialTitle,
   initialContent,
   editTitle,
@@ -102,8 +102,8 @@ export function EditPostForm({
   });
   const returnPath =
     floor > 0
-      ? topicFloorHref(topicId, floor, floorReverse)
-      : topicHref(topicId, { page, floorReverse });
+      ? topicFloorHref(topicId, floor, reverseOverride)
+      : topicHref(topicId, { page, floorReverse: reverseOverride });
 
   function rememberEditorSelection() {
     const textarea = textAreaRef.current;

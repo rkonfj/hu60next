@@ -899,7 +899,7 @@ export async function getForum(
 }
 
 type TopicRequestOptions = {
-  floorReverse?: boolean | number;
+  floorReverse?: boolean;
   floor?: number;
 };
 
@@ -914,7 +914,7 @@ async function getTopicUncached(
     `bbs.topic.${id}.${Math.max(1, page)}.json`,
     {
       pageSize: TOPICS_PER_PAGE,
-      floorReverse,
+      ...(floorReverse >= 0 ? { floorReverse } : {}),
       ...(floor > 0 ? { floor } : {}),
       _uinfo: "name,avatar,sign,regtime",
       _content: "html",
@@ -936,8 +936,12 @@ const getTopicCached = cache(getTopicUncached);
 
 function topicRequestKey(options: TopicRequestOptions = {}) {
   const floor = Number(options.floor);
+  let floorReverseKey = -1;
+  if (options.floorReverse === true) floorReverseKey = 1;
+  else if (options.floorReverse === false) floorReverseKey = 0;
+
   return {
-    floorReverse: options.floorReverse ? 1 : 0,
+    floorReverse: floorReverseKey,
     floor: Number.isInteger(floor) && floor > 0 ? floor : 0
   };
 }
@@ -963,13 +967,13 @@ export async function getTopicMain(
   sid?: string,
   options: TopicRequestOptions = {}
 ): Promise<TopicResponse> {
-  const floorReverse = options.floorReverse ? 1 : 0;
+  const { floorReverse } = topicRequestKey(options);
 
   return requestJson(
     `bbs.topic.${id}.1.json`,
     {
       pageSize: 1,
-      floorReverse,
+      ...(floorReverse >= 0 ? { floorReverse } : {}),
       _uinfo: "name,avatar,sign,regtime",
       _content: "html",
       _time: 1

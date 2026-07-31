@@ -20,12 +20,11 @@ import { TopicFloorOrder } from "@/components/topic-floor-order";
 import { SessionUpdatePublisher } from "@/components/unread-badge";
 import { compactNumber, fullDate, relativeTime } from "@/lib/format";
 import {
-  floorReverseFlag,
+  isFloorReverseEnabled,
+  topicFetchOptions,
   topicOrderQuery
 } from "@/lib/floor-order";
-import { resolveFloorReverse } from "@/lib/floor-order.server";
 import {
-  getAccountProfile,
   getFaces,
   getTopic,
   getTopicMain
@@ -63,22 +62,12 @@ export async function generateMetadata({
     cookies()
   ]);
   const sid = cookieStore.get("hulvlin_sid")?.value;
-  const account = sid ? await getAccountProfile(sid) : null;
-  const floorReverse = await resolveFloorReverse({
-    reverse: query.reverse,
-    accountFloorReverse: account?.floorReverse
-  });
-  const targetFloor = Number(query.floor);
+  const topicOptions = topicFetchOptions(query);
   const topic = await getTopic(
     Number(id),
     Math.max(1, Number(query.page) || 1),
     sid,
-    {
-      floorReverse: floorReverseFlag(floorReverse),
-      ...(Number.isInteger(targetFloor) && targetFloor > 0
-        ? { floor: targetFloor }
-        : {})
-    }
+    topicOptions
   );
   return {
     title: topic.tMeta.title,
@@ -93,26 +82,18 @@ export default async function TopicPage({
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const topicId = Number(id);
   const page = Math.max(1, Number(query.page) || 1);
-  const targetFloor = Number(query.floor);
   const cookieStore = await cookies();
   const sid = cookieStore.get("hulvlin_sid")?.value;
-  const account = sid ? await getAccountProfile(sid) : null;
-  const floorReverse = await resolveFloorReverse({
-    reverse: query.reverse,
-    accountFloorReverse: account?.floorReverse
-  });
-  const topicOptions = {
-    floorReverse: floorReverseFlag(floorReverse),
-    ...(Number.isInteger(targetFloor) && targetFloor > 0
-      ? { floor: targetFloor }
-      : {})
-  };
+  const reverseOverride =
+    query.reverse === "1" ? true : query.reverse === "0" ? false : undefined;
+  const topicOptions = topicFetchOptions(query);
   const [topic, faces] = await Promise.all([
     getTopic(topicId, page, sid, topicOptions),
     getFaces()
   ]);
   const currentPage = Math.max(1, topic.currPage || page);
-  const paginationQuery = topicOrderQuery(floorReverse);
+  const floorReverse = isFloorReverseEnabled(topic.floorReverse);
+  const paginationQuery = topicOrderQuery(reverseOverride);
 
   if (topic.__fallback) {
     return (
@@ -479,7 +460,7 @@ export default async function TopicPage({
             <ReplyForm
               topicId={topicId}
               currentPage={currentPage}
-              floorReverse={floorReverse}
+              reverseOverride={reverseOverride}
               userId={sessionUid}
               token={topic.token}
               faces={faces}

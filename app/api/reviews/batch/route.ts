@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { floorReverseFlag } from "@/lib/floor-order";
 import {
   getReviewQueue,
   getTopic,
@@ -158,7 +157,7 @@ async function getAuthoritativeTargets(
   }
 
   const topicOptions = {
-    floorReverse: floorReverseFlag(Boolean(context.floorReverse))
+    floorReverse: Boolean(context.floorReverse)
   };
   const [topic, mainTopic] = await Promise.all([
     getTopic(context.topicId, context.page, sid, topicOptions),
