@@ -123,6 +123,24 @@ const IMAGE_STYLE_PROPERTIES = new Set([
   "width"
 ]);
 
+const BORDER_WIDTH_PROPERTIES = new Set([
+  "border-width",
+  "border-top-width",
+  "border-right-width",
+  "border-bottom-width",
+  "border-left-width"
+]);
+
+const BORDER_SHORTHAND_PROPERTIES = new Set([
+  "border",
+  "border-top",
+  "border-right",
+  "border-bottom",
+  "border-left"
+]);
+
+const MAX_BORDER_WIDTH_PX = 32;
+
 const UNSAFE_VALUE_PATTERN =
   /(?:url\s*\(|@import|expression\s*\(|javascript:)/i;
 const HEX_COLOR_PATTERN = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
@@ -132,21 +150,41 @@ const NAMED_COLOR_PATTERN = /^[a-z]+$/i;
 const LENGTH_PATTERN = /^-?(?:\d+(?:\.\d+)?)(px|em|rem|%)$/i;
 const UNITLESS_PATTERN = /^-?(?:\d+(?:\.\d+)?)$/;
 const FONT_FAMILY_PATTERN = /^[\w "'\-,\u4e00-\u9fff]+$/u;
-const BORDER_SHORTHAND_PATTERN =
-  /^(?:none|\d+(?:\.\d+)?px\s+(?:solid|dashed|dotted|double)(?:\s+(?:#[0-9a-f]{3,8}|transparent|[a-z]+))?)$/i;
 
-function parseLengthLimit(property: string, maxPx: number) {
-  if (
-    property === "line-height" ||
-    property === "font-weight" ||
-    property === "border-width" ||
-    property.endsWith("-width")
-  ) {
-    return maxPx;
-  }
+function parseLengthLimit(property: string) {
+  if (property === "line-height" || property === "font-weight") return 8;
   if (property.startsWith("font-")) return 200;
   if (property.includes("radius")) return 256;
-  return maxPx;
+  if (BORDER_WIDTH_PROPERTIES.has(property)) return MAX_BORDER_WIDTH_PX;
+  return 8192;
+}
+
+function isBorderWidthLength(value: string) {
+  return isSafeLength(value, MAX_BORDER_WIDTH_PX);
+}
+
+function isSafeBorderShorthand(value: string) {
+  const normalized = value.trim();
+  const lower = normalized.toLowerCase();
+  if (lower === "none") return true;
+
+  const parts = normalized.split(/\s+/).filter(Boolean);
+  if (parts.length < 2 || parts.length > 3) return false;
+
+  const [width, style, ...colorParts] = parts;
+  const color = colorParts.join(" ");
+  const styleKeyword = style.toLowerCase();
+
+  if (!isBorderWidthLength(width)) return false;
+  if (
+    !BORDER_STYLE_KEYWORDS.has(styleKeyword) ||
+    styleKeyword === "none" ||
+    styleKeyword === "hidden"
+  ) {
+    return false;
+  }
+  if (colorParts.length > 0 && !isSafeColor(color)) return false;
+  return true;
 }
 
 function isSafeColor(value: string) {
@@ -201,7 +239,7 @@ function isAllowedStyleValue(property: string, value: string) {
     return false;
   }
 
-  const limit = parseLengthLimit(property, 8192);
+  const limit = parseLengthLimit(property);
 
   switch (property) {
     case "color":
@@ -248,15 +286,13 @@ function isAllowedStyleValue(property: string, value: string) {
     case "border-left-style":
       return BORDER_STYLE_KEYWORDS.has(normalizedValue.toLowerCase());
     case "border":
-      return (
-        normalizedValue.toLowerCase() === "none" ||
-        BORDER_SHORTHAND_PATTERN.test(normalizedValue)
-      );
     case "border-top":
     case "border-right":
     case "border-bottom":
     case "border-left":
-      return BORDER_SHORTHAND_PATTERN.test(normalizedValue);
+      return BORDER_SHORTHAND_PROPERTIES.has(property)
+        ? isSafeBorderShorthand(normalizedValue)
+        : false;
     case "text-indent":
     case "margin":
     case "margin-top":
