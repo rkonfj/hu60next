@@ -32,6 +32,7 @@ import type { ForumFace } from "@/lib/types";
 type ReplyFormProps = {
   topicId: number;
   currentPage: number;
+  reverseOverride?: boolean;
   userId: number;
   token: string;
   faces: ForumFace[];
@@ -46,6 +47,7 @@ type EditorSelection = {
 export function ReplyForm({
   topicId,
   currentPage,
+  reverseOverride,
   userId,
   token,
   faces,
@@ -311,11 +313,11 @@ export function ReplyForm({
         setPendingFloor(floor);
       }
       startUpdatingReplies(() => {
-        if (result.nextPath && result.page !== currentPage) {
+        if (result.nextPath) {
           router.push(result.nextPath);
-        } else {
-          router.refresh();
+          return;
         }
+        router.refresh();
       });
     } catch {
       setNotice("暂时无法提交回复，请稍后再试。");
@@ -338,6 +340,13 @@ export function ReplyForm({
       onSubmit={handleSubmit}
     >
       <input type="hidden" name="token" value={token} />
+      {reverseOverride !== undefined ? (
+        <input
+          type="hidden"
+          name="reverse"
+          value={reverseOverride ? "1" : "0"}
+        />
+      ) : null}
       <div>
         <strong>加入这场讨论</strong>
       </div>

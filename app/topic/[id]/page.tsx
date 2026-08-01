@@ -16,8 +16,14 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { Pagination } from "@/components/pagination";
 import { ReplyForm } from "@/components/reply-form";
 import { ReviewActions } from "@/components/reviews/review-actions";
+import { TopicFloorOrder } from "@/components/topic-floor-order";
 import { SessionUpdatePublisher } from "@/components/unread-badge";
 import { compactNumber, fullDate, relativeTime } from "@/lib/format";
+import {
+  isFloorReverseEnabled,
+  topicFetchOptions,
+  topicOrderQuery
+} from "@/lib/floor-order";
 import {
   getFaces,
   getTopic,
@@ -34,9 +40,16 @@ import {
   sanitizeHu60ReviewContent
 } from "@/lib/sanitize";
 
+export const dynamic = "force-dynamic";
+
 type TopicPageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ page?: string; replyError?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    floor?: string;
+    reverse?: string;
+    replyError?: string;
+  }>;
 };
 
 export async function generateMetadata({
@@ -48,10 +61,13 @@ export async function generateMetadata({
     searchParams,
     cookies()
   ]);
+  const sid = cookieStore.get("hulvlin_sid")?.value;
+  const topicOptions = topicFetchOptions(query);
   const topic = await getTopic(
     Number(id),
     Math.max(1, Number(query.page) || 1),
-    cookieStore.get("hulvlin_sid")?.value
+    sid,
+    topicOptions
   );
   return {
     title: topic.tMeta.title,
@@ -68,10 +84,16 @@ export default async function TopicPage({
   const page = Math.max(1, Number(query.page) || 1);
   const cookieStore = await cookies();
   const sid = cookieStore.get("hulvlin_sid")?.value;
+  const reverseOverride =
+    query.reverse === "1" ? true : query.reverse === "0" ? false : undefined;
+  const topicOptions = topicFetchOptions(query);
   const [topic, faces] = await Promise.all([
-    getTopic(topicId, page, sid),
+    getTopic(topicId, page, sid, topicOptions),
     getFaces()
   ]);
+  const currentPage = Math.max(1, topic.currPage || page);
+  const floorReverse = isFloorReverseEnabled(topic.floorReverse);
+  const paginationQuery = topicOrderQuery(reverseOverride);
 
   if (topic.__fallback) {
     return (
@@ -95,9 +117,9 @@ export default async function TopicPage({
   }
 
   const firstPageTopic = await (
-    page === 1
+    currentPage === 1
       ? Promise.resolve(topic)
-      : getTopicMain(topicId, sid)
+      : getTopicMain(topicId, sid, topicOptions)
   );
   const authorMemberTitle =
     topic.tMeta._u_regtime !== undefined
@@ -244,9 +266,10 @@ export default async function TopicPage({
               />
               {mainFloor && canEditFloor(mainFloor) ? (
                 <Link
-                  href={`/topic/${topicId}/edit/${mainFloor.id}${
-                    page > 1 ? `?page=${page}` : ""
-                  }`}
+                  href={`/topic/${topicId}/edit/${mainFloor.id}?${new URLSearchParams({
+                    ...paginationQuery,
+                    ...(currentPage > 1 ? { page: String(currentPage) } : {})
+                  }).toString()}`}
                   prefetch={false}
                 >
                   <PencilLine size={14} /> 修改
@@ -261,7 +284,12 @@ export default async function TopicPage({
                 contentId={mainFloor.id}
                 reviewState={mainFloor.review}
                 logs={mainFloor.review_log}
-                context={{ type: "topic", topicId, page }}
+                context={{
+                  type: "topic",
+                  topicId,
+                  page: currentPage,
+                  floorReverse
+                }}
               />
             ) : null}
           </article>
@@ -275,13 +303,17 @@ export default async function TopicPage({
                 </span>
                 <h2>{topic.floorCount - 1} 条回复</h2>
               </div>
-              <span>默认正序</span>
+              <TopicFloorOrder
+                topicId={topicId}
+                floorReverse={floorReverse}
+              />
             </div>
             {replies.length > 10 ? (
               <Pagination
-                current={topic.currPage}
+                current={currentPage}
                 max={topic.maxPage}
                 path={`/topic/${topicId}`}
+                query={paginationQuery}
                 className="topic-pagination-top"
                 previousPageTarget="last-reply"
                 nextPageTarget="first-reply"
@@ -377,9 +409,12 @@ export default async function TopicPage({
                   <div className="reply-actions">
                     {canEditFloor(floor) ? (
                       <Link
-                        href={`/topic/${topicId}/edit/${floor.id}${
-                          page > 1 ? `?page=${page}` : ""
-                        }`}
+                        href={`/topic/${topicId}/edit/${floor.id}?${new URLSearchParams({
+                          ...paginationQuery,
+                          ...(currentPage > 1
+                            ? { page: String(currentPage) }
+                            : {})
+                        }).toString()}`}
                         prefetch={false}
                       >
                         <PencilLine size={14} /> 修改
@@ -403,7 +438,12 @@ export default async function TopicPage({
                       contentId={floor.id}
                       reviewState={floor.review}
                       logs={floor.review_log}
-                      context={{ type: "topic", topicId, page }}
+                      context={{
+                        type: "topic",
+                        topicId,
+                        page: currentPage,
+                        floorReverse
+                      }}
                     />
                   ) : null}
                 </article>
@@ -418,9 +458,10 @@ export default async function TopicPage({
           </section>
 
           <Pagination
-            current={topic.currPage}
+            current={currentPage}
             max={topic.maxPage}
             path={`/topic/${topicId}`}
+            query={paginationQuery}
             previousPageTarget="last-reply"
             nextPageTarget="first-reply"
             prefetch={false}
@@ -429,7 +470,8 @@ export default async function TopicPage({
           {topic.canReply && topic.token ? (
             <ReplyForm
               topicId={topicId}
-              currentPage={topic.currPage}
+              currentPage={currentPage}
+              reverseOverride={reverseOverride}
               userId={sessionUid}
               token={topic.token}
               faces={faces}

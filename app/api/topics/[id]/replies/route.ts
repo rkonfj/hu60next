@@ -1,11 +1,9 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { parseReverseOverride } from "@/lib/floor-order";
 import { createHu60UpstreamHeaders } from "@/lib/hu60-headers";
 import { withHu60MarkdownMarker } from "@/lib/markdown";
-import {
-  topicFloorHref,
-  topicPageForFloor
-} from "@/lib/topic-navigation";
+import { topicFloorHref } from "@/lib/topic-navigation";
 
 const API_BASE =
   process.env.HU60_API_BASE?.replace(/\/+$/, "") ?? "https://hu60.cn/q.php";
@@ -35,17 +33,20 @@ function getPublicOrigin(request: Request) {
   return host ? `${protocol}://${host}` : requestUrl.origin;
 }
 
-function replyDestination(topicId: number, upstreamUrl?: string) {
+function replyDestination(
+  topicId: number,
+  upstreamUrl?: string,
+  reverseOverride?: boolean
+) {
   const floorMatch = upstreamUrl?.match(/[?&]floor=(\d+)/);
   const floor = Number(floorMatch?.[1]);
 
   if (!Number.isInteger(floor) || floor < 1) return null;
 
-  const page = topicPageForFloor(floor);
   return {
     floor,
-    page,
-    nextPath: topicFloorHref(topicId, floor)
+    page: null,
+    nextPath: topicFloorHref(topicId, floor, reverseOverride)
   };
 }
 
@@ -135,7 +136,10 @@ export async function POST(request: Request, { params }: RouteContext) {
       );
     }
 
-    const destination = replyDestination(topicId, data.url);
+    const reverseOverride = parseReverseOverride(
+      String(form.get("reverse") ?? "")
+    );
+    const destination = replyDestination(topicId, data.url, reverseOverride);
 
     if (isDocumentSubmission(request)) {
       const url = new URL(

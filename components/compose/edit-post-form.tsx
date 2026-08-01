@@ -46,12 +46,14 @@ import {
   withHu60MarkdownMarker
 } from "@/lib/markdown";
 import type { ForumFace } from "@/lib/types";
+import { topicFloorHref, topicHref } from "@/lib/topic-navigation";
 
 type EditPostFormProps = {
   topicId: number;
   contentId: number;
   page: number;
   floor: number;
+  reverseOverride?: boolean;
   initialTitle: string;
   initialContent: string;
   editTitle: boolean;
@@ -64,17 +66,12 @@ type EditorSelection = {
   end: number;
 };
 
-function topicPath(topicId: number, page: number, floor: number) {
-  const query = page > 1 ? `?page=${page}` : "";
-  const hash = floor > 0 ? `#floor-${floor}` : "";
-  return `/topic/${topicId}${query}${hash}`;
-}
-
 export function EditPostForm({
   topicId,
   contentId,
   page,
   floor,
+  reverseOverride,
   initialTitle,
   initialContent,
   editTitle,
@@ -103,7 +100,10 @@ export function EditPostForm({
     start: editableInitialContent.length,
     end: editableInitialContent.length
   });
-  const returnPath = topicPath(topicId, page, floor);
+  const returnPath =
+    floor > 0
+      ? topicFloorHref(topicId, floor, reverseOverride)
+      : topicHref(topicId, { page, floorReverse: reverseOverride });
 
   function rememberEditorSelection() {
     const textarea = textAreaRef.current;
