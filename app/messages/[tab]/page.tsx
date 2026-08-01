@@ -207,7 +207,6 @@ export default async function MessageTabPage({
           </span>
           <h1>{current.title}</h1>
         </div>
-        <p>登录状态实时同步至 hu60。</p>
       </header>
 
       <nav className="message-tabs" aria-label="消息分类">
