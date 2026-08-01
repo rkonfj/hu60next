@@ -2318,6 +2318,29 @@ a.topic-card-stat:hover {
   content: "";
 }
 
+.rich-content .usercss {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.rich-content .iframe_box {
+  margin: 12px 0;
+}
+
+.rich-content .useriframelink {
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.rich-content .useriframe,
+.rich-content .hu60-user-html-frame {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  border: none;
+}
+
 .code-block-shell[data-language]::before {
   position: absolute;
   z-index: 1;

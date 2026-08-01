@@ -7,7 +7,8 @@
     "build": "next build && opennextjs-cloudflare build --skipNextBuild && node scripts/prepare-sites.mjs",
     "build:next": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test .test-dist/lib/user-css.test.js"
   },
   "dependencies": {
     "highlight.js": "^11.11.1",
