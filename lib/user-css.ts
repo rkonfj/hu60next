@@ -159,8 +159,15 @@ function parseLengthLimit(property: string) {
   return 8192;
 }
 
-function isBorderWidthLength(value: string) {
-  return isSafeLength(value, MAX_BORDER_WIDTH_PX);
+function isSafeBorderWidthPx(value: string) {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "0") return true;
+
+  const match = normalized.match(/^(-?(?:\d+(?:\.\d+)?))px$/i);
+  if (!match) return false;
+
+  const amount = Number.parseFloat(match[1]);
+  return Number.isFinite(amount) && amount >= 0 && amount <= MAX_BORDER_WIDTH_PX;
 }
 
 function isSafeBorderShorthand(value: string) {
@@ -175,7 +182,7 @@ function isSafeBorderShorthand(value: string) {
   const color = colorParts.join(" ");
   const styleKeyword = style.toLowerCase();
 
-  if (!isBorderWidthLength(width)) return false;
+  if (!isSafeBorderWidthPx(width)) return false;
   if (
     !BORDER_STYLE_KEYWORDS.has(styleKeyword) ||
     styleKeyword === "none" ||
@@ -293,6 +300,12 @@ function isAllowedStyleValue(property: string, value: string) {
       return BORDER_SHORTHAND_PROPERTIES.has(property)
         ? isSafeBorderShorthand(normalizedValue)
         : false;
+    case "border-width":
+    case "border-top-width":
+    case "border-right-width":
+    case "border-bottom-width":
+    case "border-left-width":
+      return isSafeBorderWidthPx(normalizedValue);
     case "text-indent":
     case "margin":
     case "margin-top":
@@ -310,11 +323,6 @@ function isAllowedStyleValue(property: string, value: string) {
     case "max-height":
     case "min-width":
     case "min-height":
-    case "border-width":
-    case "border-top-width":
-    case "border-right-width":
-    case "border-bottom-width":
-    case "border-left-width":
     case "border-radius":
       return isSafeLength(normalizedValue, limit);
     default:
