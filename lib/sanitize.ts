@@ -8,6 +8,8 @@ import {
   clampIframeDimension,
   hasUserCssClass,
   isUserHtmlIframe,
+  mergeSanitizedStyle,
+  sanitizeImageStyle,
   sanitizeUserStyle
 } from "@/lib/user-css";
 
@@ -57,21 +59,17 @@ function sanitizeUserHtmlSrcdoc(srcdoc: string) {
     transformTags: {
       div: (_tagName, attribs) => ({
         tagName: "div",
-        attribs: {
-          ...attribs,
-          ...(attribs.style
-            ? { style: sanitizeUserStyle(attribs.style) }
-            : {})
-        }
+        attribs: mergeSanitizedStyle(
+          attribs,
+          sanitizeUserStyle(attribs.style)
+        )
       }),
       span: (_tagName, attribs) => ({
         tagName: "span",
-        attribs: {
-          ...attribs,
-          ...(attribs.style
-            ? { style: sanitizeUserStyle(attribs.style) }
-            : {})
-        }
+        attribs: mergeSanitizedStyle(
+          attribs,
+          sanitizeUserStyle(attribs.style)
+        )
       }),
       img: (_tagName, attribs) => ({
         tagName: "img",
@@ -100,22 +98,7 @@ function normalizeUserCssAttribs(attribs: Record<string, string>) {
   }
 
   const style = sanitizeUserStyle(attribs.style);
-  return {
-    ...attribs,
-    ...(style ? { style } : {})
-  };
-}
-
-function normalizeImageStyle(style?: string) {
-  if (!style?.trim()) return "";
-
-  return style
-    .split(";")
-    .map((declaration) => declaration.trim())
-    .filter((declaration) =>
-      /^(?:width|height|max-width|max-height)\s*:/i.test(declaration)
-    )
-    .join("; ");
+  return mergeSanitizedStyle(attribs, style);
 }
 
 function decodeCodeEntities(value: string) {
@@ -573,14 +556,13 @@ export function sanitizeHu60Content(
       img: (_tagName, attribs) => {
         const src = resolveSource(attribs.src);
         const className = normalizeImageClass(attribs.class, src);
-        const style = normalizeImageStyle(attribs.style);
+        const style = sanitizeImageStyle(attribs.style);
         return {
           tagName: "img",
           attribs: {
-            ...attribs,
+            ...mergeSanitizedStyle(attribs, style),
             src,
             ...(className ? { class: className } : {}),
-            ...(style ? { style } : {}),
             loading: "lazy",
             decoding: "async"
           }
