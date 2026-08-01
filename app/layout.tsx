@@ -54,12 +54,35 @@ function getBuildTime() {
 }
 
 const buildTime = getBuildTime();
+const themeInitScript = `
+  (() => {
+    const root = document.documentElement;
+    let mode = "auto";
+    try {
+      const storedMode = localStorage.getItem("hulvlin-theme");
+      if (storedMode === "dark" || storedMode === "light") mode = storedMode;
+    } catch {}
+    const resolved = mode === "auto"
+      ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+      : mode;
+    root.dataset.theme = resolved;
+    root.dataset.themeMode = mode;
+    root.style.colorScheme = resolved;
+  })();
+`;
 
 export default function RootLayout({
   children
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="zh-CN" data-scroll-behavior="smooth">
+    <html
+      lang="zh-CN"
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>
         <CodeCopyEnhancer />
         <ContentImageEnhancer />

@@ -2,8 +2,6 @@
 
 import {
   ArrowRight,
-  Eye,
-  EyeOff,
   LoaderCircle,
   LockKeyhole,
   UserRound
@@ -18,7 +16,6 @@ export function LoginForm({
   initialNotice?: string;
 }) {
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [notice, setNotice] = useState(initialNotice);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -83,28 +80,16 @@ export function LoginForm({
           <LockKeyhole size={18} />
           <input
             name="pass"
-            type="text"
-            inputMode="text"
+            type="password"
             autoComplete="current-password"
             autoCorrect="off"
             autoCapitalize="none"
             spellCheck={false}
-            lang="zh-CN"
-            className={`chinese-password-input${showPassword ? "" : " masked"}`}
             required
             maxLength={200}
-            placeholder="支持中文、表情及其它字符"
+            placeholder="请输入密码"
           />
         </span>
-      </label>
-      <label className="password-visibility">
-        <input
-          type="checkbox"
-          checked={showPassword}
-          onChange={(event) => setShowPassword(event.target.checked)}
-        />
-        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-        显示密码 / 输入中文密码
       </label>
       {notice && <p className="form-notice">{notice}</p>}
       <button type="submit" disabled={loading}>

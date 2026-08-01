@@ -1,6 +1,5 @@
 import {
-  LogIn,
-  LogOut
+  LogIn
 } from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -33,11 +32,6 @@ export async function SessionMenu() {
         userName={session.name || "已登录"}
         canReview={session.permissions?.includes("PERMISSION_REVIEW_POST")}
       />
-      <form action="/api/logout" method="post">
-        <button className="icon-button" type="submit" aria-label="退出登录">
-          <LogOut size={17} />
-        </button>
-      </form>
     </div>
   );
 }

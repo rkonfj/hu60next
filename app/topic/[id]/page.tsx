@@ -108,7 +108,9 @@ export default async function TopicPage({
           <MessageCircle size={30} />
           <h1>帖子暂时不可用</h1>
           <p>没有使用离线正文或模拟回复代替真实内容。</p>
-          <Link href="/explore/active">返回发现页</Link>
+          <Link href="/explore/active" prefetch={false}>
+            返回发现页
+          </Link>
         </div>
       </main>
     );
@@ -215,6 +217,7 @@ export default async function TopicPage({
                   <Link
                     href={`/forum/${topic.fIndex.at(-1)?.id ?? 0}`}
                     className="forum-pill article-forum-pill"
+                    prefetch={false}
                   >
                     {topic.fName}
                   </Link>
@@ -267,6 +270,7 @@ export default async function TopicPage({
                     ...paginationQuery,
                     ...(currentPage > 1 ? { page: String(currentPage) } : {})
                   }).toString()}`}
+                  prefetch={false}
                 >
                   <PencilLine size={14} /> 修改
                 </Link>
@@ -372,6 +376,12 @@ export default async function TopicPage({
                         title={fullDate(floor.ctime)}
                       >
                         {relativeTime(floor.ctime)}
+                        {Number(floor.mtime || floor.ctime) !==
+                        Number(floor.ctime)
+                          ? ` · ${relativeTime(
+                              Number(floor.mtime)
+                            )}编辑`
+                          : ""}
                       </span>
                     </div>
                     <a href={`#floor-${floor.floor}`} className="floor-number">
@@ -405,6 +415,7 @@ export default async function TopicPage({
                             ? { page: String(currentPage) }
                             : {})
                         }).toString()}`}
+                        prefetch={false}
                       >
                         <PencilLine size={14} /> 修改
                       </Link>
@@ -481,7 +492,7 @@ export default async function TopicPage({
                 <strong>加入这场讨论</strong>
                 <span>登录后即可参与讨论</span>
               </div>
-              <Link href={`/login?next=/topic/${topicId}`}>
+              <Link href={`/login?next=/topic/${topicId}`} prefetch={false}>
                 登录并回复 <Reply size={16} />
               </Link>
             </div>

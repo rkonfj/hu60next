@@ -2,6 +2,7 @@
 
 import {
   ChevronDown,
+  LogOut,
   ShieldCheck,
   Trophy,
   UserRound
@@ -81,14 +82,18 @@ export function DesktopUserMenu({
           社区荣誉
         </Link>
         {canReview ? (
-          <>
-            <Link href="/reviews" onClick={closeMenu}>
-              <ShieldCheck size={16} />
-              审核中心
-              <ReviewNotificationBadge />
-            </Link>
-          </>
+          <Link href="/reviews" onClick={closeMenu}>
+            <ShieldCheck size={16} />
+            审核中心
+            <ReviewNotificationBadge />
+          </Link>
         ) : null}
+        <form action="/api/logout" method="post">
+          <button type="submit" onClick={closeMenu}>
+            <LogOut size={16} />
+            退出登录
+          </button>
+        </form>
       </nav>
     </details>
   );

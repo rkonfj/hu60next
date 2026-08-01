@@ -5,11 +5,13 @@ import { Brand } from "@/components/brand";
 import { ContextualComposeLink } from "@/components/contextual-compose-link";
 import { HeaderSearch } from "@/components/header-search";
 import { MobileNav } from "@/components/mobile-nav";
+import { ScrollToTopHeader } from "@/components/scroll-to-top-header";
 import { SessionMenu } from "@/components/session-menu";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export function Header() {
   return (
-    <header className="site-header">
+    <ScrollToTopHeader>
       <div className="header-inner">
         <Brand />
         <nav className="desktop-nav" aria-label="主导航">
@@ -42,8 +44,9 @@ export function Header() {
           <ContextualComposeLink />
           <SessionMenu />
           <MobileNav />
+          <ThemeSwitcher />
         </div>
       </div>
-    </header>
+    </ScrollToTopHeader>
   );
 }

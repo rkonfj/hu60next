@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { ReviewNotificationBadge } from "@/components/unread-badge";
 
 type MobileNavClientProps = {
@@ -116,6 +117,7 @@ export function MobileNavClient({
             </Link>
           );
         })}
+        <ThemeSwitcher variant="mobile" />
         {isLoggedIn ? (
           <form action="/api/logout" method="post">
             <button type="submit" onClick={closeMenu}>
