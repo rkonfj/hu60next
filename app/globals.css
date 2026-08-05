@@ -9044,3 +9044,37 @@ body :is(
     grid-row: 1 / span 2;
   }
 }
+
+@media (max-width: 640px) {
+  .header-inner {
+    height: 52px;
+  }
+
+  .page-shell {
+    width: calc(100% - 16px);
+  }
+
+  .home-grid {
+    padding-top: 8px;
+  }
+
+  .feed-toolbar {
+    margin-bottom: 8px;
+  }
+
+  .topic-card {
+    padding: 8px 9px 7px;
+  }
+
+  .topic-main {
+    padding-bottom: 7px;
+  }
+
+  .topic-main p {
+    -webkit-line-clamp: 1;
+  }
+
+  .topic-card-meta {
+    padding-top: 6px;
+  }
+}
